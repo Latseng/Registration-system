@@ -1,7 +1,17 @@
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { MainPage, LoginPage, DepartmentPage, RecordsPage } from "pages";
+
 function App() {
   return (
     <>
-      <h1 className="text-3xl font-bold underline">Hello world!</h1>
+      <BrowserRouter>
+        <Routes>
+          <Route path="login" element={<LoginPage />} />
+          <Route path="department" element={<DepartmentPage />} />
+          <Route path="records" element={<RecordsPage />} />
+          <Route path="*" element={<MainPage />} />
+        </Routes>
+      </BrowserRouter>
     </>
   );
 }
