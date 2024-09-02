@@ -1,5 +1,5 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { MainPage, LoginPage, DepartmentPage, RecordsPage } from "pages";
+import { MainPage, LoginPage, DepartmentPage, RecordsPage } from "./pages";
 
 function App() {
   return (
