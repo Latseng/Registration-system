@@ -5,6 +5,9 @@ const { Sider, Content } = Layout;
 
 const DepartmentPage = () => {
   const navigate = useNavigate();
+  const handleClickLogin = () => {
+    navigate('/login')
+  }
   return (
     <Layout className="min-h-screen">
       {/* 左側導覽列 */}
@@ -34,7 +37,7 @@ const DepartmentPage = () => {
 
       {/* 右側內容區 */}
       <Content className="bg-gray-100 p-6">
-        <button className="absolute right-8 top-4">登入</button>
+        <button className="absolute right-8 top-4"onClick={handleClickLogin}>登入</button>
         <h1 className="text-2xl mb-6">門診科別</h1>
         <div className="flex space-x-4 mb-6">
           <Button>科別搜尋</Button>

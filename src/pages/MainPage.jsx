@@ -4,12 +4,16 @@ import { useNavigate } from "react-router-dom";
 
 const MainPage = () => {
   const navigate = useNavigate();
+  
   const handleClick = () => {
     navigate("/department");
   }
+  const handleClickNav = () =>{
+     navigate("/login");
+  }
   return (
     <>
-     <Navbar />
+     <Navbar onClick={handleClickNav} />
      <MainContent onClick={handleClick} />
     </>
   );
