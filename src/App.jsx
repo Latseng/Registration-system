@@ -1,5 +1,5 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { MainPage, LoginPage, DepartmentPage, RecordsPage } from "./pages";
+import { MainPage, LoginPage, DepartmentPage, RecordsPage, ClinicSchedulePage } from "./pages";
 
 function App() {
   return (
@@ -10,6 +10,7 @@ function App() {
           <Route path="department" element={<DepartmentPage />} />
           <Route path="records" element={<RecordsPage />} />
           <Route path="*" element={<MainPage />} />
+          <Route path="schedule" element={<ClinicSchedulePage />} />
         </Routes>
       </BrowserRouter>
     </>

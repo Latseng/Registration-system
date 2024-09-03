@@ -1,15 +1,17 @@
 import useRWD from "../hooks/useRWD";
 import Logo from "../components/Logo";
-import { Layout, Menu, Button, Divider } from "antd";
+import { Layout, Menu, Button, Divider, Drawer } from "antd";
 import { FaSuitcaseMedical } from "react-icons/fa6";
 import { IoMenu } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 const { Sider, Header, Content } = Layout;
 
 const DepartmentPage = () => {
   const navigate = useNavigate();
   const device = useRWD()
+  const [openMenu, setOpenMenu] = useState(false)
 
   const handleClickLogin = () => {
     navigate("/login");
@@ -18,7 +20,7 @@ const DepartmentPage = () => {
      navigate("/*")
   }
   return (
-    <Layout>
+    <Layout className="min-h-screen">
       {device === "desktop" ? (
         <Sider
           width={200}
@@ -45,13 +47,27 @@ const DepartmentPage = () => {
         </Sider>
       ) : (
         /* 手機版導覽列 */
-        <Header className="flex justify-between items-center bg-blue-600 px-6">
-          <button className="text-white">
-            <IoMenu className="size-6" />
-          </button>
-          <Logo onClick={handleClickLogo} />
-          <button className="text-white">登入</button>
-        </Header>
+        <>
+          <Header className="flex justify-between items-center bg-blue-600 px-6">
+            <button className="text-white" onClick={() => setOpenMenu(true)}>
+              <IoMenu className="size-6" />
+            </button>
+            <Logo onClick={handleClickLogo} />
+            <button className="text-white">登入</button>
+          </Header>
+          <Drawer
+            visible={openMenu}
+            closable={false}
+            placement="left"
+            onClose={() => setOpenMenu(false)}
+          >
+            <Menu mode="vertical" defaultSelectedKeys={["1"]}>
+              <Menu.Item key="1">快速掛號</Menu.Item>
+              <Menu.Item key="2">掛號查詢</Menu.Item>
+              <Menu.Item key="3">看診紀錄</Menu.Item>
+            </Menu>
+          </Drawer>
+        </>
       )}
 
       {/* 右側內容區 */}
