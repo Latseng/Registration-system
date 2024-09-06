@@ -1,5 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { MainPage, LoginPage, DepartmentPage, RecordsPage, ClinicSchedulePage } from "./pages";
+import { MainPage, LoginPage, DepartmentPage, RecordsPage, ClinicSchedulePage, QueryPage } from "./pages";
+import './App.css'
 
 function App() {
   return (
@@ -7,10 +8,11 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="login" element={<LoginPage />} />
-          <Route path="department" element={<DepartmentPage />} />
+          <Route path="departments" element={<DepartmentPage />} />
           <Route path="records" element={<RecordsPage />} />
           <Route path="*" element={<MainPage />} />
           <Route path="schedule" element={<ClinicSchedulePage />} />
+          <Route path="query" element={<QueryPage />} />
         </Routes>
       </BrowserRouter>
     </>

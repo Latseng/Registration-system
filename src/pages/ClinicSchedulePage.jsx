@@ -18,25 +18,26 @@ import { IoMenu } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 
+
 const { Sider, Header, Content } = Layout;
-// const dummyClinicData = [
-//   {
-//     id: 1,
-//     doctor: "陳ＯＯ",
-//     看診日期: "09/14",
-//     看診時段: "上午診",
-//     掛號人數: 14,
-//     額滿: false,
-//   },
-//   {
-//     id: 2,
-//     doctor: "黃ＯＯ",
-//     看診日期: "09/14",
-//     看診時段: "下午診",
-//     掛號人數: 14,
-//     額滿: false,
-//   },
-// ];
+const dummyClinicData = [
+  {
+    id: 1,
+    doctor: "陳ＯＯ",
+    看診日期: "09/14",
+    看診時段: "上午診",
+    掛號人數: 14,
+    額滿: false,
+  },
+  {
+    id: 2,
+    doctor: "黃ＯＯ",
+    看診日期: "09/14",
+    看診時段: "下午診",
+    掛號人數: 14,
+    額滿: false,
+  },
+];
 
 const ClinicSchedulePage = () => {
   const navigate = useNavigate();
@@ -85,7 +86,7 @@ const ClinicSchedulePage = () => {
     form.resetFields();
   };
 
-  // 門診時間表的數據
+  
   const dataSource = [
     {
       key: "1",
@@ -137,6 +138,7 @@ const ClinicSchedulePage = () => {
       ...dates.reduce((acc, date, index) => {
         acc[`date${index}`] = (
           <Button
+            disabled
             type="link"
             onClick={() =>
               showModal({
@@ -147,7 +149,7 @@ const ClinicSchedulePage = () => {
               })
             }
           >
-            醫師C <br /> 掛號人數: 4
+            醫師C <br /> 額滿
           </Button>
         );
         return acc;
@@ -155,7 +157,7 @@ const ClinicSchedulePage = () => {
     },
   ];
 
-  // 設定表格的列
+  
   const columns = [
     {
       title: "",
@@ -188,11 +190,17 @@ const ClinicSchedulePage = () => {
           <Menu
             mode="vertical"
             defaultSelectedKeys={["1"]}
-            className="bg-blue-600 px-6"
+            className="bg-blue-600 px-6 "
           >
-            <Menu.Item key="1">快速掛號</Menu.Item>
-            <Menu.Item key="2">掛號查詢</Menu.Item>
-            <Menu.Item key="3">看診紀錄</Menu.Item>
+            <Menu.Item key="1" className="custom-menu-item">
+              快速掛號
+            </Menu.Item>
+            <Menu.Item key="2" className="custom-menu-item">
+              掛號查詢
+            </Menu.Item>
+            <Menu.Item key="3" className="custom-menu-item">
+              看診紀錄
+            </Menu.Item>
           </Menu>
         </Sider>
       ) : (
