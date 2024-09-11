@@ -12,36 +12,65 @@ import {
   Input,
   Row,
   Col,
+  Breadcrumb
+
 } from "antd";
 import { FaSuitcaseMedical } from "react-icons/fa6";
 import { IoMenu } from "react-icons/io5";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import dayjs from "dayjs";
 
 
 const { Sider, Header, Content } = Layout;
-const dummyClinicData = [
-  {
-    id: 1,
-    doctor: "陳ＯＯ",
-    看診日期: "09/14",
-    看診時段: "上午診",
-    掛號人數: 14,
-    額滿: false,
-  },
-  {
-    id: 2,
-    doctor: "黃ＯＯ",
-    看診日期: "09/14",
-    看診時段: "下午診",
-    掛號人數: 14,
-    額滿: false,
-  },
+
+const generateDates = () => {
+  const dates = [];
+  for (let i = 0; i < 14; i++) {
+    const date = dayjs().add(i, "day");
+    const formattedDate = `${date.format("M/D")}（${"日一二三四五六".charAt(
+      date.day()
+    )}）`;
+    
+    dates.push(formattedDate);
+  }
+  return dates;
+};
+
+
+const doctors = [
+  "陳OO 醫師",
+  "王OO 醫師",
+  "張OO 醫師",
+  "李OO 醫師",
+  "林OO 醫師",
+  "趙OO 醫師",
+  "周OO 醫師",
 ];
+
+const generateRandomDoctorSlots = () => {
+  const doctorSlots = [];
+  const numDoctors = Math.floor(Math.random() * 3) + 1; // 隨機1到3位醫師
+  
+  for (let i = 0; i < numDoctors; i++) {
+    const randomDoctor =
+      doctors[Math.floor(Math.random() * doctors.length)];
+    const numOfPatients = Math.floor(Math.random() * 21); // 隨機掛號人數
+    const isFull = numOfPatients >= 20; // 超過20人不可點擊
+    doctorSlots.push({
+      doctor: randomDoctor,
+      numOfPatients,
+      isFull,
+    });
+  }
+  return doctorSlots;
+};
+
 
 const ClinicSchedulePage = () => {
   const navigate = useNavigate();
-  const device = useRWD();
+  const isDesktop = useRWD();
+  const dates = generateDates()
+
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [form] = Form.useForm();
@@ -53,16 +82,7 @@ const ClinicSchedulePage = () => {
     navigate("/*");
   };
 
-  // 生成從今天開始的兩週日期
-  const generateDates = () => {
-    let dates = [];
-    for (let i = 0; i < 14; i++) {
-      dates.push(dayjs().add(i, "day").format("MM/DD (ddd)"));
-    }
-    return dates;
-  };
-
-  const dates = generateDates();
+  
 
   const showModal = (doctorInfo) => {
     setSelectedDoctor(doctorInfo);
@@ -86,94 +106,59 @@ const ClinicSchedulePage = () => {
     form.resetFields();
   };
 
-  
-  const dataSource = [
-    {
-      key: "1",
-      time: "上午診",
-      ...dates.reduce((acc, date, index) => {
-        acc[`date${index}`] = (
-          <Button
-            type="link"
-            onClick={() =>
-              showModal({
-                department: "內科",
-                doctor: "醫師A",
-                date,
-                timeSlot: "上午診",
-              })
-            }
-          >
-            醫師A <br /> 掛號人數: 5
-          </Button>
-        );
-        return acc;
-      }, {}),
-    },
-    {
-      key: "2",
-      time: "下午診",
-      ...dates.reduce((acc, date, index) => {
-        acc[`date${index}`] = (
-          <Button
-            type="link"
-            onClick={() =>
-              showModal({
-                department: "內科",
-                doctor: "醫師B",
-                date,
-                timeSlot: "下午診",
-              })
-            }
-          >
-            醫師B <br /> 掛號人數: 3
-          </Button>
-        );
-        return acc;
-      }, {}),
-    },
-    {
-      key: "3",
-      time: "夜診",
-      ...dates.reduce((acc, date, index) => {
-        acc[`date${index}`] = (
-          <Button
-            disabled
-            type="link"
-            onClick={() =>
-              showModal({
-                department: "內科",
-                doctor: "醫師C",
-                date,
-                timeSlot: "夜診",
-              })
-            }
-          >
-            醫師C <br /> 額滿
-          </Button>
-        );
-        return acc;
-      }, {}),
-    },
-  ];
-
-  
   const columns = [
     {
-      title: "",
+      title: "時間",
       dataIndex: "time",
       key: "time",
+      fixed: "left",
     },
     ...dates.map((date, index) => ({
       title: date,
       dataIndex: `date${index}`,
       key: `date${index}`,
+      render: (_, record) => {
+        const doctorSlot = record[`date${index}`];
+          return doctorSlot.map(({ doctor, numOfPatients, isFull }, idx) => (
+            <Button key={idx} type="link" disabled={isFull}>
+              {doctor} <br /> {isFull ? "額滿" : `掛號人數: ${numOfPatients}`}
+            </Button>
+          ));
+       
+      },
     })),
+  ];
+
+  const dataSource = [
+    {
+      key: "morning",
+      time: "上午診",
+      ...dates.reduce((acc, _, index) => {
+        acc[`date${index}`] = generateRandomDoctorSlots(); // 填入隨機醫師資料
+        return acc;
+      }, {}),
+    },
+    {
+      key: "afternoon",
+      time: "下午診",
+      ...dates.reduce((acc, _, index) => {
+        acc[`date${index}`] = generateRandomDoctorSlots(); // 填入隨機醫師資料
+        return acc;
+      }, {}),
+    },
+    {
+      key: "evening",
+      time: "夜診",
+      ...dates.reduce((acc, _, index) => {
+        acc[`date${index}`] = generateRandomDoctorSlots(); // 填入隨機醫師資料
+        return acc;
+      }, {}),
+    },
   ];
 
   return (
     <Layout className="min-h-screen">
-      {device === "desktop" ? (
+      {isDesktop ? (
         <Sider
           width={200}
           style={{ backgroundColor: "rgb(37 99 235)" }}
@@ -184,7 +169,7 @@ const ClinicSchedulePage = () => {
             className="mx-auto flex items-center text-white text-3xl"
           >
             <FaSuitcaseMedical className="mr-2" />
-            <h1>掛掛</h1>
+            <h1>MA</h1>
           </button>
           <Divider className="bg-white w-full" />
           <Menu
@@ -204,7 +189,6 @@ const ClinicSchedulePage = () => {
           </Menu>
         </Sider>
       ) : (
-        /* 手機版導覽列 */
         <Header className="flex justify-between items-center bg-blue-600 px-6">
           <button className="text-white">
             <IoMenu className="size-6" />
@@ -217,14 +201,17 @@ const ClinicSchedulePage = () => {
       {/* 右側內容區 */}
       <Layout className="bg-gray-100 p-6">
         <Content className="bg-white p-6 rounded-md shadow-md">
+          <Breadcrumb>
+            <Breadcrumb.Item>
+              <Link to="/departments">門診科別＜</Link>
+            </Breadcrumb.Item>
+          </Breadcrumb>
           <h1 className="text-2xl mb-6">一般內科門診時間表</h1>
           <div className="overflow-x-auto">
-            {/* 滑動容器 */}
             <Table
-              dataSource={dataSource}
               columns={columns}
+              dataSource={dataSource}
               pagination={false}
-              bordered
             />
           </div>
         </Content>

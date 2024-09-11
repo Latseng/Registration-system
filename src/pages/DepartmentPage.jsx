@@ -11,7 +11,7 @@ const { Sider, Header, Content } = Layout;
 const DepartmentPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const device = useRWD()
+  const isDesktop = useRWD()
   const [openMenu, setOpenMenu] = useState(false)
 
   const currentPage = () => {
@@ -21,7 +21,7 @@ const DepartmentPage = () => {
       case "/records":
         return "3";
       default:
-        return "1"; // 默認為快速掛號頁面
+        return "1"; 
     }
   };
   const handleClickLogin = () => {
@@ -33,13 +33,13 @@ const DepartmentPage = () => {
    const handleClickPage = (e) => {
      switch (e.key) {
        case "1":
-         navigate("/departments"); // 跳轉到科別選擇頁面
+         navigate("/departments"); 
          break;
        case "2":
-         navigate("/query"); // 跳轉到掛號查詢頁面
+         navigate("/query"); 
          break;
        case "3":
-         navigate("/records"); // 跳轉到看診紀錄頁面
+         navigate("/records"); 
          break;
        default:
          break;
@@ -48,7 +48,7 @@ const DepartmentPage = () => {
 
   return (
     <Layout className="min-h-screen">
-      {device === "desktop" ? (
+      {isDesktop ? (
         <Sider
           width={200}
           style={{ backgroundColor: "rgb(37 99 235)" }}
@@ -59,7 +59,7 @@ const DepartmentPage = () => {
             className="mx-auto flex items-center text-white text-3xl"
           >
             <FaSuitcaseMedical className="mr-2" />
-            <h1>掛掛</h1>
+            <h1>MA</h1>
           </button>
           <Divider className="bg-white w-full" />
           <Menu
@@ -90,7 +90,7 @@ const DepartmentPage = () => {
             <button className="text-white">登入</button>
           </Header>
           <Drawer
-            visible={openMenu}
+            open={openMenu}
             closable={false}
             placement="left"
             onClose={() => setOpenMenu(false)}
@@ -106,7 +106,7 @@ const DepartmentPage = () => {
 
       {/* 右側內容區 */}
       <Content className="bg-gray-100 p-6">
-        {device === "desktop" && (
+        {isDesktop && (
           <button className="absolute right-8 top-4" onClick={handleClickLogin}>
             登入
           </button>
@@ -123,7 +123,7 @@ const DepartmentPage = () => {
               <Button
                 className="w-24 h-10 mr-4 mb-2"
                 onClick={() => {
-                  navigate("/schedule");
+                  navigate("/departments/schedule");
                 }}
               >
                 一般內科

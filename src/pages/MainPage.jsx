@@ -6,7 +6,7 @@ const MainPage = () => {
   const navigate = useNavigate();
   
   const handleClick = () => {
-    navigate("/department");
+    navigate("/departments");
   }
   const handleClickNav = () =>{
      navigate("/login");

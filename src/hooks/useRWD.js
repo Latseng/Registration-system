@@ -24,12 +24,13 @@
 import { useState, useEffect } from "react";
 
 const useRWD = () => {
-  const [device, setDevice] = useState(() => {
-    return window.innerWidth > 576 ? "desktop" : "mobile";
+  
+  const [isDesktop, setIsDesktop] = useState(() => {
+    return window.innerWidth > 576 
   });
 
   const handleRWD = () => {
-    setDevice(window.innerWidth > 576 ? "desktop" : "mobile");
+    setIsDesktop(window.innerWidth > 576);
   };
 
   useEffect(() => {
@@ -39,7 +40,7 @@ const useRWD = () => {
     };
   }, [handleRWD]);
 
-  return device;
+  return isDesktop;
 };
 
 export default useRWD;

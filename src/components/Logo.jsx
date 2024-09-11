@@ -7,7 +7,7 @@ const Logo = ({onClick}) => {
       className="flex items-center text-white text-2xl"
     >
       <FaSuitcaseMedical className="mr-2" />
-      <h1>掛掛</h1>
+      <h1>MA</h1>
     </button>
   );
 };
