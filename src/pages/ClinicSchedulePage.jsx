@@ -85,8 +85,8 @@ const ClinicSchedulePage = () => {
   const isDesktop = useRWD();
   const dates = generateDates()
 
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [form] = Form.useForm();
 
   const handleClickLogin = () => {
@@ -98,16 +98,17 @@ const ClinicSchedulePage = () => {
 
   
 
-  const showModal = (doctorInfo) => {
-    setSelectedDoctor(doctorInfo);
-    setIsModalVisible(true);
+  const handleAppointment = (appointment) => {
+   setSelectedAppointment(appointment);
+    
+    setIsModalOpen(true);
   };
   const handleOk = () => {
     form
       .validateFields()
       .then((values) => {
         console.log("Form values: ", values);
-        setIsModalVisible(false);
+        setIsModalOpen(false);
         form.resetFields();
       })
       .catch((info) => {
@@ -116,7 +117,7 @@ const ClinicSchedulePage = () => {
   };
 
   const handleCancel = () => {
-    setIsModalVisible(false);
+    setIsModalOpen(false);
     form.resetFields();
   };
 
@@ -132,9 +133,11 @@ const ClinicSchedulePage = () => {
       dataIndex: `date${index}`,
       key: `date${index}`,
       render: (_, record) => {
+        
         const doctorSlot = record[`date${index}`];
+        
           return doctorSlot.map(({ doctor, numOfPatients, isFull }, idx) => (
-            <Button key={idx} type="link" disabled={isFull}>
+            <Button onClick={() => handleAppointment({date: date, doctor: doctor, time: record.time})} key={idx} type="link" disabled={isFull}>
               {doctor} <br /> {isFull ? "額滿" : `掛號人數: ${numOfPatients}`}
             </Button>
           ));
@@ -238,70 +241,50 @@ const ClinicSchedulePage = () => {
       {/* Modal 彈出框 */}
       <Modal
         title="掛號資訊"
-        visible={isModalVisible}
+        open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
         okText="確認"
         cancelText="取消"
       >
-        <Form form={form} layout="vertical">
-          <Form.Item
-            label="科別"
-            name="department"
-            initialValue={selectedDoctor?.department}
-          >
-            <Input disabled />
-          </Form.Item>
-          <Form.Item
-            label="醫師"
-            name="doctor"
-            initialValue={selectedDoctor?.doctor}
-          >
-            <Input disabled />
-          </Form.Item>
-          <Form.Item
-            label="日期"
-            name="date"
-            initialValue={selectedDoctor?.date}
-          >
-            <Input disabled />
-          </Form.Item>
-          <Form.Item
-            label="門診時段"
-            name="timeSlot"
-            initialValue={selectedDoctor?.timeSlot}
-          >
-            <Input disabled />
-          </Form.Item>
-          <Form.Item
-            label="身分證字號"
-            name="idNumber"
-            rules={[{ required: true, message: "請輸入身分證字號" }]}
-          >
-            <Input placeholder="請輸入身分證字號" />
-          </Form.Item>
-          <Form.Item
-            label="生日"
-            name="birthday"
-            rules={[{ required: true, message: "請輸入生日" }]}
-          >
-            <Input placeholder="請輸入生日" />
-          </Form.Item>
-          <Form.Item
-            label="圖形驗證碼"
-            name="captcha"
-            rules={[{ required: true, message: "請輸入圖形驗證碼" }]}
-          >
-            <Row gutter={8}>
-              <Col span={16}>
-                <Input placeholder="請輸入驗證碼" />
-              </Col>
-              <Col span={8}>
-                <Button>刷新驗證碼</Button>
-              </Col>
-            </Row>
-          </Form.Item>
-        </Form>
+        {selectedAppointment && (
+          <>
+            <h3>科別：一般內科</h3>
+            <h3>日期：{selectedAppointment.date}</h3>
+            <h3>時段：{selectedAppointment.time}</h3>
+            <h3>{selectedAppointment.doctor}</h3>
+            <Form form={form} layout="vertical">
+              <Form.Item
+                label="身分證字號"
+                name="idNumber"
+                rules={[{ required: true, message: "請輸入身分證字號" }]}
+              >
+                <Input placeholder="請輸入身分證字號" />
+              </Form.Item>
+              <Form.Item
+                label="生日"
+                name="birthday"
+                rules={[{ required: true, message: "請輸入生日" }]}
+              >
+                <Input placeholder="請輸入生日" />
+              </Form.Item>
+              <Form.Item
+                label="圖形驗證碼"
+                name="captcha"
+                rules={[{ required: true, message: "請輸入圖形驗證碼" }]}
+              >
+                <Row gutter={8}>
+                  <Col span={16}>
+                    <Input placeholder="請輸入驗證碼" />
+                  </Col>
+                  <Col span={8}>
+                    <Button>刷新驗證碼</Button>
+                  </Col>
+                </Row>
+              </Form.Item>
+            </Form>
+          </>
+        )}
       </Modal>
     </Layout>
   );
