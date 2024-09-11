@@ -12,8 +12,8 @@ import {
   Input,
   Row,
   Col,
-  Breadcrumb
-
+  Breadcrumb,
+  ConfigProvider,
 } from "antd";
 import { FaSuitcaseMedical } from "react-icons/fa6";
 import { IoMenu } from "react-icons/io5";
@@ -22,6 +22,20 @@ import dayjs from "dayjs";
 
 
 const { Sider, Header, Content } = Layout;
+const items = [
+  {
+    key: "1",
+    label: "快速掛號",
+  },
+  {
+    key: "2",
+    label: "掛號查詢",
+  },
+  {
+    key: "3",
+    label: "看診紀錄",
+  },
+];
 
 const generateDates = () => {
   const dates = [];
@@ -172,21 +186,23 @@ const ClinicSchedulePage = () => {
             <h1>MA</h1>
           </button>
           <Divider className="bg-white w-full" />
-          <Menu
-            mode="vertical"
-            defaultSelectedKeys={["1"]}
-            className="bg-blue-600 px-6 "
+          <ConfigProvider
+            theme={{
+              components: {
+                Menu: {
+                  itemColor: "white",
+                  itemSelectedColor: "rgb(59 130 246)",
+                },
+              },
+            }}
           >
-            <Menu.Item key="1" className="custom-menu-item">
-              快速掛號
-            </Menu.Item>
-            <Menu.Item key="2" className="custom-menu-item">
-              掛號查詢
-            </Menu.Item>
-            <Menu.Item key="3" className="custom-menu-item">
-              看診紀錄
-            </Menu.Item>
-          </Menu>
+            <Menu
+              mode="vertical"
+              defaultSelectedKeys={["1"]}
+              className="bg-blue-600 px-6"
+              items={items}
+            />
+          </ConfigProvider>
         </Sider>
       ) : (
         <Header className="flex justify-between items-center bg-blue-600 px-6">

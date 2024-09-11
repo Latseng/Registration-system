@@ -1,12 +1,27 @@
 import useRWD from "../hooks/useRWD";
 import Logo from "../components/Logo";
-import { Layout, Menu, Button, Divider, Drawer } from "antd";
+import { Layout, Menu, Button, Divider, Drawer, ConfigProvider } from "antd";
 import { FaSuitcaseMedical } from "react-icons/fa6";
 import { IoMenu } from "react-icons/io5";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
 
 const { Sider, Header, Content } = Layout;
+
+const items = [
+  {
+    key: "1",
+    label: "快速掛號",
+  },
+  {
+    key: "2",
+    label: "掛號查詢",
+  },
+  {
+    key: "3",
+    label: "看診紀錄",
+  },
+];
 
 const DepartmentPage = () => {
   const location = useLocation();
@@ -62,22 +77,24 @@ const DepartmentPage = () => {
             <h1>MA</h1>
           </button>
           <Divider className="bg-white w-full" />
-          <Menu
-            mode="vertical"
-            selectedKeys={[currentPage()]}
-            className="bg-blue-600 px-6"
-            onClick={handleClickPage}
+          <ConfigProvider
+            theme={{
+              components: {
+                Menu: {
+                  itemColor: "white",
+                  itemSelectedColor: "rgb(59 130 246)",
+                },
+              },
+            }}
           >
-            <Menu.Item key="1" className="custom-menu-item">
-              快速掛號
-            </Menu.Item>
-            <Menu.Item key="2" className="custom-menu-item">
-              掛號查詢
-            </Menu.Item>
-            <Menu.Item key="3" className="custom-menu-item">
-              看診紀錄
-            </Menu.Item>
-          </Menu>
+            <Menu
+              mode="vertical"
+              selectedKeys={[currentPage()]}
+              className="bg-blue-600 px-6"
+              items={items}
+              onClick={handleClickPage}
+            />
+          </ConfigProvider>
         </Sider>
       ) : (
         /* 手機版導覽列 */
@@ -95,11 +112,7 @@ const DepartmentPage = () => {
             placement="left"
             onClose={() => setOpenMenu(false)}
           >
-            <Menu mode="vertical" defaultSelectedKeys={["1"]}>
-              <Menu.Item key="1">快速掛號</Menu.Item>
-              <Menu.Item key="2">掛號查詢</Menu.Item>
-              <Menu.Item key="3">看診紀錄</Menu.Item>
-            </Menu>
+            <Menu mode="vertical" items={items} defaultSelectedKeys={["1"]} /> 
           </Drawer>
         </>
       )}

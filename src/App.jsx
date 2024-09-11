@@ -1,6 +1,5 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { MainPage, LoginPage, DepartmentPage, RecordsPage, ClinicSchedulePage, QueryPage } from "./pages";
-import './App.css'
 
 function App() {
   return (

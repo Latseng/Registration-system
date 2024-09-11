@@ -1,8 +1,0 @@
-
-.custom-menu-item {
-  @apply text-white !important;
-}
-
-.custom-menu-item.ant-menu-item-selected {
-  @apply bg-white text-blue-500 !important;
-}
