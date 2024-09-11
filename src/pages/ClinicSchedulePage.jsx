@@ -201,11 +201,13 @@ const ClinicSchedulePage = () => {
       {/* 右側內容區 */}
       <Layout className="bg-gray-100 p-6">
         <Content className="bg-white p-6 rounded-md shadow-md">
-          <Breadcrumb>
-            <Breadcrumb.Item>
-              <Link to="/departments">門診科別＜</Link>
-            </Breadcrumb.Item>
-          </Breadcrumb>
+          <Breadcrumb
+            items={[
+              {
+                title: <Link to="/departments">門診科別＜</Link>,
+              },
+            ]}
+          />
           <h1 className="text-2xl mb-6">一般內科門診時間表</h1>
           <div className="overflow-x-auto">
             <Table
