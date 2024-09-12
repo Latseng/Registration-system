@@ -1,4 +1,4 @@
-import { Layout, Menu, Button, Divider, Drawer } from "antd";
+import { Layout, Menu, Button, ConfigProvider, Divider, Drawer } from "antd";
 import Logo from "../components/Logo";
 import { FaSuitcaseMedical } from "react-icons/fa6";
 import { IoMenu } from "react-icons/io5";
@@ -7,13 +7,28 @@ import useRWD from "../hooks/useRWD";
 import { useState } from "react";
 
 const { Sider, Header, Content } = Layout;
+const items = [
+  {
+    key: "1",
+    label: "快速掛號",
+  },
+  {
+    key: "2",
+    label: "掛號查詢",
+  },
+  {
+    key: "3",
+    label: "看診紀錄",
+  },
+];
 
 const QueryPage = () => {
   const location = useLocation();
+  const data = location.state;
   const navigate = useNavigate();
-  const device = useRWD();
+  const isDesktop = useRWD();
   const [openMenu, setOpenMenu] = useState(false);
-
+  
   const currentPage = () => {
     switch (location.pathname) {
       case "/query":
@@ -48,7 +63,7 @@ const QueryPage = () => {
 
   return (
     <Layout className="min-h-screen">
-      {device === "desktop" ? (
+      {isDesktop ? (
         <Sider
           width={200}
           style={{ backgroundColor: "rgb(37 99 235)" }}
@@ -59,25 +74,27 @@ const QueryPage = () => {
             className="mx-auto flex items-center text-white text-3xl"
           >
             <FaSuitcaseMedical className="mr-2" />
-            <h1>掛掛</h1>
+            <h1>MA</h1>
           </button>
           <Divider className="bg-white w-full" />
-          <Menu
-            mode="vertical"
-            selectedKeys={[currentPage()]}
-            className="bg-blue-600 px-6"
-            onClick={handleClickPage}
+          <ConfigProvider
+            theme={{
+              components: {
+                Menu: {
+                  itemColor: "white",
+                  itemSelectedColor: "rgb(59 130 246)",
+                },
+              },
+            }}
           >
-            <Menu.Item key="1" className="custom-menu-item">
-              快速掛號
-            </Menu.Item>
-            <Menu.Item key="2" className="custom-menu-item">
-              掛號查詢
-            </Menu.Item>
-            <Menu.Item key="3" className="custom-menu-item">
-              看診紀錄
-            </Menu.Item>
-          </Menu>
+            <Menu
+              mode="vertical"
+              selectedKeys={[currentPage()]}
+              className="bg-blue-600 px-6"
+              items={items}
+              onClick={handleClickPage}
+            />
+          </ConfigProvider>
         </Sider>
       ) : (
         /* 手機版導覽列 */
@@ -90,28 +107,35 @@ const QueryPage = () => {
             <button className="text-white">登入</button>
           </Header>
           <Drawer
-            visible={openMenu}
+            open={openMenu}
             closable={false}
             placement="left"
             onClose={() => setOpenMenu(false)}
           >
-            <Menu mode="vertical" defaultSelectedKeys={["1"]}>
-              <Menu.Item key="1">快速掛號</Menu.Item>
-              <Menu.Item key="2">掛號查詢</Menu.Item>
-              <Menu.Item key="3">看診紀錄</Menu.Item>
-            </Menu>
+            <Menu mode="vertical" items={items} defaultSelectedKeys={["1"]} />
           </Drawer>
         </>
       )}
 
       {/* 右側內容區 */}
       <Content className="bg-gray-100 p-6">
-        {device === "desktop" && (
+        {isDesktop === "desktop" && (
           <button className="absolute right-8 top-4" onClick={handleClickLogin}>
             登入
           </button>
         )}
-        <h1 className="text-2xl mb-6">掛號查詢</h1>
+        {data ? (
+          <>
+        <h1 className="text-2xl mb-6">您的看診時段</h1>
+        <div>
+          <h3>日期：{data.date}</h3>
+          <h3>時段：{data.time}</h3>
+          <h3>看診醫師：{data.doctor}</h3>
+        </div>
+        </>) : (
+          <h1>您尚未掛號</h1>
+        )}
+
       </Content>
     </Layout>
   );

@@ -25,8 +25,7 @@ const LoginPage = () => {
         wrapperCol={{ span: 16 }}
         initialValues={{ remember: true }}
         onFinish={onFinish}
-        autoComplete="   
-off"
+        autoComplete="off"
         className="w-full max-w-md"
       >
         <Form.Item

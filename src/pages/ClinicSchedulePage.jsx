@@ -10,8 +10,9 @@ import {
   Modal,
   Form,
   Input,
-  Row,
-  Col,
+  DatePicker,
+  Flex,
+ message,
   Breadcrumb,
   ConfigProvider,
 } from "antd";
@@ -88,10 +89,11 @@ const ClinicSchedulePage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [form] = Form.useForm();
+  const [messageApi, contextHolder] = message.useMessage();
 
-  const handleClickLogin = () => {
-    navigate("/login");
-  };
+  // const handleClickLogin = () => {
+  //   navigate("/login");
+  // };
   const handleClickLogo = () => {
     navigate("/*");
   };
@@ -100,26 +102,22 @@ const ClinicSchedulePage = () => {
 
   const handleAppointment = (appointment) => {
    setSelectedAppointment(appointment);
-    
     setIsModalOpen(true);
-  };
-  const handleOk = () => {
-    form
-      .validateFields()
-      .then((values) => {
-        console.log("Form values: ", values);
-        setIsModalOpen(false);
-        form.resetFields();
-      })
-      .catch((info) => {
-        console.log("Validate Failed:", info);
-      });
   };
 
   const handleCancel = () => {
     setIsModalOpen(false);
     form.resetFields();
   };
+  const handleSubmit = () => {
+    setIsModalOpen(false);
+    form.resetFields();
+    messageApi.open({
+      type: "success",
+      content: "掛號成功",
+    });
+    navigate("/query", { state: selectedAppointment });
+  }
 
   const columns = [
     {
@@ -158,14 +156,6 @@ const ClinicSchedulePage = () => {
     {
       key: "afternoon",
       time: "下午診",
-      ...dates.reduce((acc, _, index) => {
-        acc[`date${index}`] = generateRandomDoctorSlots(); // 填入隨機醫師資料
-        return acc;
-      }, {}),
-    },
-    {
-      key: "evening",
-      time: "夜診",
       ...dates.reduce((acc, _, index) => {
         acc[`date${index}`] = generateRandomDoctorSlots(); // 填入隨機醫師資料
         return acc;
@@ -239,51 +229,45 @@ const ClinicSchedulePage = () => {
       </Layout>
 
       {/* Modal 彈出框 */}
-      <Modal
-        title="掛號資訊"
-        open={isModalOpen}
-        onOk={handleOk}
-        onCancel={handleCancel}
-        okText="確認"
-        cancelText="取消"
-      >
+      <Modal open={isModalOpen} onCancel={handleCancel} footer={null}>
         {selectedAppointment && (
-          <>
-            <h3>科別：一般內科</h3>
-            <h3>日期：{selectedAppointment.date}</h3>
-            <h3>時段：{selectedAppointment.time}</h3>
-            <h3>{selectedAppointment.doctor}</h3>
-            <Form form={form} layout="vertical">
-              <Form.Item
-                label="身分證字號"
-                name="idNumber"
-                rules={[{ required: true, message: "請輸入身分證字號" }]}
-              >
-                <Input placeholder="請輸入身分證字號" />
-              </Form.Item>
-              <Form.Item
-                label="生日"
-                name="birthday"
-                rules={[{ required: true, message: "請輸入生日" }]}
-              >
-                <Input placeholder="請輸入生日" />
-              </Form.Item>
-              <Form.Item
-                label="圖形驗證碼"
-                name="captcha"
-                rules={[{ required: true, message: "請輸入圖形驗證碼" }]}
-              >
-                <Row gutter={8}>
-                  <Col span={16}>
-                    <Input placeholder="請輸入驗證碼" />
-                  </Col>
-                  <Col span={8}>
-                    <Button>刷新驗證碼</Button>
-                  </Col>
-                </Row>
-              </Form.Item>
-            </Form>
-          </>
+          <Form
+            form={form}
+            onFinish={handleSubmit}
+            labelCol={{ span: 8 }}
+            className="w-full max-w-md"
+          >
+            <h1 className="text-center text-xl font-bold">掛號資訊</h1>
+            <div className="mb-3 ml-16 text-base">
+              <h3>科別：一般內科</h3>
+              <h3>日期：{selectedAppointment.date}</h3>
+              <h3>時段：{selectedAppointment.time}</h3>
+              <h3>{selectedAppointment.doctor}</h3>
+            </div>
+            <Form.Item
+              label="身分證字號"
+              name="idNumber"
+              rules={[{ required: true, message: "請輸入身分證字號" }]}
+            >
+              <Input placeholder="請輸入身分證字號" />
+            </Form.Item>
+            <Form.Item
+              label="生日"
+              name="birthday"
+              rules={[{ required: true, message: "請選擇生日" }]}
+            >
+              <DatePicker />
+            </Form.Item>
+            <Form.Item>
+              <Flex gap="middle" justify="center">
+                <Button onClick={handleCancel}>取消</Button>
+                {contextHolder}
+                <Button type="primary" htmlType="submit">
+                  送出
+                </Button>
+              </Flex>
+            </Form.Item>
+          </Form>
         )}
       </Modal>
     </Layout>
