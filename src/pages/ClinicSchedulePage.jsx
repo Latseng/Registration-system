@@ -112,7 +112,6 @@ const ClinicSchedulePage = () => {
   };
   const handleSubmit = async (values) => {
     const patientId = values.idNumber
-    console.log(patientId);
     
     try {
      await createAppointment({

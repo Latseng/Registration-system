@@ -5,7 +5,7 @@ import { IoMenu } from "react-icons/io5";
 import { useNavigate, useLocation } from "react-router-dom";
 import useRWD from "../hooks/useRWD";
 import { useState, useEffect } from "react";
-import { getAppointment } from "../api/appointment";
+import { getAppointment, deleteAppointment } from "../api/appointment";
 
 const { Sider, Header, Content } = Layout;
 const items = [
@@ -37,7 +37,7 @@ const QueryPage = () => {
     const getAppointmentData = async () => {
       try {
        const response = await getAppointment();
-       setAppointment(...response)
+       setAppointment(response[0])
       } catch (error) {
         console.error(error);
       }
@@ -76,6 +76,15 @@ const QueryPage = () => {
         break;
     }
   };
+
+  const handleDelete = async (id) => {
+    try {
+      await deleteAppointment(id)
+      setAppointment(null)
+    } catch(error) {
+      console.error(error);
+    }
+  }
 
   return (
     <Layout className="min-h-screen">
@@ -148,7 +157,7 @@ const QueryPage = () => {
               <h3>時段：{appointment.time}</h3>
               <h3>看診醫師：{appointment.doctor}</h3>
             </div>
-            <Button danger>取消掛號</Button>
+            <Button onClick={() => handleDelete(appointment.id)} danger>取消掛號</Button>
           </>
         ) : (
           <h1 className="text-2xl mb-6">您目前沒有看診掛號</h1>

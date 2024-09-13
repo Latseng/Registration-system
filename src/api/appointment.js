@@ -5,6 +5,7 @@ const baseUrl = "http://localhost:3004";
 export const getAppointment = async () => {
   try {
     const res = await axios.get(`${baseUrl}/appointment`);
+    
     return res.data;
   } catch (error) {
     console.error('[Get Appointment failed]: ', error);
@@ -28,4 +29,11 @@ export const createAppointment = async (payload) => {
 
 export const patchAppointment = () => {};
 
-export const deleteAppointment = () => {};
+export const deleteAppointment = async (id) => {
+  try {
+    await axios.delete(`${baseUrl}/appointment/${id}`);
+    
+  } catch (error) {
+    console.error('[Delete Appointment failed]:', error);
+  }
+};
