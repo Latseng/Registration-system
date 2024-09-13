@@ -20,6 +20,7 @@ import { FaSuitcaseMedical } from "react-icons/fa6";
 import { IoMenu } from "react-icons/io5";
 import { useNavigate, Link } from "react-router-dom";
 import dayjs from "dayjs";
+import { createAppointment } from "../api/appointment"
 
 
 const { Sider, Header, Content } = Layout;
@@ -109,14 +110,26 @@ const ClinicSchedulePage = () => {
     setIsModalOpen(false);
     form.resetFields();
   };
-  const handleSubmit = () => {
-    setIsModalOpen(false);
-    form.resetFields();
-    messageApi.open({
-      type: "success",
-      content: "掛號成功",
-    });
-    navigate("/query", { state: selectedAppointment });
+  const handleSubmit = async (values) => {
+    const patientId = values.idNumber
+    console.log(patientId);
+    
+    try {
+     await createAppointment({
+      ...selectedAppointment,
+      patientId
+      })
+      setIsModalOpen(false);
+      form.resetFields();
+      messageApi.open({
+        type: "success",
+        content: "掛號成功",
+      });
+      navigate("/query");
+    } catch (error) {
+      console.error(error);
+    }
+    
   }
 
   const columns = [

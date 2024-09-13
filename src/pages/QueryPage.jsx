@@ -1,10 +1,11 @@
-import { Layout, Menu, Button, ConfigProvider, Divider, Drawer } from "antd";
+import { Layout, Menu, ConfigProvider, Button, Divider, Drawer } from "antd";
 import Logo from "../components/Logo";
 import { FaSuitcaseMedical } from "react-icons/fa6";
 import { IoMenu } from "react-icons/io5";
 import { useNavigate, useLocation } from "react-router-dom";
 import useRWD from "../hooks/useRWD";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getAppointment } from "../api/appointment";
 
 const { Sider, Header, Content } = Layout;
 const items = [
@@ -24,11 +25,26 @@ const items = [
 
 const QueryPage = () => {
   const location = useLocation();
-  const data = location.state;
+  
   const navigate = useNavigate();
   const isDesktop = useRWD();
   const [openMenu, setOpenMenu] = useState(false);
+  const [appointment, setAppointment] = useState(null)
   
+  
+
+  useEffect(() => {
+    const getAppointmentData = async () => {
+      try {
+       const response = await getAppointment();
+       setAppointment(...response)
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    getAppointmentData()
+  }, []);
+
   const currentPage = () => {
     switch (location.pathname) {
       case "/query":
@@ -36,7 +52,7 @@ const QueryPage = () => {
       case "/records":
         return "3";
       default:
-        return "1"; 
+        return "1";
     }
   };
   const handleClickLogin = () => {
@@ -124,18 +140,19 @@ const QueryPage = () => {
             登入
           </button>
         )}
-        {data ? (
+        {appointment ? (
           <>
-        <h1 className="text-2xl mb-6">您的看診時段</h1>
-        <div>
-          <h3>日期：{data.date}</h3>
-          <h3>時段：{data.time}</h3>
-          <h3>看診醫師：{data.doctor}</h3>
-        </div>
-        </>) : (
-          <h1>您尚未掛號</h1>
+            <h1 className="text-2xl mb-6">您的看診時段</h1>
+            <div className="mb-10">
+              <h3>日期：{appointment.date}</h3>
+              <h3>時段：{appointment.time}</h3>
+              <h3>看診醫師：{appointment.doctor}</h3>
+            </div>
+            <Button danger>取消掛號</Button>
+          </>
+        ) : (
+          <h1 className="text-2xl mb-6">您目前沒有看診掛號</h1>
         )}
-
       </Content>
     </Layout>
   );
