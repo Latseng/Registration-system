@@ -124,7 +124,7 @@ const ClinicSchedulePage = () => {
         type: "success",
         content: "掛號成功",
       });
-      navigate("/query");
+      navigate("/query", {state: "success"});
     } catch (error) {
       console.error(error);
     }
@@ -161,7 +161,7 @@ const ClinicSchedulePage = () => {
       key: "morning",
       time: "上午診",
       ...dates.reduce((acc, _, index) => {
-        acc[`date${index}`] = generateRandomDoctorSlots(); // 填入隨機醫師資料
+        acc[`date${index}`] = generateRandomDoctorSlots(); 
         return acc;
       }, {}),
     },
@@ -169,7 +169,7 @@ const ClinicSchedulePage = () => {
       key: "afternoon",
       time: "下午診",
       ...dates.reduce((acc, _, index) => {
-        acc[`date${index}`] = generateRandomDoctorSlots(); // 填入隨機醫師資料
+        acc[`date${index}`] = generateRandomDoctorSlots(); 
         return acc;
       }, {}),
     },
@@ -219,7 +219,6 @@ const ClinicSchedulePage = () => {
         </Header>
       )}
 
-      {/* 右側內容區 */}
       <Layout className="bg-gray-100 p-6">
         <Content className="bg-white p-6 rounded-md shadow-md">
           <Breadcrumb
@@ -240,7 +239,6 @@ const ClinicSchedulePage = () => {
         </Content>
       </Layout>
 
-      {/* Modal 彈出框 */}
       <Modal open={isModalOpen} onCancel={handleCancel} footer={null}>
         {selectedAppointment && (
           <Form

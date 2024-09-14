@@ -1,4 +1,4 @@
-import { Layout, Menu, ConfigProvider, Button, Divider, Drawer } from "antd";
+import { Layout, Menu, ConfigProvider, Button,Modal, message, Divider, Drawer } from "antd";
 import Logo from "../components/Logo";
 import { FaSuitcaseMedical } from "react-icons/fa6";
 import { IoMenu } from "react-icons/io5";
@@ -25,24 +25,42 @@ const items = [
 
 const QueryPage = () => {
   const location = useLocation();
-  
   const navigate = useNavigate();
   const isDesktop = useRWD();
   const [openMenu, setOpenMenu] = useState(false);
   const [appointment, setAppointment] = useState(null)
+  const [appointmentState, setAppointmentState] = useState(location.state || "");
+  const [messageApi, contextHolder] = message.useMessage();
+  const [isModalOpen, setIsModalOpen] = useState(false);
   
-  
+  const handleshowModal = () => {
+    setIsModalOpen(true);
+  };
+
+
+  const handleModalCancel = () => {
+    setIsModalOpen(false);
+  };
+
 
   useEffect(() => {
     const getAppointmentData = async () => {
       try {
        const response = await getAppointment();
        setAppointment(response[0])
+       
       } catch (error) {
         console.error(error);
       }
     }
     getAppointmentData()
+    if(appointmentState === 'success') {
+      messageApi.open({
+        type: "success",
+        content: "掛號成功",
+      });
+      setAppointmentState("")
+    }
   }, []);
 
   const currentPage = () => {
@@ -81,6 +99,12 @@ const QueryPage = () => {
     try {
       await deleteAppointment(id)
       setAppointment(null)
+      setIsModalOpen(false);
+      messageApi.open({
+        type: "success",
+        content: "掛號已取消",
+      });
+
     } catch(error) {
       console.error(error);
     }
@@ -88,6 +112,7 @@ const QueryPage = () => {
 
   return (
     <Layout className="min-h-screen">
+      {contextHolder}
       {isDesktop ? (
         <Sider
           width={200}
@@ -122,7 +147,6 @@ const QueryPage = () => {
           </ConfigProvider>
         </Sider>
       ) : (
-        /* 手機版導覽列 */
         <>
           <Header className="flex justify-between items-center bg-blue-600 px-6">
             <button className="text-white" onClick={() => setOpenMenu(true)}>
@@ -142,7 +166,6 @@ const QueryPage = () => {
         </>
       )}
 
-      {/* 右側內容區 */}
       <Content className="bg-gray-100 p-6">
         {isDesktop === "desktop" && (
           <button className="absolute right-8 top-4" onClick={handleClickLogin}>
@@ -157,7 +180,26 @@ const QueryPage = () => {
               <h3>時段：{appointment.time}</h3>
               <h3>看診醫師：{appointment.doctor}</h3>
             </div>
-            <Button onClick={() => handleDelete(appointment.id)} danger>取消掛號</Button>
+            <Button onClick={handleshowModal}>
+              取消掛號
+            </Button>
+            <Modal
+              title="您確定要取消掛號？"
+              open={isModalOpen}
+              onCancel={handleModalCancel}
+              footer={null}
+            >
+              <p className="my-6">
+                若取消掛號，再次看診必須重新掛號、重新候診。
+              </p>
+              <Button
+                className="w-full"
+                onClick={() => handleDelete(appointment.id)}
+                danger
+              >
+                確定取消
+              </Button>
+            </Modal>
           </>
         ) : (
           <h1 className="text-2xl mb-6">您目前沒有看診掛號</h1>
