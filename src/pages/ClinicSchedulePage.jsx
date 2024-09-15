@@ -24,6 +24,7 @@ import { createAppointment } from "../api/appointment"
 
 
 const { Sider, Header, Content } = Layout;
+const {Search} = Input
 const items = [
   {
     key: "1",
@@ -51,7 +52,7 @@ const generateDates = () => {
   }
   return dates;
 };
-
+const dates = generateDates();
 
 const doctors = [
   "陳OO 醫師",
@@ -80,21 +81,35 @@ const generateRandomDoctorSlots = () => {
   }
   return doctorSlots;
 };
+const doctorClinicTime1 = dates.reduce((acc, _, index) => {
+        acc[`date${index}`] = generateRandomDoctorSlots(); 
+        return acc;
+      }, {})
 
+
+
+const doctorClinicTime2 = dates.reduce((acc, _, index) => {
+        acc[`date${index}`] = generateRandomDoctorSlots(); 
+        return acc;
+      }, {})
 
 const ClinicSchedulePage = () => {
   const navigate = useNavigate();
   const isDesktop = useRWD();
-  const dates = generateDates()
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [doctorSchedule, setDoctorSchedule] = useState({
+    morning: doctorClinicTime1,
+    afternoon: doctorClinicTime2,
+  });
   const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
 
-  // const handleClickLogin = () => {
-  //   navigate("/login");
-  // };
+  const handleClickLogin = () => {
+    navigate("/login");
+  };
+
   const handleClickLogo = () => {
     navigate("/*");
   };
@@ -131,6 +146,52 @@ const ClinicSchedulePage = () => {
     
   }
 
+    const currentPage = () => {
+      switch (location.pathname) {
+        case "/query":
+          return "2";
+        case "/records":
+          return "3";
+        default:
+          return "1";
+      }
+    };
+  const handleClickPage = (e) => {
+    switch (e.key) {
+      case "1":
+        navigate("/departments");
+        break;
+      case "2":
+        navigate("/query");
+        break;
+      case "3":
+        navigate("/records");
+        break;
+      default:
+        break;
+    }
+  };
+
+  const onSearch = (value) => {
+    console.log(value);
+    //篩選醫師
+    const resultDoctor = { ...doctorSchedule };
+
+    for (let key in doctorSchedule.morning) {
+      resultDoctor.morning[key] = doctorSchedule.morning[key].filter((d) =>
+        d.doctor.includes(value)
+      );
+    }
+    for (let key in doctorSchedule.afternoon) {
+resultDoctor.afternoon[key] = doctorSchedule.afternoon[key].filter((d) =>
+  d.doctor.includes(value)
+);
+    }
+    console.log(resultDoctor);
+    
+    setDoctorSchedule(resultDoctor)
+  }
+
   const columns = [
     {
       title: "時間",
@@ -160,18 +221,12 @@ const ClinicSchedulePage = () => {
     {
       key: "morning",
       time: "上午診",
-      ...dates.reduce((acc, _, index) => {
-        acc[`date${index}`] = generateRandomDoctorSlots(); 
-        return acc;
-      }, {}),
+      ...doctorSchedule.morning,
     },
     {
       key: "afternoon",
       time: "下午診",
-      ...dates.reduce((acc, _, index) => {
-        acc[`date${index}`] = generateRandomDoctorSlots(); 
-        return acc;
-      }, {}),
+      ...doctorSchedule.afternoon,
     },
   ];
 
@@ -203,9 +258,10 @@ const ClinicSchedulePage = () => {
           >
             <Menu
               mode="vertical"
-              defaultSelectedKeys={["1"]}
+              selectedKeys={[currentPage()]}
               className="bg-blue-600 px-6"
               items={items}
+              onClick={handleClickPage}
             />
           </ConfigProvider>
         </Sider>
@@ -220,15 +276,29 @@ const ClinicSchedulePage = () => {
       )}
 
       <Layout className="bg-gray-100 p-6">
+        {isDesktop && (
+          <button className="absolute right-8 top-4" onClick={handleClickLogin}>
+            登入
+          </button>
+        )}
+        <Breadcrumb
+          items={[
+            {
+              title: <Link to="/departments">門診科別＜</Link>,
+            },
+          ]}
+        />
+        <h1 className="text-2xl mb-6">一般內科門診時間表</h1>
         <Content className="bg-white p-6 rounded-md shadow-md">
-          <Breadcrumb
-            items={[
-              {
-                title: <Link to="/departments">門診科別＜</Link>,
-              },
-            ]}
+          <Search
+            placeholder="醫師搜尋"
+            allowClear
+            
+            onSearch={onSearch}
+            style={{
+              width: 200,
+            }}
           />
-          <h1 className="text-2xl mb-6">一般內科門診時間表</h1>
           <div className="overflow-x-auto">
             <Table
               columns={columns}
@@ -248,7 +318,7 @@ const ClinicSchedulePage = () => {
             className="w-full max-w-md"
           >
             <h1 className="text-center text-xl font-bold">掛號資訊</h1>
-            <div className="mb-3 ml-16 text-base">
+            <div className="my-4 ml-16 text-base">
               <h3>科別：一般內科</h3>
               <h3>日期：{selectedAppointment.date}</h3>
               <h3>時段：{selectedAppointment.time}</h3>

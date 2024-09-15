@@ -101,7 +101,7 @@ const QueryPage = () => {
       setAppointment(null)
       setIsModalOpen(false);
       messageApi.open({
-        type: "success",
+        type: "warning",
         content: "掛號已取消",
       });
 
@@ -166,12 +166,12 @@ const QueryPage = () => {
         </>
       )}
 
+      {isDesktop && (
+        <button className="absolute right-8 top-4" onClick={handleClickLogin}>
+          登入
+        </button>
+      )}
       <Content className="bg-gray-100 p-6">
-        {isDesktop === "desktop" && (
-          <button className="absolute right-8 top-4" onClick={handleClickLogin}>
-            登入
-          </button>
-        )}
         {appointment ? (
           <>
             <h1 className="text-2xl mb-6">您的看診時段</h1>
@@ -180,9 +180,7 @@ const QueryPage = () => {
               <h3>時段：{appointment.time}</h3>
               <h3>看診醫師：{appointment.doctor}</h3>
             </div>
-            <Button onClick={handleshowModal}>
-              取消掛號
-            </Button>
+            <Button onClick={handleshowModal}>取消掛號</Button>
             <Modal
               title="您確定要取消掛號？"
               open={isModalOpen}

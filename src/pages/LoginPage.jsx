@@ -16,7 +16,7 @@ const LoginPage = () => {
         className="mb-10 flex items-center text-blue-500 text-6xl"
       >
         <FaSuitcaseMedical className="mr-2" />
-        <h1>掛掛</h1>
+        <h1>MA</h1>
       </button>
       <Form
         form={form}
@@ -26,7 +26,7 @@ const LoginPage = () => {
         initialValues={{ remember: true }}
         onFinish={onFinish}
         autoComplete="off"
-        className="w-full max-w-md"
+        className="w-full max-w-lg pr-28"
       >
         <Form.Item
           label="身分證字號"
@@ -47,7 +47,7 @@ const LoginPage = () => {
         {/* 其他欄位：手機、驗證碼等 */}
 
         <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-          <Button type="primary" htmlType="submit">
+          <Button className="w-full" type="primary" htmlType="submit">
             登入
           </Button>
         </Form.Item>
