@@ -1,4 +1,4 @@
-import { Layout, Menu, ConfigProvider, Button,Modal, message, Divider, Drawer } from "antd";
+import { Layout, Menu, Card, ConfigProvider, Button,Modal, message, Divider, Drawer } from "antd";
 import Logo from "../components/Logo";
 import { FaSuitcaseMedical } from "react-icons/fa6";
 import { IoMenu } from "react-icons/io5";
@@ -175,29 +175,34 @@ const QueryPage = () => {
         {appointment ? (
           <>
             <h1 className="text-2xl mb-6">您的看診時段</h1>
-            <div className="mb-10">
+            <div className="bg-white px-8 py-4">
               <h3>日期：{appointment.date}</h3>
               <h3>時段：{appointment.time}</h3>
               <h3>看診醫師：{appointment.doctor}</h3>
-            </div>
-            <Button onClick={handleshowModal}>取消掛號</Button>
-            <Modal
-              title="您確定要取消掛號？"
-              open={isModalOpen}
-              onCancel={handleModalCancel}
-              footer={null}
-            >
-              <p className="my-6">
-                若取消掛號，再次看診必須重新掛號、重新候診。
-              </p>
-              <Button
-                className="w-full"
-                onClick={() => handleDelete(appointment.id)}
-                danger
-              >
-                確定取消
+              <Card title="目前看診進度" bordered={false} style={{ width: 300 }}>
+                <p>門診尚未開始</p>
+              </Card>
+              <Button className="mt-6" onClick={handleshowModal}>
+                取消掛號
               </Button>
-            </Modal>
+              <Modal
+                title="您確定要取消掛號？"
+                open={isModalOpen}
+                onCancel={handleModalCancel}
+                footer={null}
+              >
+                <p className="my-6">
+                  若取消掛號，再次看診必須重新掛號、重新候診。
+                </p>
+                <Button
+                  className="w-full"
+                  onClick={() => handleDelete(appointment.id)}
+                  danger
+                >
+                  確定取消
+                </Button>
+              </Modal>
+            </div>
           </>
         ) : (
           <h1 className="text-2xl mb-6">您目前沒有看診掛號</h1>

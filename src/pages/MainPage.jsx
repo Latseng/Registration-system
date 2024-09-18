@@ -5,8 +5,20 @@ import { useNavigate } from "react-router-dom";
 const MainPage = () => {
   const navigate = useNavigate();
   
-  const handleClick = () => {
-    navigate("/departments");
+  const handleClick = (route) => {
+    switch (route) {
+      case "department":
+        navigate("/departments");
+        break;
+        case "query":
+        navigate("/query"); 
+         break;
+         case "records":
+          navigate("/records");
+          break;
+      default:
+        break;
+    }
   }
   const handleClickNav = () =>{
      navigate("/login");

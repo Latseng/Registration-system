@@ -9,7 +9,7 @@ const MainContent = ({onClick}) => {
       <Card
         hoverable
         className="h-40 flex items-center justify-center text-xl"
-        onClick={onClick}
+        onClick={() => onClick("department")}
       >
         快速掛號
       </Card>
@@ -18,7 +18,7 @@ const MainContent = ({onClick}) => {
         <Card
           hoverable
           className="h-40 flex items-center justify-center text-xl"
-          onClick={() => console.log("預約掛號")}
+          onClick={() => onClick("query")}
         >
           掛號查詢
         </Card>
@@ -27,7 +27,7 @@ const MainContent = ({onClick}) => {
         <Card
           hoverable
           className="h-40 flex items-center justify-center text-xl"
-          onClick={() => console.log("查詢紀錄")}
+          onClick={() => onClick("records")}
         >
           看診紀錄
         </Card>

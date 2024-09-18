@@ -187,7 +187,7 @@ resultDoctor.afternoon[key] = doctorSchedule.afternoon[key].filter((d) =>
   d.doctor.includes(value)
 );
     }
-    console.log(resultDoctor);
+  
     
     setDoctorSchedule(resultDoctor)
   }
