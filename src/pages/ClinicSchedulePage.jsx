@@ -1,12 +1,10 @@
 import useRWD from "../hooks/useRWD";
+import Sidebar from "../components/Sidebar";
 import { useState } from "react";
-import Logo from "../components/Logo";
 import {
   Layout,
-  Menu,
   Button,
   Table,
-  Divider,
   Modal,
   Form,
   Input,
@@ -14,31 +12,16 @@ import {
   Flex,
  message,
   Breadcrumb,
-  ConfigProvider,
 } from "antd";
-import { FaSuitcaseMedical } from "react-icons/fa6";
-import { IoMenu } from "react-icons/io5";
+
 import { useNavigate, Link } from "react-router-dom";
 import dayjs from "dayjs";
 import { createAppointment } from "../api/appointment"
 
 
-const { Sider, Header, Content } = Layout;
+const { Content } = Layout;
 const {Search} = Input
-const items = [
-  {
-    key: "1",
-    label: "快速掛號",
-  },
-  {
-    key: "2",
-    label: "掛號查詢",
-  },
-  {
-    key: "3",
-    label: "看診紀錄",
-  },
-];
+
 
 const generateDates = () => {
   const dates = [];
@@ -146,16 +129,6 @@ const ClinicSchedulePage = () => {
     
   }
 
-    const currentPage = () => {
-      switch (location.pathname) {
-        case "/query":
-          return "2";
-        case "/records":
-          return "3";
-        default:
-          return "1";
-      }
-    };
   const handleClickPage = (e) => {
     switch (e.key) {
       case "1":
@@ -166,6 +139,9 @@ const ClinicSchedulePage = () => {
         break;
       case "3":
         navigate("/records");
+        break;
+      case "4":
+        navigate("/doctors");
         break;
       default:
         break;
@@ -232,48 +208,7 @@ resultDoctor.afternoon[key] = doctorSchedule.afternoon[key].filter((d) =>
 
   return (
     <Layout className="min-h-screen">
-      {isDesktop ? (
-        <Sider
-          width={200}
-          style={{ backgroundColor: "rgb(37 99 235)" }}
-          className="px-6 flex flex-col items-center py-6"
-        >
-          <button
-            onClick={() => navigate("/*")}
-            className="mx-auto flex items-center text-white text-3xl"
-          >
-            <FaSuitcaseMedical className="mr-2" />
-            <h1>MA</h1>
-          </button>
-          <Divider className="bg-white w-full" />
-          <ConfigProvider
-            theme={{
-              components: {
-                Menu: {
-                  itemColor: "white",
-                  itemSelectedColor: "rgb(59 130 246)",
-                },
-              },
-            }}
-          >
-            <Menu
-              mode="vertical"
-              selectedKeys={[currentPage()]}
-              className="bg-blue-600 px-6"
-              items={items}
-              onClick={handleClickPage}
-            />
-          </ConfigProvider>
-        </Sider>
-      ) : (
-        <Header className="flex justify-between items-center bg-blue-600 px-6">
-          <button className="text-white">
-            <IoMenu className="size-6" />
-          </button>
-          <Logo onClick={handleClickLogo} />
-          <button className="text-white">登入</button>
-        </Header>
-      )}
+      <Sidebar onClickPage={handleClickPage} onClickLogo={handleClickLogo} />
 
       <Layout className="bg-gray-100 p-6">
         {isDesktop && (
@@ -293,7 +228,6 @@ resultDoctor.afternoon[key] = doctorSchedule.afternoon[key].filter((d) =>
           <Search
             placeholder="醫師搜尋"
             allowClear
-            
             onSearch={onSearch}
             style={{
               width: 200,
