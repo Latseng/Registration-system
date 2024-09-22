@@ -20,7 +20,7 @@ import { createAppointment } from "../api/appointment"
 
 
 const { Content } = Layout;
-const {Search} = Input
+const { Search } = Input
 
 
 const generateDates = () => {
@@ -149,8 +149,8 @@ const ClinicSchedulePage = () => {
   };
 
   const onSearch = (value) => {
-    console.log(value);
-    //篩選醫師
+    
+    
     const resultDoctor = { ...doctorSchedule };
 
     for (let key in doctorSchedule.morning) {
