@@ -58,9 +58,6 @@ const DepartmentPage = () => {
               >
                 一般內科
               </Button>
-              <Button className="w-24 h-10 mr-4 mb-2">心臟內科</Button>
-              <Button className="w-24 h-10 mr-4 mb-2">肝膽腸胃科</Button>
-              <Button className="w-24 h-10 mr-4 mb-2">腎臟科</Button>
             </div>
           </div>
 
@@ -68,14 +65,11 @@ const DepartmentPage = () => {
             <h2 className="text-xl mb-4">外科</h2>
             <div className="flex flex-wrap mb-6">
               <Button className="w-24 h-10 mr-4 mb-2">一般外科</Button>
-              <Button className="w-24 h-10 mr-4 mb-2">骨科</Button>
             </div>
           </div>
           <div className="bg-white mb-6 p-3 rounded-lg">
             <h2 className="text-xl mb-4">其他</h2>
             <div className="flex flex-wrap mb-6">
-              <Button className="w-24 h-10 mr-4 mb-2">中醫</Button>
-              <Button className="w-24 h-10 mr-4 mb-2">眼科</Button>
               <Button className="w-24 h-10 mr-4 mb-2">皮膚科</Button>
             </div>
           </div>

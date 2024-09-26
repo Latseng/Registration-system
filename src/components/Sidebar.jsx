@@ -23,7 +23,7 @@ const items = [
   },
   {
     key: "4",
-    label: "醫師資訊",
+    label: "醫師專長查詢",
   },
 ];
 

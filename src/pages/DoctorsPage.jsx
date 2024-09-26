@@ -1,8 +1,9 @@
-import { Layout, List, Table, Input, Avatar } from "antd";
+import { Layout, List, Button, Input, Table, Avatar, Modal } from "antd";
 import useRWD from "../hooks/useRWD";
 import Sidebar from "../components/Sidebar";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
+import { useState } from "react";
 
 const { Content } = Layout;
 const { Search } = Input;
@@ -75,7 +76,7 @@ const data = doctorsData.map((d, i) => ({
   title: `${d.doctorName} 醫師`,
   avatar: `https://api.dicebear.com/7.x/miniavs/svg?seed=${i}`,
   description: d.department,
-  content: `專長： ${d.specialties}`,
+  content: `專長： ${d.specialties.join('、')}`,
 }));
 
 const generateDates = () => {
@@ -92,9 +93,61 @@ const generateDates = () => {
 };
 const dates = generateDates();
 
+const columns = [
+  {
+    title: "時間",
+    dataIndex: "time",
+    key: "time",
+    fixed: "left",
+  },
+  ...dates.map((date, index) => ({
+    title: date,
+    dataIndex: `date${index}`,
+    key: `date${index}`,
+    // render: (_, record) => {
+    //   const doctorSlot = record[`date${index}`];
+    //   return doctorSlot.map(({ numOfPatients, isFull }, idx) => (
+    //     <Button
+    //       // onClick={() =>
+    //       //   handleAppointment({ date: date, doctor: doctor, time: record.time })
+    //       // }
+    //       key={idx}
+    //       type="link"
+    //       disabled={isFull}
+    //     >
+    //       <br /> {isFull ? "額滿" : `掛號人數: ${numOfPatients}`}
+    //     </Button>
+    //   ));
+    // },
+  })),
+];
+const dataSource = [
+  {
+    key: "morning",
+    time: "上午診",
+    // ...doctorSchedule.morning,
+  },
+  {
+    key: "afternoon",
+    time: "下午診",
+    // ...doctorSchedule.afternoon,
+  },
+];
+
 const DoctorsPage = () => {
   const isDesktop = useRWD();
   const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedDoctor, setSelectedDoctor] = useState(null);
+
+  const showDoctorInfo = (doctor) => {
+    setSelectedDoctor(doctor);
+    setIsModalOpen(true);
+  };
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  };
 
   const handleClickLogo = () => {
     navigate("/*");
@@ -132,7 +185,7 @@ const DoctorsPage = () => {
         </button>
       )}
       <Content className="bg-gray-100 p-6">
-        <h1 className="text-2xl mb-6">醫師資訊</h1>
+        <h1 className="text-2xl mb-6">醫師專長查詢</h1>
         <Search
           className="mb-2"
           placeholder="醫師搜尋"
@@ -142,48 +195,62 @@ const DoctorsPage = () => {
             width: 200,
           }}
         />
-        <div className="bg-white py-3">
-          <List
-            itemLayout="vertical"
-            size="large"
-            pagination={{
-              onChange: (page) => {
-                console.log(page);
-              },
-              pageSize: 3,
-            }}
-            dataSource={data}
-            renderItem={(item) => (
-              <List.Item
-                key={item.title}
-                extra={
-                  <img
-                    width={272}
-                    alt="logo"
-                    src="https://gw.alipayobjects.com/zos/rmsportal/mqaQswcyDLcXyDKnZfES.png"
-                  />
-                }
+
+        <List
+          className="bg-white pb-4"
+          itemLayout="vertical"
+          size="large"
+          pagination={{
+            pageSize: 5,
+          }}
+          dataSource={data}
+          renderItem={(item) => (
+            <List.Item className="relative" key={item.title}>
+              <Avatar shape="square" size={64} src={item.avatar} />
+              <div className="absolute left-24 top-10 flex flex-wrap items-center w-6/12">
+                <h4 className="text-lg">{item.title}</h4>
+                <p className="text-black text-base mx-8">{item.description}</p>
+              </div>
+              <Button
+                className="absolute right-8 top-8"
+                onClick={() => showDoctorInfo(item)}
               >
-                <List.Item.Meta
-                  avatar={
-                    <Avatar shape="square" size={160} src={item.avatar} />
-                  }
-                  title={
-                    <button onClick={() => console.log(event.target)}>
-                      <h3>{item.title}</h3>
-                    </button>
-                  }
-                  description={
-                    <>
-                      <h4 className="text-black my-1">{item.description}</h4>
-                      <p className="text-black my-1">{item.content}</p>
-                    </>
-                  }
+                詳細資訊
+              </Button>
+            </List.Item>
+          )}
+        />
+        {selectedDoctor && (
+          <Modal open={isModalOpen} onCancel={handleCancel} footer={null}>
+            <div className="p-4">
+              <h2 className="text-2xl">{selectedDoctor.title}</h2>
+              <Avatar
+                shape="square"
+                size={100}
+                src={selectedDoctor.avatar}
+                alt={`${selectedDoctor.title}照片`}
+                style={{ width: "100px", marginBottom: "10px" }}
+              />
+              <div className="my-4 text-base">
+                <p>科別： {selectedDoctor.description}</p>
+                <p>{selectedDoctor.content}</p>
+              </div>
+              <h4 className="text-lg my-4">可看診時間:</h4>
+              <div className="overflow-x-auto">
+                <Table
+                  columns={columns}
+                  dataSource={dataSource}
+                  pagination={false}
                 />
-              </List.Item>
-            )}
-          />
-        </div>
+                {/* <ul>
+                {selectedDoctor.availableTimes.map((time, index) => (
+                  <li key={index}>{time}</li>
+                ))}
+              </ul> */}
+              </div>
+            </div>
+          </Modal>
+        )}
       </Content>
     </Layout>
   );
