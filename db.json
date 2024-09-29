@@ -1,3 +1,103 @@
 {
-  "appointment": []
+  "appointment": [],
+  "schedules": [
+    {
+      "doctorScheduleId": 1,
+      "date": "2024-09-08T19:13:45.442Z",
+      "scheduleSlot": "Monday_Morning",
+      "specialty": "一般內科",
+      "doctorId": 1,
+      "doctorName": "張偉華",
+      "bookedAppointments": 1,
+      "maxAppointments": 10,
+      "status": "AVAILABLE"
+    },
+    {
+      "doctorScheduleId": 2,
+      "date": "2024-09-01T19:16:10.995Z",
+      "scheduleSlot": "Monday_Afternoon",
+      "specialty": "一般內科",
+      "doctorId": 1,
+      "doctorName": "張偉華",
+      "bookedAppointments": 1,
+      "maxAppointments": 10,
+      "status": "AVAILABLE"
+    },
+    {
+      "doctorScheduleId": 3,
+      "date": "2024-09-06T23:29:58.893Z",
+      "scheduleSlot": "Saturday_Afternoon",
+      "specialty": "一般內科",
+      "doctorId": 1,
+      "doctorName": "張偉華",
+      "bookedAppointments": 0,
+      "maxAppointments": 10,
+      "status": "AVAILABLE"
+    },
+    {
+      "doctorScheduleId": 4,
+      "date": "2024-09-06T11:40:40.379Z",
+      "scheduleSlot": "Friday_Afternoon",
+      "specialty": "一般內科",
+      "doctorId": 2,
+      "doctorName": "李靜文",
+      "bookedAppointments": 0,
+      "maxAppointments": 10,
+      "status": "AVAILABLE"
+    },
+    {
+      "doctorScheduleId": 5,
+      "date": "2024-09-09T16:03:26.138Z",
+      "scheduleSlot": "Tuesday_Afternoon",
+      "specialty": "一般內科",
+      "doctorId": 2,
+      "doctorName": "李靜文",
+      "bookedAppointments": 0,
+      "maxAppointments": 10,
+      "status": "AVAILABLE"
+    },
+    {
+      "doctorScheduleId": 6,
+      "date": "2024-09-12T15:18:25.572Z",
+      "scheduleSlot": "Friday_Afternoon",
+      "specialty": "一般內科",
+      "doctorId": 2,
+      "doctorName": "李靜文",
+      "bookedAppointments": 0,
+      "maxAppointments": 10,
+      "status": "AVAILABLE"
+    },
+    {
+      "doctorScheduleId": 7,
+      "date": "2024-09-04T18:51:15.112Z",
+      "scheduleSlot": "Thursday_Afternoon",
+      "specialty": "一般內科",
+      "doctorId": 3,
+      "doctorName": "王超群",
+      "bookedAppointments": 0,
+      "maxAppointments": 10,
+      "status": "AVAILABLE"
+    },
+    {
+      "doctorScheduleId": 8,
+      "date": "2024-09-09T22:50:59.631Z",
+      "scheduleSlot": "Tuesday_Afternoon",
+      "specialty": "一般內科",
+      "doctorId": 3,
+      "doctorName": "王超群",
+      "bookedAppointments": 0,
+      "maxAppointments": 10,
+      "status": "AVAILABLE"
+    },
+    {
+      "doctorScheduleId": 9,
+      "date": "2024-09-04T21:09:50.727Z",
+      "scheduleSlot": "Thursday_Morning",
+      "specialty": "一般內科",
+      "doctorId": 3,
+      "doctorName": "王超群",
+      "bookedAppointments": 0,
+      "maxAppointments": 10,
+      "status": "AVAILABLE"
+    }]
 }
