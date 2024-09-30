@@ -8,6 +8,7 @@ import {
   Table,
   Modal,
   Form,
+  Card,
   Input,
   DatePicker,
   Flex,
@@ -25,6 +26,10 @@ import { MdPermContactCalendar } from "react-icons/md";
 
 const { Content } = Layout;
 const { Search } = Input;
+const gridStyle = {
+  width: "25%",
+  textAlign: "center",
+};
 
 const generateDates = () => {
   const dates = [];
@@ -52,6 +57,7 @@ const ClinicSchedulePage = () => {
 
   const [schedules, setSchedules] = useState([]);
   const [displayMode, setDisplayMode] = useState("schedule");
+  
 
   const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
@@ -93,7 +99,7 @@ const ClinicSchedulePage = () => {
       key: `date${index}`,
       render: (doctors, record) =>
         doctors.map((doc, idx) => (
-          <Flex key={idx}>
+          <Flex key={idx} className="my-2">
             <Button size="small" className="mr-1">
               <MdPermContactCalendar className="text-xl" />
             </Button>
@@ -195,14 +201,38 @@ const ClinicSchedulePage = () => {
     navigate("/*");
   };
   const onSearch = (value) => {
-    const resultDoctor = schedules.filter((s) => 
-      s.doctorName.includes(value)
-    )
-    
-    if (resultDoctor.length === 0) return 
+    const resultDoctor = schedules.filter((s) => s.doctorName.includes(value));
+
+    if (resultDoctor.length === 0) return;
 
     setSchedules(resultDoctor);
   };
+
+  const groupedSchedulesForList = schedules.reduce((acc, schedule) => {
+    //重整班表資料給列表渲染使用
+    if (!acc[schedule.doctorId]) {
+      acc[schedule.doctorId] = {
+        doctorId: schedule.doctorId,
+        doctorName: schedule.doctorName,
+        specialty: schedule.specialty,
+        schedules: [],
+      };
+    }
+    const groupSchedule = {
+      doctorScheduleId: schedule.doctorScheduleId,
+      date: `${dayjs(schedule.date).format("M/D")}(${"日一二三四五六".charAt(
+        dayjs(schedule.date).day()
+      )})`,
+      scheduleSlot: schedule.scheduleSlot.includes("Morning") ? "上午" : "下午",
+      bookedAppointments: schedule.bookedAppointments,
+      maxAppointments: schedule.maxAppointments,
+      status: schedule.status,
+    };
+    acc[schedule.doctorId].schedules.push(groupSchedule);
+    return acc;
+  }, {});
+
+  const doctorListData = Object.values(groupedSchedulesForList);
 
   // const columns = [
   //   {
@@ -295,21 +325,52 @@ const ClinicSchedulePage = () => {
               </Radio.Button>
             </Radio.Group>
           </Flex>
-          <div className="flex justify-between my-4">
-            <Button onClick={handlePreviousWeek} disabled={currentWeek === 0}>
-              上一週
-            </Button>
-            <Button onClick={handleNextWeek} disabled={currentWeek === 1}>
-              下一週
-            </Button>
-          </div>
+          {displayMode === "schedule" && (
+            <div className="flex justify-between my-4">
+              <Button onClick={handlePreviousWeek} disabled={currentWeek === 0}>
+                上一週
+              </Button>
+              <Button onClick={handleNextWeek} disabled={currentWeek === 1}>
+                下一週
+              </Button>
+            </div>
+          )}
+
           <div className="overflow-x-auto">
-            <Table
-              bordered
-              columns={columns}
-              dataSource={dataSource}
-              pagination={false}
-            />
+            {displayMode === "schedule" ? (
+              <Table
+                bordered
+                columns={columns}
+                dataSource={dataSource}
+                pagination={false}
+              />
+            ) : (
+              doctorListData.map((d) => (
+                <Card
+                  className="my-4"
+                  key={d.doctorId}
+                  title={d.doctorName + " 醫師"}
+                >
+                  {d.schedules.map((schedule) => (
+                    <Card.Grid
+                      key={schedule.doctorScheduleId}
+                      style={gridStyle}
+                    >
+                      <Button>
+                        {schedule.date}
+                        <br />
+                        {schedule.scheduleSlot}
+                        <br />
+                        已掛號{schedule.bookedAppointments}人
+                      </Button>
+                    </Card.Grid>
+                  ))}
+                  <Card.Grid hoverable={false} style={gridStyle}>
+                    測試內容
+                  </Card.Grid>
+                </Card>
+              ))
+            )}
           </div>
         </Content>
       </Layout>
