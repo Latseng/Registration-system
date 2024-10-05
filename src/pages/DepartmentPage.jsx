@@ -56,9 +56,8 @@ const DepartmentPage = () => {
     }
   };
 
-  const handleClickSpecialties = (specialties) => {
-    console.log(specialties);
-    
+  const handleClickSpecialties = (specialty) => {
+    navigate("/departments/schedule", { state: { specialty: specialty } });
   }
 
   return (

@@ -6,10 +6,10 @@ const baseURL = "https://registration-system-2gho.onrender.com/api";
 
 axios.defaults.headers.common["x-api-key"] = APIKey;
 
-export const getSchedules = async () => {
+export const getSchedules = async (specialty) => {
   try {
     const res = await axios.get(
-      `${baseURL}/doctor-schedules/schedules-by-specialty/一般內科`
+      `${baseURL}/doctor-schedules/schedules-by-specialty/${specialty}`
     );
     return res.data.data
   } catch (error) {

@@ -15,7 +15,7 @@ import {
   Breadcrumb,
 } from "antd";
 
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import dayjs from "dayjs";
 // import { createAppointment } from "../api/appointment";
 import { getSchedules } from "../api/schedules";
@@ -24,6 +24,7 @@ import { LuCalendarDays } from "react-icons/lu";
 import { MdPermContactCalendar } from "react-icons/md";
 import DatePicker from "../components/DatePicker";
 import ReCAPTCHA from "react-google-recaptcha";
+
 
 const { Content } = Layout;
 const { Search } = Input;
@@ -48,6 +49,8 @@ const generateDates = () => {
 const ClinicSchedulePage = () => {
   const navigate = useNavigate();
   const isDesktop = useRWD();
+  const location = useLocation()
+  const {specialty} = location.state
 
   const dates = generateDates();
   const [currentWeek, setCurrentWeek] = useState(0);
@@ -66,7 +69,7 @@ const ClinicSchedulePage = () => {
   useEffect(() => {
     const getSchedulesAsync = async () => {
       try {
-        const schedules = await getSchedules();
+        const schedules = await getSchedules(specialty);
         setSchedules(schedules);
       } catch (error) {
         console.error(error);
@@ -262,7 +265,7 @@ const ClinicSchedulePage = () => {
             },
           ]}
         />
-        <h1 className="text-2xl mb-6">一般內科門診</h1>
+        <h1 className="text-2xl mb-6">{specialty}門診</h1>
         <Content className="bg-white p-4 rounded-md shadow-md">
           <Flex justify={"space-between"}>
             <Search
