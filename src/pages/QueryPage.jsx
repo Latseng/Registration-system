@@ -1,9 +1,9 @@
-import { Layout,  Card, Button,Modal, message,} from "antd";
+import { Layout,  Card, Button, Modal, List, message,} from "antd";
 import Sidebar from "../components/Sidebar";
 import { useNavigate, useLocation } from "react-router-dom";
 import useRWD from "../hooks/useRWD";
 import { useState, useEffect } from "react";
-import { getAppointment, deleteAppointment } from "../api/appointment";
+import { getAppointments } from "../api/appointments";
 
 const { Content } = Layout;
 
@@ -13,7 +13,7 @@ const QueryPage = () => {
   const navigate = useNavigate();
   const isDesktop = useRWD();
   
-  const [appointment, setAppointment] = useState(null)
+  const [appointments, setAppointments] = useState([])
   const [appointmentState, setAppointmentState] = useState(location.state || "");
   const [messageApi, contextHolder] = message.useMessage();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -31,8 +31,9 @@ const QueryPage = () => {
   useEffect(() => {
     const getAppointmentData = async () => {
       try {
-       const response = await getAppointment();
-       setAppointment(response[0])
+       const response = await getAppointments();
+       console.log(response.data)
+       setAppointments(response.data)
        
       } catch (error) {
         console.error(error);
@@ -74,20 +75,20 @@ const QueryPage = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    try {
-      await deleteAppointment(id)
-      setAppointment(null)
-      setIsModalOpen(false);
-      messageApi.open({
-        type: "warning",
-        content: "掛號已取消",
-      });
+  // const handleDelete = async (id) => {
+  //   try {
+  //     await deleteAppointment(id)
+  //     setAppointment(null)
+  //     setIsModalOpen(false);
+  //     messageApi.open({
+  //       type: "warning",
+  //       content: "掛號已取消",
+  //     });
 
-    } catch(error) {
-      console.error(error);
-    }
-  }
+  //   } catch(error) {
+  //     console.error(error);
+  //   }
+  // }
 
   return (
     <Layout className="min-h-screen">
@@ -100,14 +101,19 @@ const QueryPage = () => {
         </button>
       )}
       <Content className="bg-gray-100 p-6">
-        {appointment ? (
+        {appointments ? (
           <>
             <h1 className="text-2xl mb-6">您的看診時段</h1>
-            <div className="bg-white px-8 py-4">
-              <h3>日期：{appointment.date}</h3>
-              <h3>時段：{appointment.time}</h3>
-              <h3>看診醫師：{appointment.doctor}</h3>
-              <Card
+            <List bordered className="bg-white px-8 py-4">
+              {appointments.map((a) => (
+                <List.Item key={a.id}>
+                  <p>姓名：{a.patientId}</p>
+                  <p>醫師：{a.doctorScheduleId}</p>
+                  <p>預約號碼：{a.consultationNumber}</p>
+                  <Button>{a.status === "CONFIRMED" ? "取消掛號" : "重新掛號"}</Button>
+                </List.Item>
+              ))}
+              {/* <Card
                 title="目前看診進度"
                 bordered={false}
                 style={{ width: 300 }}
@@ -128,13 +134,13 @@ const QueryPage = () => {
                 </p>
                 <Button
                   className="w-full"
-                  onClick={() => handleDelete(appointment.id)}
+                  // onClick={() => handleDelete(appointment.id)}
                   danger
                 >
                   確定取消
                 </Button>
-              </Modal>
-            </div>
+              </Modal> */}
+            </List>
           </>
         ) : (
           <h1 className="text-2xl mb-6">您目前沒有看診掛號</h1>

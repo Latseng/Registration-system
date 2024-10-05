@@ -3,81 +3,13 @@ import useRWD from "../hooks/useRWD";
 import Sidebar from "../components/Sidebar";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getDoctors } from "../api/doctors";
 
 const { Content } = Layout;
 const { Search } = Input;
 
-const doctorsData = [
-  {
-    doctorName: "張OO",
-    department: "心臟內科",
-    specialties: ["心導管手術", "冠狀動脈疾病"],
-  },
-  {
-    doctorName: "陳OO",
-    department: "一般內科",
-    specialties: ["高血壓", "糖尿病"],
-  },
-  {
-    doctorName: "李OO",
-    department: "神經外科",
-    specialties: ["腦腫瘤切除手術", "脊椎外科手術"],
-  },
-  {
-    doctorName: "林OO",
-    department: "骨科",
-    specialties: ["人工關節置換術", "脊椎疾病"],
-  },
-  {
-    doctorName: "王OO",
-    department: "皮膚科",
-    specialties: ["皮膚病理學", "皮膚癌診療"],
-  },
-  {
-    doctorName: "周OO",
-    department: "小兒科",
-    specialties: ["兒童過敏", "兒童氣喘"],
-  },
-  {
-    doctorName: "黃OO",
-    department: "婦產科",
-    specialties: ["產前檢查", "高危險妊娠"],
-  },
-  {
-    doctorName: "吳OO",
-    department: "眼科",
-    specialties: ["白內障手術", "視網膜疾病"],
-  },
-  {
-    doctorName: "何OO",
-    department: "耳鼻喉科",
-    specialties: ["鼻竇炎", "耳聾"],
-  },
-  {
-    doctorName: "劉OO",
-    department: "泌尿科",
-    specialties: ["前列腺疾病", "膀胱癌"],
-  },
-  {
-    doctorName: "徐OO",
-    department: "精神科",
-    specialties: ["憂鬱症", "焦慮症", "精神分裂症"],
-  },
-  {
-    doctorName: "邱OO",
-    department: "內分泌科",
-    specialties: ["甲狀腺疾病", "骨質疏鬆症"],
-  },
-];
 
-const data = doctorsData.map((d, i) => ({
-  href: "https://ant.design",
-  title: `${d.doctorName} 醫師`,
-  avatar: `https://api.dicebear.com/7.x/miniavs/svg?seed=${i}`,
-  description: d.department,
-  content: `專長： ${d.specialties.join('、')}`,
-}));
 
 const generateDates = () => {
   const dates = [];
@@ -139,6 +71,30 @@ const DoctorsPage = () => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [doctors, setDoctors] = useState([])
+
+  useEffect(() => {
+    const getDoctorsData = async () => {
+      try {
+        const response = await getDoctors()
+        console.log(response.data);
+        setDoctors(response.data)
+        
+      } catch(error) {
+        console.error(error);
+        
+      }
+    }
+    getDoctorsData()
+  }, [])
+
+  const data = doctors.map((d, i) => ({
+    href: "https://ant.design",
+    title: `${d.name} 醫師`,
+    avatar: `https://api.dicebear.com/7.x/miniavs/svg?seed=${i}`,
+    description: d.specialty,
+    content: `專長： ${JSON.parse(d.description).join('、')}`,
+  }));
 
   const showDoctorInfo = (doctor) => {
     setSelectedDoctor(doctor);

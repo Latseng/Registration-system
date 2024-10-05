@@ -10,7 +10,6 @@ import {
   Form,
   Card,
   Input,
-  DatePicker,
   Flex,
   message,
   Breadcrumb,
@@ -18,11 +17,13 @@ import {
 
 import { useNavigate, Link } from "react-router-dom";
 import dayjs from "dayjs";
-import { createAppointment } from "../api/appointment";
+// import { createAppointment } from "../api/appointment";
 import { getSchedules } from "../api/schedules";
 import { AiOutlineTeam } from "react-icons/ai";
 import { LuCalendarDays } from "react-icons/lu";
 import { MdPermContactCalendar } from "react-icons/md";
+import DatePicker from "../components/DatePicker";
+import ReCAPTCHA from "react-google-recaptcha";
 
 const { Content } = Layout;
 const { Search } = Input;
@@ -57,10 +58,10 @@ const ClinicSchedulePage = () => {
 
   const [schedules, setSchedules] = useState([]);
   const [displayMode, setDisplayMode] = useState("schedule");
-  
+  const [visitType, setVisitType] = useState("initial");
 
   const [form] = Form.useForm();
-  const [messageApi, contextHolder] = message.useMessage();
+  // const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
     const getSchedulesAsync = async () => {
@@ -92,11 +93,13 @@ const ClinicSchedulePage = () => {
       dataIndex: "time",
       key: "time",
       fixed: "left",
+      className: "min-w-20",
     },
     ...weekDates.map((date, index) => ({
       title: date,
       dataIndex: `date${index}`,
       key: `date${index}`,
+      className: "min-w-44",
       render: (doctors, record) =>
         doctors.map((doc, idx) => (
           <Flex key={idx} className="my-2">
@@ -124,7 +127,7 @@ const ClinicSchedulePage = () => {
     })),
   ];
 
-  // 生成上午診與下午診的資料源
+  // 生成上午診與下午診的表格資料源
   const dataSource = [
     {
       key: "morning",
@@ -155,25 +158,25 @@ const ClinicSchedulePage = () => {
     setIsModalOpen(false);
     form.resetFields();
   };
-  const handleSubmit = async (values) => {
-    const patientId = values.idNumber;
+  // const handleSubmit = async (values) => {
+  //   const patientId = values.idNumber;
 
-    try {
-      await createAppointment({
-        ...selectedAppointment,
-        patientId,
-      });
-      setIsModalOpen(false);
-      form.resetFields();
-      messageApi.open({
-        type: "success",
-        content: "掛號成功",
-      });
-      navigate("/query", { state: "success" });
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  //   try {
+  //     await createAppointment({
+  //       ...selectedAppointment,
+  //       patientId,
+  //     });
+  //     setIsModalOpen(false);
+  //     form.resetFields();
+  //     messageApi.open({
+  //       type: "success",
+  //       content: "掛號成功",
+  //     });
+  //     navigate("/query", { state: "success" });
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
 
   const handleClickPage = (e) => {
     switch (e.key) {
@@ -234,56 +237,13 @@ const ClinicSchedulePage = () => {
 
   const doctorListData = Object.values(groupedSchedulesForList);
 
-  // const columns = [
-  //   {
-  //     title: "時間",
-  //     dataIndex: "time",
-  //     key: "time",
-  //     fixed: "left",
-  //   },
-  //   ...dates.map((date, index) => ({
-  //     title: date,
-  //     dataIndex: `date${index}`,
-  //     key: `date${index}`,
-  //     render: (_, record) => {
-  //       const doctorSlot = record[`date${index}`];
+  const onChange = (value) => {
+  console.log("Captcha value:", value);
+}
+ const handleVisitTypeChange = (e) => {
+   setVisitType(e.target.value); 
+ };
 
-  //       return doctorSlot.map(({ doctor, numOfPatients, isFull }, idx) => (
-  //         <Flex className="my-2" key={idx} align={"center"}>
-  //           <Button className="mr-1" size="small">
-  //             <MdPermContactCalendar className="text-xl" />
-  //           </Button>
-  //           <Button
-  //             size="small"
-  //             onClick={() =>
-  //               handleAppointment({
-  //                 date: date,
-  //                 doctor: doctor,
-  //                 time: record.time,
-  //               })
-  //             }
-  //             disabled={isFull}
-  //           >
-  //             {doctor} <br /> {isFull ? "額滿" : `掛號人數: ${numOfPatients}`}
-  //           </Button>
-  //         </Flex>
-  //       ));
-  //     },
-  //   })),
-  // ];
-
-  // const dataSource = [
-  //   {
-  //     key: "morning",
-  //     time: "上午診",
-  //     ...doctorSchedule.morning,
-  //   },
-  //   {
-  //     key: "afternoon",
-  //     time: "下午診",
-  //     ...doctorSchedule.afternoon,
-  //   },
-  // ];
 
   return (
     <Layout className="min-h-screen">
@@ -340,6 +300,7 @@ const ClinicSchedulePage = () => {
             {displayMode === "schedule" ? (
               <Table
                 bordered
+                tableLayout="auto"
                 columns={columns}
                 dataSource={dataSource}
                 pagination={false}
@@ -356,7 +317,15 @@ const ClinicSchedulePage = () => {
                       key={schedule.doctorScheduleId}
                       style={gridStyle}
                     >
-                      <Button>
+                      <Button
+                        onClick={() =>
+                          handleAppointment({
+                            date: schedule.date,
+                            doctor: d.doctorName,
+                            time: schedule.scheduleSlot,
+                          })
+                        }
+                      >
                         {schedule.date}
                         <br />
                         {schedule.scheduleSlot}
@@ -366,7 +335,13 @@ const ClinicSchedulePage = () => {
                     </Card.Grid>
                   ))}
                   <Card.Grid hoverable={false} style={gridStyle}>
-                    測試內容
+                    已滿
+                  </Card.Grid>
+                  <Card.Grid hoverable={false} style={gridStyle}>
+                    已滿
+                  </Card.Grid>
+                  <Card.Grid hoverable={false} style={gridStyle}>
+                    已滿
                   </Card.Grid>
                 </Card>
               ))
@@ -379,17 +354,29 @@ const ClinicSchedulePage = () => {
         {selectedAppointment && (
           <Form
             form={form}
-            onFinish={handleSubmit}
+            // onFinish={handleSubmit}
             labelCol={{ span: 8 }}
             className="w-full max-w-md"
           >
             <h1 className="text-center text-xl font-bold">掛號資訊</h1>
-            <div className="my-4 ml-16 text-base">
-              <h3>科別：一般內科</h3>
-              <h3>日期：{selectedAppointment.date}</h3>
-              <h3>時段：{selectedAppointment.time}</h3>
-              <h3>醫師：{selectedAppointment.doctor}</h3>
+            <div className="my-4 text-center text-lg">
+              <h3>一般內科</h3>
+              <p>
+                {selectedAppointment.date}
+                {selectedAppointment.time}
+              </p>
+              <h3>{selectedAppointment.doctor} 醫師</h3>
             </div>
+            <Form.Item
+              name="visitType"
+              label="就診類別"
+              rules={[{ required: true, message: "請選擇就診類別" }]}
+            >
+              <Radio.Group onChange={handleVisitTypeChange} value={visitType}>
+                <Radio value={"initial"}>初診</Radio>
+                <Radio value={"return"}>複診</Radio>
+              </Radio.Group>
+            </Form.Item>
             <Form.Item
               label="身分證字號"
               name="idNumber"
@@ -397,13 +384,14 @@ const ClinicSchedulePage = () => {
             >
               <Input placeholder="請輸入身分證字號" />
             </Form.Item>
-            <Form.Item
-              label="生日"
-              name="birthday"
-              rules={[{ required: true, message: "請選擇生日" }]}
-            >
-              <DatePicker />
+            <Form.Item label="生日" name="birthday">
+              <DatePicker form={form} />
             </Form.Item>
+            <ReCAPTCHA
+              className="my-4 ml-20"
+              sitekey="Your client site key"
+              onChange={onChange}
+            />
             <Form.Item>
               <Flex gap="middle" justify="center">
                 <Button onClick={handleCancel}>取消</Button>

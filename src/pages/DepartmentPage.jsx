@@ -1,12 +1,35 @@
 import useRWD from "../hooks/useRWD";
 import Sidebar from "../components/Sidebar";
-import { Layout, Button } from "antd";
+import { Layout, Button, Input, Card } from "antd";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { getSpecialties } from "../api/specialties";
+
 const { Content } = Layout;
+const {Search} = Input
+const gridStyle = {
+  width: "25%",
+  textAlign: "center",
+};
 
 const DepartmentPage = () => {
   const navigate = useNavigate();
   const isDesktop = useRWD();
+  const [specialties, setSpecialties] = useState([])
+  
+
+  useEffect(() => {
+    const getSpecialtiesAsnc = async () => {
+      try {
+        const specialties = await getSpecialties()
+        
+        setSpecialties(specialties)
+      } catch (error) {
+        console.error(error);  
+      }
+    }
+    getSpecialtiesAsnc()
+  },[])
 
   const handleClickLogin = () => {
     navigate("/login");
@@ -33,6 +56,11 @@ const DepartmentPage = () => {
     }
   };
 
+  const handleClickSpecialties = (specialties) => {
+    console.log(specialties);
+    
+  }
+
   return (
     <Layout className="min-h-screen">
       <Sidebar onClickPage={handleClickPage} onClickLogo={handleClickLogo} />
@@ -42,38 +70,25 @@ const DepartmentPage = () => {
             登入
           </button>
         )}
-        <h1 className="text-2xl mb-6">門診科別</h1>
-        <div className="flex space-x-4 mb-6">
-          <Button>科別搜尋</Button>
+        <h1 className="text-2xl mb-4">門診科別</h1>
+        <div className="flex mb-4">
+          <Search
+            placeholder="搜尋科別"
+            allowClear
+            style={{
+              width: 200,
+            }}
+          />
         </div>
-        <div>
-          <div className="bg-white mb-6 p-3 rounded-lg">
-            <h2 className="text-xl mb-4">內科</h2>
-            <div className="flex flex-wrap mb-6">
-              <Button
-                className="w-24 h-10 mr-4 mb-2"
-                onClick={() => {
-                  navigate("/departments/schedule");
-                }}
-              >
-                一般內科
-              </Button>
-            </div>
-          </div>
-
-          <div className="bg-white mb-6 p-3 rounded-lg">
-            <h2 className="text-xl mb-4">外科</h2>
-            <div className="flex flex-wrap mb-6">
-              <Button className="w-24 h-10 mr-4 mb-2">一般外科</Button>
-            </div>
-          </div>
-          <div className="bg-white mb-6 p-3 rounded-lg">
-            <h2 className="text-xl mb-4">其他</h2>
-            <div className="flex flex-wrap mb-6">
-              <Button className="w-24 h-10 mr-4 mb-2">皮膚科</Button>
-            </div>
-          </div>
-        </div>
+            {specialties.map((s) => (
+              <Card className="my-4" key={s.category} title={s.category}>
+                {s.specialties.map((s) => (
+                  <Card.Grid key={s} style={gridStyle}>
+                    <Button onClick={() => handleClickSpecialties(s)}>{s}</Button>
+                  </Card.Grid>
+                ))}
+              </Card>
+            ))} 
       </Content>
     </Layout>
   );
