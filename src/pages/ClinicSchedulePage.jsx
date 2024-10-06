@@ -3,6 +3,7 @@ import Sidebar from "../components/Sidebar";
 import { useState, useEffect } from "react";
 import {
   Layout,
+  Avatar,
   Button,
   Radio,
   Table,
@@ -11,7 +12,6 @@ import {
   Card,
   Input,
   Flex,
-  message,
   Breadcrumb,
 } from "antd";
 
@@ -24,6 +24,7 @@ import { LuCalendarDays } from "react-icons/lu";
 import { MdPermContactCalendar } from "react-icons/md";
 import DatePicker from "../components/DatePicker";
 import ReCAPTCHA from "react-google-recaptcha";
+import { getDoctorById } from "../api/doctors";
 
 
 const { Content } = Layout;
@@ -57,7 +58,9 @@ const ClinicSchedulePage = () => {
   const weekDates = dates.slice(currentWeek * 7, (currentWeek + 1) * 7);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDoctorModalOpen, setIsDoctorModalOpen] = useState(false)
   const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [selectedDoctor, setSelectedDoctor] = useState(null);
 
   const [schedules, setSchedules] = useState([]);
   const [displayMode, setDisplayMode] = useState("schedule");
@@ -106,7 +109,7 @@ const ClinicSchedulePage = () => {
       render: (doctors, record) =>
         doctors.map((doc, idx) => (
           <Flex key={idx} className="my-2">
-            <Button size="small" className="mr-1">
+            <Button onClick={() => handleClickDoctorInfo(doc.doctorId)} size="small" className="mr-1">
               <MdPermContactCalendar className="text-xl" />
             </Button>
             <Button
@@ -157,7 +160,24 @@ const ClinicSchedulePage = () => {
     setIsModalOpen(true);
   };
 
-  const handleCancel = () => {
+  const handleClickDoctorInfo = (id) => {
+    const getDoctorByIdAsync = async () => {
+      try {
+        const doctor = await getDoctorById(id);
+        setSelectedDoctor(doctor);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    getDoctorByIdAsync();
+setIsDoctorModalOpen(true)
+  }
+
+  const handleCancel = (value) => {
+    if(value === "doctor") {
+      setIsDoctorModalOpen(false) 
+      setSelectedDoctor(null)}
+
     setIsModalOpen(false);
     form.resetFields();
   };
@@ -398,7 +418,7 @@ const ClinicSchedulePage = () => {
             <Form.Item>
               <Flex gap="middle" justify="center">
                 <Button onClick={handleCancel}>取消</Button>
-                {contextHolder}
+
                 <Button type="primary" htmlType="submit">
                   送出
                 </Button>
@@ -407,6 +427,41 @@ const ClinicSchedulePage = () => {
           </Form>
         )}
       </Modal>
+      {selectedDoctor && (
+        <Modal
+          open={isDoctorModalOpen}
+          onCancel={() => handleCancel("doctor")}
+          footer={null}
+        >
+          <div className="p-4">
+            <h3 className="text-2xl">{selectedDoctor.name} 醫師</h3>
+            <Avatar
+              shape="square"
+              size={100}
+              src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${selectedDoctor.id}`}
+              alt={`${selectedDoctor.name}照片`}
+              style={{ width: "100px", marginBottom: "10px" }}
+            />
+            <div className="my-4 text-base">
+              <p>科別： {selectedDoctor.specialty}</p>
+              <p>專長：{JSON.parse(selectedDoctor.description).join("、")}</p>
+            </div>
+            <h4 className="text-lg my-4">可看診時間:</h4>
+            {/* <div className="overflow-x-auto">
+                <Table
+                  columns={columns}
+                  dataSource={dataSource}
+                  pagination={false}
+                /> */}
+            {/* <ul>
+                {selectedDoctor.availableTimes.map((time, index) => (
+                  <li key={index}>{time}</li>
+                ))}
+              </ul> */}
+            {/* </div> */}
+          </div>
+        </Modal>
+      )}
     </Layout>
   );
 };
