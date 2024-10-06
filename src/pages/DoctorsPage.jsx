@@ -72,13 +72,15 @@ const DoctorsPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [doctors, setDoctors] = useState([])
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     const getDoctorsData = async () => {
       try {
+        setIsLoading(true)
         const response = await getDoctors()
-        console.log(response.data);
         setDoctors(response.data)
+        setIsLoading(false)
         
       } catch(error) {
         console.error(error);
@@ -156,6 +158,7 @@ const DoctorsPage = () => {
           className="bg-white pb-4"
           itemLayout="vertical"
           size="large"
+          loading={isLoading}
           pagination={{
             pageSize: 5,
           }}
