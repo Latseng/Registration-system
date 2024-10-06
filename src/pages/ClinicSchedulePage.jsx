@@ -12,6 +12,7 @@ import {
   Card,
   Input,
   Flex,
+  message,
   Breadcrumb,
 } from "antd";
 
@@ -65,21 +66,25 @@ const ClinicSchedulePage = () => {
   const [schedules, setSchedules] = useState([]);
   const [displayMode, setDisplayMode] = useState("schedule");
   const [visitType, setVisitType] = useState("initial");
+  const [searchValue, setSearchValue] = useState("");
 
   const [form] = Form.useForm();
-  // const [messageApi, contextHolder] = message.useMessage();
+  const [messageApi, contextHolder] = message.useMessage();
 
+  const getSchedulesAsync = async () => {
+    try {
+      const schedules = await getSchedules(specialty);
+      setSchedules(schedules);
+    } catch (error) {
+      console.error(error);
+    }
+  };
   useEffect(() => {
-    const getSchedulesAsync = async () => {
-      try {
-        const schedules = await getSchedules(specialty);
-        setSchedules(schedules);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    getSchedulesAsync();
-  }, []);
+    if (!searchValue) {
+     getSchedulesAsync();
+    }
+    
+  }, [searchValue]);
 
   const mapSchedulesToSlots = (schedules, time, dates) => {
     return dates.reduce((acc, date, index) => {
@@ -226,12 +231,19 @@ setIsDoctorModalOpen(true)
   const handleClickLogo = () => {
     navigate("/*");
   };
-  const onSearch = (value) => {
-    const resultDoctor = schedules.filter((s) => s.doctorName.includes(value));
-
-    if (resultDoctor.length === 0) return;
-
-    setSchedules(resultDoctor);
+  const warning = (value) => {
+    messageApi.open({
+      type: "warning",
+      content: value,
+    });
+  };
+  const handleSearch = (value, _, {source}) => {
+    if (source === "clear") return;
+    const filteredData = value.trim();
+    if (filteredData.length === 0) return warning("請輸入有效關鍵字");
+    const resultData = schedules.filter((s) => s.doctorName.includes(filteredData));
+if (resultData.length === 0) return warning("查無此醫師");
+    setSchedules(resultData);
   };
 
   const groupedSchedulesForList = schedules.reduce((acc, schedule) => {
@@ -267,9 +279,14 @@ setIsDoctorModalOpen(true)
    setVisitType(e.target.value); 
  };
 
+ const handleSearchChange = (event) => {
+   setSearchValue(event.target.value);
+ };
+
 
   return (
     <Layout className="min-h-screen">
+      {contextHolder}
       <Sidebar onClickPage={handleClickPage} onClickLogo={handleClickLogo} />
 
       <Layout className="bg-gray-100 p-6">
@@ -290,7 +307,8 @@ setIsDoctorModalOpen(true)
           <Flex justify={"space-between"}>
             <Search
               placeholder="醫師搜尋"
-              onSearch={onSearch}
+              onSearch={handleSearch}
+              onChange={(event) => handleSearchChange(event)}
               allowClear
               style={{
                 width: 200,

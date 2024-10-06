@@ -74,7 +74,7 @@ const DepartmentPage = () => {
   const handleSearch = (value, _, { source }) => {
     if (source === "clear") return;
     const filteredData = value.trim();
-    if (filteredData.length === 0) return warning("請輸入正確的關鍵字");
+    if (filteredData.length === 0) return warning("請輸入有效關鍵字");
     const resultData = departments
       .filter((item) => {
         return item.specialties.some((specialty) =>
