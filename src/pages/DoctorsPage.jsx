@@ -1,4 +1,4 @@
-import { Layout, List, Button, Input, Table, Avatar, Modal } from "antd";
+import { Layout, List, message, Button, Input, Table, Avatar, Modal } from "antd";
 import useRWD from "../hooks/useRWD";
 import Sidebar from "../components/Sidebar";
 import { useNavigate } from "react-router-dom";
@@ -73,6 +73,8 @@ const DoctorsPage = () => {
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [doctors, setDoctors] = useState([])
   const [isLoading, setIsLoading] = useState(false)
+  const [searchValue, setSearchValue] = useState("");
+  const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
     const getDoctorsData = async () => {
@@ -87,8 +89,11 @@ const DoctorsPage = () => {
         
       }
     }
-    getDoctorsData()
-  }, [])
+     if (!searchValue) {
+       getDoctorsData();
+     }
+   
+  }, [searchValue])
 
   const data = doctors.map((d, i) => ({
     href: "https://ant.design",
@@ -131,11 +136,45 @@ const DoctorsPage = () => {
   const handleClickLogin = () => {
     navigate("/login");
   };
-  const handleSearch = () => {
-    console.log("搜尋醫師中");
+  const warning = (value) => {
+    messageApi.open({
+      type: "warning",
+      content: value,
+    });
+  }
+  const handleSearch = (value, _, {source}) => {
+    console.log(value);
+    if(source === "clear") return;
+    const filteredData = value.trim();
+    if(filteredData.length === 0) return warning("請輸入有效關鍵字")
+    const resultData = doctors.filter(
+      (d) =>
+        d.name.includes(filteredData) ||
+        d.specialty.includes(filteredData) ||
+        JSON.parse(d.description).some((item) => item.includes(filteredData))
+    );
+    if (resultData.length === 0) return warning("查無此醫師");
+    setDoctors(resultData)
   };
+  console.log(doctors);
+
+  const handleSearchChange = (event) => {
+    setSearchValue(event.target.value);
+  };
+  
+  // const handleSearch = (value, _, { source }) => {
+  //   if (source === "clear") return;
+  //   const filteredData = value.trim();
+  //   if (filteredData.length === 0) return warning("請輸入有效關鍵字");
+  //   const resultData = schedules.filter((s) =>
+  //     s.doctorName.includes(filteredData)
+  //   );
+  //   if (resultData.length === 0) return warning("查無此醫師");
+  //   setSchedules(resultData);
+  // };
   return (
     <Layout className="min-h-screen">
+      {contextHolder}
       <Sidebar onClickPage={handleClickPage} onClickLogo={handleClickLogo} />
       {isDesktop && (
         <button className="absolute right-8 top-4" onClick={handleClickLogin}>
@@ -149,6 +188,7 @@ const DoctorsPage = () => {
           placeholder="醫師搜尋"
           allowClear
           onSearch={handleSearch}
+          onChange={(event) => handleSearchChange(event)}
           style={{
             width: 200,
           }}

@@ -5,10 +5,16 @@ const baseURL = "https://registration-system-2gho.onrender.com/api"
 
 axios.defaults.headers.common["x-api-key"] = APIKey;
 
-export const getAppointments = async () => {
+export const getAppointments = async (payload) => {
+  console.log(payload);
+  const {idNumber, birthDate, recaptchaResponse} = payload
   try {
-    const res = await axios.get(`${baseURL}/appointments`, {
+    const res = await axios.get(`${baseURL}/appointments/by-patient`, {
+      idNumber,
+      birthDate,
+      recaptchaResponse,
     }); 
+    console.log(res);
     return res.data;
   } catch (error) {
     console.error('[Get Appointments failed]: ', error);

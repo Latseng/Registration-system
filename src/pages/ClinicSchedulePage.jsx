@@ -67,14 +67,20 @@ const ClinicSchedulePage = () => {
   const [displayMode, setDisplayMode] = useState("schedule");
   const [visitType, setVisitType] = useState("initial");
   const [searchValue, setSearchValue] = useState("");
+  const [isDoctorModalLoading, setIsDoctorModalLoading] = useState(false)
+  const [isScheduleLoaing, setScheduleLoading] = useState(true)
 
   const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
 
   const getSchedulesAsync = async () => {
+     
     try {
+     
       const schedules = await getSchedules(specialty);
       setSchedules(schedules);
+      setScheduleLoading(false)
+      
     } catch (error) {
       console.error(error);
     }
@@ -114,8 +120,15 @@ const ClinicSchedulePage = () => {
       render: (doctors, record) =>
         doctors.map((doc, idx) => (
           <Flex key={idx} className="my-2">
-            <Button onClick={() => handleClickDoctorInfo(doc.doctorId)} size="small" className="mr-1">
-              <MdPermContactCalendar className="text-xl" />
+            <Button
+              onClick={() => handleClickDoctorInfo(doc.doctorId)}
+              loading={isDoctorModalLoading}
+              size="small"
+              className="mr-1"
+            >
+              {!isDoctorModalLoading && (
+                <MdPermContactCalendar className="text-xl" />
+              )}
             </Button>
             <Button
               onClick={() =>
@@ -166,10 +179,12 @@ const ClinicSchedulePage = () => {
   };
 
   const handleClickDoctorInfo = (id) => {
+    setIsDoctorModalLoading(true);
     const getDoctorByIdAsync = async () => {
       try {
         const doctor = await getDoctorById(id);
         setSelectedDoctor(doctor);
+        setIsDoctorModalLoading(false);
       } catch (error) {
         console.error(error);
       }
@@ -341,6 +356,7 @@ if (resultData.length === 0) return warning("查無此醫師");
             {displayMode === "schedule" ? (
               <Table
                 bordered
+                loading={isScheduleLoaing}
                 tableLayout="auto"
                 columns={columns}
                 dataSource={dataSource}
