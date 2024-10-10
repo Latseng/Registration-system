@@ -1,6 +1,7 @@
 import { FaSuitcaseMedical } from "react-icons/fa6";
-import { Form, Input, Button, DatePicker } from "antd";
+import { Form, Input, Button } from "antd";
 import { useNavigate } from "react-router-dom";
+import DatePicker from "../components/DatePicker";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -31,16 +32,18 @@ const LoginPage = () => {
         <Form.Item
           label="身分證字號"
           name="idNumber"
-          rules={[{ required: true, message: "請輸入身分證字號" }]}
+          rules={[
+            { required: true, message: "請輸入身分證字號" },
+            {
+              pattern: /^[A-Z][0-9]{9}$/,
+              message: "身份證字號格式錯誤，請輸入正確的身份證字號",
+            },
+          ]}
         >
           <Input />
         </Form.Item>
 
-        <Form.Item
-          label="生日"
-          name="birthday"
-          rules={[{ required: true, message: "請選擇生日" }]}
-        >
+        <Form.Item label="生日">
           <DatePicker />
         </Form.Item>
 

@@ -7,6 +7,8 @@ import { getAppointments } from "../api/appointments";
 import { FaRegUser } from "react-icons/fa";
 import DatePicker from "../components/DatePicker";
 import { patchAppointment } from "../api/schedules";
+import dayjs from "dayjs";
+
 
 const { Content } = Layout;
 
@@ -83,9 +85,7 @@ const QueryPage = () => {
 
 const handleFinish = (values) => {
   const birthDate = new Date(
-    values.year,
-    values.month - 1,
-    values.day
+    Date.UTC(values.year, values.month - 1, values.day)
   ).toISOString();
   const requestData = {
     idNumber: values.idNumber,
@@ -94,8 +94,14 @@ const handleFinish = (values) => {
   };
   const getAppointmentsDataAsync = async () => {
     try {
-      const patientAppointments = getAppointments(requestData)
-      console.log(patientAppointments);
+      const patientAppointments = await getAppointments(requestData)
+      const weekDay = ["日", "一", "二", "三", "四", "五", "六"];
+      const organizedAppointments = patientAppointments.data.map((p) => {
+       const formattedDate = dayjs(p.date).format("M/D") + '（' +weekDay[dayjs(p.date).day()] + "）"
+       const formattedSlot = p.scheduleSlot.includes("Morning") ? "上午診" : "下午診"
+        return { ...p, date: formattedDate, scheduleSlot: formattedSlot };
+      })
+      setAppointments(organizedAppointments);
       
     } catch(error) {
       console.error(error);
@@ -103,7 +109,93 @@ const handleFinish = (values) => {
     
 }
 getAppointmentsDataAsync();
+setIsVerified(true)
 }
+
+const idNumberValidation = async (_, value) => {
+    function validateIdNumber(idNumber) {
+      const regex = /^[A-Z][12]\d{8}$/;
+
+      if (!regex.test(idNumber)) {
+        return false;
+      }
+
+      const letterMapping = {
+        A: 10,
+        B: 11,
+        C: 12,
+        D: 13,
+        E: 14,
+        F: 15,
+        G: 16,
+        H: 17,
+        I: 34,
+        J: 18,
+        K: 19,
+        L: 20,
+        M: 21,
+        N: 22,
+        O: 35,
+        P: 23,
+        Q: 24,
+        R: 25,
+        S: 26,
+        T: 27,
+        U: 28,
+        V: 29,
+        W: 32,
+        X: 30,
+        Y: 31,
+        Z: 33,
+      };
+
+      const firstLetterValue = letterMapping[idNumber[0]];
+
+      const n1 = Math.floor(firstLetterValue / 10);
+
+      const n2 = firstLetterValue % 10;
+
+      const n3 = parseInt(idNumber[1]);
+
+      const n4 = parseInt(idNumber[2]);
+
+      const n5 = parseInt(idNumber[3]);
+
+      const n6 = parseInt(idNumber[4]);
+
+      const n7 = parseInt(idNumber[5]);
+
+      const n8 = parseInt(idNumber[6]);
+
+      const n9 = parseInt(idNumber[7]);
+
+      const n10 = parseInt(idNumber[8]);
+
+      const n11 = parseInt(idNumber[9]);
+
+      const total =
+        n1 * 1 +
+        n2 * 9 +
+        n3 * 8 +
+        n4 * 7 +
+        n5 * 6 +
+        n6 * 5 +
+        n7 * 4 +
+        n8 * 3 +
+        n9 * 2 +
+        n10 * 1 +
+        n11 * 1;
+
+      return total % 10 === 0;
+    }
+    const isValid = validateIdNumber(value);
+    return Promise.resolve().then(() => {
+    if(!isValid) {
+    return Promise.reject(new Error("身分證字號格式錯誤"));
+    }
+    })
+  }
+
 
   return (
     <Layout className="min-h-screen">
@@ -122,10 +214,11 @@ getAppointmentsDataAsync();
               <h1 className="text-2xl mb-6">您的看診時段</h1>
               <List bordered className="bg-white px-8 py-4">
                 {appointments.map((a) => (
-                  <List.Item key={a.id}>
-                    <p>姓名：{a.patientId}</p>
-                    <p>醫師：{a.doctorScheduleId}</p>
-                    <p>預約號碼：{a.consultationNumber}</p>
+                  <List.Item key={a.appointmentId}>
+                    <p>{a.date + a.scheduleSlot}</p>
+                    <p>{a.doctorSpecialty}</p>
+                    <p>醫師：{a.doctorName}</p>
+                    <p>看診號碼：{a.consultationNumber}</p>
                     <Button>
                       {a.status === "CONFIRMED" ? "取消掛號" : "重新掛號"}
                     </Button>
@@ -178,14 +271,15 @@ getAppointmentsDataAsync();
             <Form.Item
               label="身份證字號"
               name="idNumber"
+              validateTrigger="onBlur"
               rules={[
                 {
                   required: true,
                   message: "請輸入身份證字號",
                 },
+
                 {
-                  pattern: /^[A-Z][0-9]{9}$/,
-                  message: "身份證字號格式錯誤，請輸入正確的身份證字號",
+                  validator: idNumberValidation,
                 },
               ]}
             >

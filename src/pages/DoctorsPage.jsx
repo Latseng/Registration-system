@@ -142,8 +142,8 @@ const DoctorsPage = () => {
       content: value,
     });
   }
+  
   const handleSearch = (value, _, {source}) => {
-    console.log(value);
     if(source === "clear") return;
     const filteredData = value.trim();
     if(filteredData.length === 0) return warning("請輸入有效關鍵字")
@@ -156,7 +156,6 @@ const DoctorsPage = () => {
     if (resultData.length === 0) return warning("查無此醫師");
     setDoctors(resultData)
   };
-  console.log(doctors);
 
   const handleSearchChange = (event) => {
     setSearchValue(event.target.value);
