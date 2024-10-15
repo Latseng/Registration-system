@@ -65,7 +65,6 @@ const DatePicker = ({form}) => {
             onChange={handleMonthChange}
             placeholder="月" 
             style={{ width: "100%" }}
-            disabled={!year} 
           >
             {months.map((m) => (
               <Option key={m} value={m}>
@@ -85,7 +84,6 @@ const DatePicker = ({form}) => {
             onChange={setDay}
             placeholder="日"
             style={{ width: "100%" }}
-            disabled={!month} 
           >
             {days.map((d) => (
               <Option key={d} value={d}>

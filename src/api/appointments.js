@@ -16,23 +16,55 @@ export const getAppointments = async (payload) => {
     return res.data;
   } catch (error) {
     console.error('[Get Appointments failed]: ', error);
+    return error.response;
+    
   }
 };
 
-// export const createAppointment = async (payload) => {
-//    const { date, time, doctor, patientId } = payload;
-//    try {
-//      const res = await axios.post(`${baseUrl}/appointment`, {
-//        date,
-//        time,
-//        doctor,
-//        patientId
-//      });
-//      return res.data;
-//    } catch (error) {
-//      console.error("[Create Appointment failed]: ", error);
-//    }
-// };
+export const createAppointment = async (payload) => {
+   const { idNumber, birthDate, recaptchaResponse, doctorScheduleId } = payload;
+   try {
+     const res = await axios.post(`${baseURL}/appointments`, {
+       idNumber,
+       birthDate,
+       recaptchaResponse,
+       doctorScheduleId,
+     });
+     return res.data;
+   } catch (error) {
+     console.error(
+       "[Create Appointment failed]: ",
+       error
+     );
+     return error.response.data.message;
+   }
+};
+
+export const createFirstAppointment = async (payload) => {
+  const {
+    idNumber,
+    birthDate,
+    recaptchaResponse,
+    doctorScheduleId,
+    name,
+    contactInfo,
+  } = payload;
+  try {
+    const res = await axios.post(`${baseURL}/appointments/first-visit`, {
+      idNumber,
+      birthDate,
+      recaptchaResponse,
+      doctorScheduleId,
+      name,
+      contactInfo,
+    });
+    console.log(res);
+    
+    return res.data;
+  } catch (error) {
+    console.error("[Create Appointment failed]: ", error);
+  }
+};
 
 export const patchAppointment = () => {};
 

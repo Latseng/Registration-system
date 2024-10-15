@@ -18,7 +18,7 @@ import {
 
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import dayjs from "dayjs";
-// import { createAppointment } from "../api/appointment";
+import { createAppointment, createFirstAppointment } from "../api/appointments";
 import { getSchedules } from "../api/schedules";
 import { AiOutlineTeam } from "react-icons/ai";
 import { LuCalendarDays } from "react-icons/lu";
@@ -65,10 +65,11 @@ const ClinicSchedulePage = () => {
 
   const [schedules, setSchedules] = useState([]);
   const [displayMode, setDisplayMode] = useState("schedule");
-  const [visitType, setVisitType] = useState("initial");
+  // const [visitType, setVisitType] = useState("initial");
   const [searchValue, setSearchValue] = useState("");
   const [isDoctorModalLoading, setIsDoctorModalLoading] = useState(false)
   const [isScheduleLoaing, setScheduleLoading] = useState(true)
+  const [firstCreateAppointment, setFirstCreateAppointment] = useState(false)
 
   const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
@@ -133,6 +134,7 @@ const ClinicSchedulePage = () => {
             <Button
               onClick={() =>
                 handleAppointment({
+                  scheduleId: doc.doctorScheduleId,
                   date: date,
                   doctor: doc.doctorName,
                   time: record.time,
@@ -176,6 +178,7 @@ const ClinicSchedulePage = () => {
   const handleAppointment = (appointment) => {
     setSelectedAppointment(appointment);
     setIsModalOpen(true);
+    setIsDoctorModalOpen(false)
   };
 
   const handleClickDoctorInfo = (id) => {
@@ -183,7 +186,22 @@ const ClinicSchedulePage = () => {
     const getDoctorByIdAsync = async () => {
       try {
         const doctor = await getDoctorById(id);
-        setSelectedDoctor(doctor);
+        
+        const weekDay = ["日", "一", "二", "三", "四", "五", "六"];
+        const organizedSchedules = doctor.schedules.map((s) => {
+          const formattedDate =
+            dayjs(s.date).format("M/D") +
+            "（" +
+            weekDay[dayjs(s.date).day()] +
+            "）";
+          const formattedSlot = s.scheduleSlot.includes("Morning")
+            ? "上午診"
+            : "下午診";
+          return { ...s, date: formattedDate, scheduleSlot: formattedSlot };
+        });
+        const organizedDoctors = { ...doctor, schedules: organizedSchedules };
+        setSelectedDoctor(organizedDoctors);
+        
         setIsDoctorModalLoading(false);
       } catch (error) {
         console.error(error);
@@ -201,25 +219,53 @@ setIsDoctorModalOpen(true)
     setIsModalOpen(false);
     form.resetFields();
   };
-  // const handleSubmit = async (values) => {
-  //   const patientId = values.idNumber;
 
-  //   try {
-  //     await createAppointment({
-  //       ...selectedAppointment,
-  //       patientId,
-  //     });
-  //     setIsModalOpen(false);
-  //     form.resetFields();
-  //     messageApi.open({
-  //       type: "success",
-  //       content: "掛號成功",
-  //     });
-  //     navigate("/query", { state: "success" });
-  //   } catch (error) {
-  //     console.error(error);
-  //   }
-  // };
+  const handleSubmit = async (values) => {
+    const birthDate = new Date(
+      Date.UTC(values.year, values.month - 1, values.day)
+    ).toISOString();
+    let requestData = {
+      idNumber: values.idNumber,
+      birthDate: birthDate,
+      recaptchaResponse: "test_recaptcha",
+      doctorScheduleId: selectedAppointment.scheduleId,
+    };
+
+     if (firstCreateAppointment) {
+      requestData = {
+        idNumber: values.idNumber,
+        birthDate: birthDate,
+        recaptchaResponse: "test_recaptcha",
+        doctorScheduleId: selectedAppointment.scheduleId,
+        name: values.name,
+        contactInfo: values.number
+      };
+      const newFistAppointment = await createFirstAppointment(requestData);
+      console.log(newFistAppointment);
+      return
+     } 
+    
+     const newAppointment =  await createAppointment(requestData);
+     if (newAppointment === "You have already booked this time slot.") messageApi.open({
+       type: "warning",
+       content: "重複掛號",
+     });
+     
+
+     if(newAppointment.includes('初診')) {
+      console.log('填資料');
+      setFirstCreateAppointment(true)
+     }
+     
+      // setIsModalOpen(false);
+      // form.resetFields();
+      // messageApi.open({
+      //   type: "success",
+      //   content: "掛號成功",
+      // });
+      // navigate("/query", { state: "success" });
+    
+  };
 
   const handleClickPage = (e) => {
     switch (e.key) {
@@ -290,14 +336,13 @@ if (resultData.length === 0) return warning("查無此醫師");
   const onChange = (value) => {
   console.log("Captcha value:", value);
 }
- const handleVisitTypeChange = (e) => {
-   setVisitType(e.target.value); 
- };
+//  const handleVisitTypeChange = (e) => {
+//    setVisitType(e.target.value); 
+//  };
 
  const handleSearchChange = (event) => {
    setSearchValue(event.target.value);
  };
-
 
   return (
     <Layout className="min-h-screen">
@@ -411,7 +456,7 @@ if (resultData.length === 0) return warning("查無此醫師");
         {selectedAppointment && (
           <Form
             form={form}
-            // onFinish={handleSubmit}
+            onFinish={handleSubmit}
             labelCol={{ span: 8 }}
             className="w-full max-w-md"
           >
@@ -424,7 +469,7 @@ if (resultData.length === 0) return warning("查無此醫師");
               </p>
               <h3>{selectedAppointment.doctor} 醫師</h3>
             </div>
-            <Form.Item
+            {/* <Form.Item
               name="visitType"
               label="就診類別"
               rules={[{ required: true, message: "請選擇就診類別" }]}
@@ -433,7 +478,7 @@ if (resultData.length === 0) return warning("查無此醫師");
                 <Radio value={"initial"}>初診</Radio>
                 <Radio value={"return"}>複診</Radio>
               </Radio.Group>
-            </Form.Item>
+            </Form.Item> */}
             <Form.Item
               label="身分證字號"
               name="idNumber"
@@ -444,6 +489,26 @@ if (resultData.length === 0) return warning("查無此醫師");
             <Form.Item label="生日" name="birthday">
               <DatePicker form={form} />
             </Form.Item>
+            {firstCreateAppointment && (
+              <>
+              <h4>您為初次掛號，請填寫以下資料</h4>
+                <Form.Item
+                  label="姓名"
+                  name="name"
+                  rules={[{ required: true, message: "請輸入姓名" }]}
+                >
+                  <Input placeholder="請輸入姓名" />
+                </Form.Item>
+                <Form.Item
+                  label="聯絡電話"
+                  name="number"
+                  rules={[{ required: true, message: "請輸入聯絡電話" }]}
+                >
+                  <Input placeholder="請輸入聯絡電話" />
+                </Form.Item>
+              </>
+            )}
+
             <ReCAPTCHA
               className="my-4 ml-20"
               sitekey="Your client site key"
@@ -480,19 +545,26 @@ if (resultData.length === 0) return warning("查無此醫師");
               <p>科別： {selectedDoctor.specialty}</p>
               <p>專長：{JSON.parse(selectedDoctor.description).join("、")}</p>
             </div>
-            <h4 className="text-lg my-4">可看診時間:</h4>
-            {/* <div className="overflow-x-auto">
-                <Table
-                  columns={columns}
-                  dataSource={dataSource}
-                  pagination={false}
-                /> */}
-            {/* <ul>
-                {selectedDoctor.availableTimes.map((time, index) => (
-                  <li key={index}>{time}</li>
-                ))}
-              </ul> */}
-            {/* </div> */}
+            <Card className="my-4" title="可掛號時段">
+              {selectedDoctor.schedules.map((schedule) => (
+                <Card.Grid
+                  className="cursor-pointer hover:text-blue-500"
+                  onClick={() =>
+                    handleAppointment({
+                      date: schedule.date,
+                      doctor: selectedDoctor.name,
+                      time: schedule.scheduleSlot,
+                    })
+                  }
+                  key={schedule.id}
+                  style={gridStyle}
+                >
+                  <p>{schedule.date}</p>
+                  <p>{schedule.scheduleSlot}</p>
+                  <p>已掛號{schedule.bookedAppointments}人</p>
+                </Card.Grid>
+              ))}
+            </Card>
           </div>
         </Modal>
       )}

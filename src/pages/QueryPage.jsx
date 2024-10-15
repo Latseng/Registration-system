@@ -25,6 +25,7 @@ const QueryPage = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isVerified, setIsVerified] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   
   const handleshowModal = () => {
     setIsModalOpen(true);
@@ -84,6 +85,7 @@ const QueryPage = () => {
   };
 
 const handleFinish = (values) => {
+  setIsLoading(true)
   const birthDate = new Date(
     Date.UTC(values.year, values.month - 1, values.day)
   ).toISOString();
@@ -95,6 +97,18 @@ const handleFinish = (values) => {
   const getAppointmentsDataAsync = async () => {
     try {
       const patientAppointments = await getAppointments(requestData)
+      if (
+        patientAppointments.data.message ===
+        "No appointments found for this patient."
+      ) {
+        setIsLoading(false)
+        messageApi.open({
+          type: "warning",
+          content: "查無掛號紀錄",
+        });
+        return;
+      }
+      
       const weekDay = ["日", "一", "二", "三", "四", "五", "六"];
       const organizedAppointments = patientAppointments.data.map((p) => {
        const formattedDate = dayjs(p.date).format("M/D") + '（' +weekDay[dayjs(p.date).day()] + "）"
@@ -102,14 +116,16 @@ const handleFinish = (values) => {
         return { ...p, date: formattedDate, scheduleSlot: formattedSlot };
       })
       setAppointments(organizedAppointments);
-      
+      setIsVerified(true);
     } catch(error) {
       console.error(error);
+      
+        
     }
     
 }
 getAppointmentsDataAsync();
-setIsVerified(true)
+
 }
 
 const idNumberValidation = async (_, value) => {
@@ -196,6 +212,10 @@ const idNumberValidation = async (_, value) => {
     })
   }
 
+  const handleClick = (value) => {
+    if(value === "cancel") console.log('取消');
+    
+  }
 
   return (
     <Layout className="min-h-screen">
@@ -219,9 +239,12 @@ const idNumberValidation = async (_, value) => {
                     <p>{a.doctorSpecialty}</p>
                     <p>醫師：{a.doctorName}</p>
                     <p>看診號碼：{a.consultationNumber}</p>
-                    <Button>
-                      {a.status === "CONFIRMED" ? "取消掛號" : "重新掛號"}
-                    </Button>
+
+                    {a.status === "CONFIRMED" ? (
+                      <Button onClick={() => handleClick('cancel')}>取消掛號</Button>
+                    ) : (
+                      <Button onClick={() => handleClick('again')}>重新掛號</Button>
+                    )}
                   </List.Item>
                 ))}
                 {/* <Card
@@ -290,7 +313,12 @@ const idNumberValidation = async (_, value) => {
             </Form.Item>
 
             <Form.Item>
-              <Button block type="primary" htmlType="submit">
+              <Button
+                block
+                loading={isLoading}
+                type="primary"
+                htmlType="submit"
+              >
                 查詢
               </Button>
               或

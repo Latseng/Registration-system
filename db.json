@@ -1,0 +1,177 @@
+{
+  "appointment": [
+    {
+      "id": "01d1",
+      "date": "9/2(一)",
+      "time": "下午診",
+      "doctor": "張偉華",
+      "patientId": "A123456789"
+    }
+  ],
+  "schedules": [
+    {
+      "doctorScheduleId": 1,
+      "date": "2024-09-08T19:13:45.442Z",
+      "scheduleSlot": "Monday_Morning",
+      "specialty": "一般內科",
+      "doctorId": 1,
+      "doctorName": "張偉華",
+      "bookedAppointments": 1,
+      "maxAppointments": 10,
+      "status": "AVAILABLE",
+      "id": "a806"
+    },
+    {
+      "doctorScheduleId": 2,
+      "date": "2024-09-01T19:16:10.995Z",
+      "scheduleSlot": "Monday_Afternoon",
+      "specialty": "一般內科",
+      "doctorId": 1,
+      "doctorName": "張偉華",
+      "bookedAppointments": 1,
+      "maxAppointments": 10,
+      "status": "AVAILABLE",
+      "id": "e8d6"
+    },
+    {
+      "doctorScheduleId": 3,
+      "date": "2024-09-06T23:29:58.893Z",
+      "scheduleSlot": "Saturday_Afternoon",
+      "specialty": "一般內科",
+      "doctorId": 1,
+      "doctorName": "張偉華",
+      "bookedAppointments": 0,
+      "maxAppointments": 10,
+      "status": "AVAILABLE",
+      "id": "5b05"
+    },
+    {
+      "doctorScheduleId": 4,
+      "date": "2024-09-06T11:40:40.379Z",
+      "scheduleSlot": "Friday_Afternoon",
+      "specialty": "一般內科",
+      "doctorId": 2,
+      "doctorName": "李靜文",
+      "bookedAppointments": 0,
+      "maxAppointments": 10,
+      "status": "AVAILABLE",
+      "id": "d56a"
+    },
+    {
+      "doctorScheduleId": 5,
+      "date": "2024-09-09T16:03:26.138Z",
+      "scheduleSlot": "Tuesday_Afternoon",
+      "specialty": "一般內科",
+      "doctorId": 2,
+      "doctorName": "李靜文",
+      "bookedAppointments": 0,
+      "maxAppointments": 10,
+      "status": "AVAILABLE",
+      "id": "e39d"
+    },
+    {
+      "doctorScheduleId": 6,
+      "date": "2024-09-12T15:18:25.572Z",
+      "scheduleSlot": "Friday_Afternoon",
+      "specialty": "一般內科",
+      "doctorId": 2,
+      "doctorName": "李靜文",
+      "bookedAppointments": 0,
+      "maxAppointments": 10,
+      "status": "AVAILABLE",
+      "id": "e7a6"
+    },
+    {
+      "doctorScheduleId": 7,
+      "date": "2024-09-04T18:51:15.112Z",
+      "scheduleSlot": "Thursday_Afternoon",
+      "specialty": "一般內科",
+      "doctorId": 3,
+      "doctorName": "王超群",
+      "bookedAppointments": 0,
+      "maxAppointments": 10,
+      "status": "AVAILABLE",
+      "id": "bd14"
+    },
+    {
+      "doctorScheduleId": 8,
+      "date": "2024-09-09T22:50:59.631Z",
+      "scheduleSlot": "Tuesday_Afternoon",
+      "specialty": "一般內科",
+      "doctorId": 3,
+      "doctorName": "王超群",
+      "bookedAppointments": 0,
+      "maxAppointments": 10,
+      "status": "AVAILABLE",
+      "id": "6053"
+    },
+    {
+      "doctorScheduleId": 9,
+      "date": "2024-09-04T21:09:50.727Z",
+      "scheduleSlot": "Thursday_Morning",
+      "specialty": "一般內科",
+      "doctorId": 3,
+      "doctorName": "王超群",
+      "bookedAppointments": 0,
+      "maxAppointments": 10,
+      "status": "AVAILABLE",
+      "id": "894b"
+    }
+  ],
+  "doctors": [
+    {
+      "id": "1",
+      "name": "張偉華",
+      "specialty": "一般內科",
+      "description": "[\"高血壓\",\"糖尿病\",\"慢性病管理\",\"心血管疾病\",\"內分泌疾病\",\"腎臟病\",\"呼吸系統疾病\",\"傳染病\"]"
+    },
+    {
+      "id": "2",
+      "name": "李靜文",
+      "specialty": "一般內科",
+      "description": "[\"消化道問題\",\"胃腸道疾病\",\"肝臟疾病\",\"內視鏡學\",\"膽胰疾病\",\"幽門螺旋桿菌\",\"超音波術\",\"胃癌\"]"
+    },
+    {
+      "id": "3",
+      "name": "王超群",
+      "specialty": "一般內科",
+      "description": "[\"呼吸系統疾病\",\"過敏反應\",\"慢性阻塞性肺病\",\"肺炎\",\"哮喘\",\"傳染病控制\",\"免疫系統\",\"代謝疾病\"]"
+    },
+    {
+      "id": "4",
+      "name": "趙麗萍",
+      "specialty": "一般外科",
+      "description": "[\"心臟外科\",\"血管外科\",\"急救手術\",\"創傷處理\",\"器官移植\",\"胸腔外科\",\"肝膽手術\",\"腹腔鏡手術\"]"
+    },
+    {
+      "id": "5",
+      "name": "錢勇軍",
+      "specialty": "一般外科",
+      "description": "[\"腹腔鏡手術\",\"膽囊切除\",\"闌尾切除\",\"腸道修復手術\",\"內視鏡手術\",\"胃癌切除\",\"大腸癌手術\",\"急診手術\"]"
+    },
+    {
+      "id": "6",
+      "name": "孫娜娜",
+      "specialty": "一般外科",
+      "description": "[\"創傷外科\",\"急診外科\",\"燒傷處理\",\"腹腔手術\",\"胸腔手術\",\"結直腸手術\",\"急救處理\",\"血管修復手術\"]"
+    },
+    {
+      "id": "7",
+      "name": "周敏玲",
+      "specialty": "皮膚科",
+      "description": "[\"皮膚過敏\",\"濕疹\",\"異位性皮膚炎\",\"蕁麻疹\",\"銀屑病\",\"皮膚病理\",\"皮膚真菌感染\",\"青春痘治療\"]"
+    },
+    {
+      "id": "8",
+      "name": "吳軍超",
+      "specialty": "皮膚科",
+      "description": "[\"皮膚美容\",\"微整形\",\"去角質\",\"注射填充劑\",\"皮膚老化治療\",\"雷射美容\",\"去疤手術\",\"脂肪移植\"]"
+    },
+    {
+      "id": "9",
+      "name": "鄭洋洋",
+      "specialty": "皮膚科",
+      "description": "[\"皮膚癌\",\"黑色素瘤\",\"基底細胞癌\",\"皮膚腫瘤切除\",\"皮膚病變\",\"早期皮膚癌診斷\",\"冷凍治療\",\"放射療法\"]"
+    }
+  ]
+}

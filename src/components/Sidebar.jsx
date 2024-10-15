@@ -96,7 +96,12 @@ const Sidebar = ({onClickPage, onClickLogo}) => {
             placement="left"
             onClose={() => setOpenMenu(false)}
           >
-            <Menu mode="vertical" items={items} defaultSelectedKeys={["1"]} />
+            <Menu
+              onClick={onClickPage}
+              mode="vertical"
+              items={items}
+              defaultSelectedKeys={["1"]}
+            />
           </Drawer>
         </>
       )}
