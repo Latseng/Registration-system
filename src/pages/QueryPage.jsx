@@ -3,7 +3,7 @@ import Sidebar from "../components/Sidebar";
 import { useNavigate, useLocation } from "react-router-dom";
 import useRWD from "../hooks/useRWD";
 import { useState, useEffect } from "react";
-import { getAppointments } from "../api/appointments";
+import { getAppointments, cancelAppointment, createAppointment } from "../api/appointments";
 import { FaRegUser } from "react-icons/fa";
 import DatePicker from "../components/DatePicker";
 import { patchAppointment } from "../api/schedules";
@@ -26,6 +26,8 @@ const QueryPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isVerified, setIsVerified] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [confirmModal, setConfirmModal] = useState({cancelModal: false, againModal: false})
+  const [requestData, setRequestData] = useState({})
   
   const handleshowModal = () => {
     setIsModalOpen(true);
@@ -84,48 +86,51 @@ const QueryPage = () => {
     }
   };
 
+const getAppointmentsDataAsync = async (data) => {
+  try {
+    const patientAppointments = await getAppointments(data);
+    if (
+      patientAppointments.data.message ===
+      "No appointments found for this patient."
+    ) {
+      setIsLoading(false);
+      messageApi.open({
+        type: "warning",
+        content: "查無掛號紀錄",
+      });
+      return;
+    }
+    setRequestData(data); 
+    const weekDay = ["日", "一", "二", "三", "四", "五", "六"];
+    const organizedAppointments = patientAppointments.data.map((p) => {
+      const formattedDate =
+        dayjs(p.date).format("M/D") +
+        "（" +
+        weekDay[dayjs(p.date).day()] +
+        "）";
+      const formattedSlot = p.scheduleSlot.includes("Morning")
+        ? "上午診"
+        : "下午診";
+      return { ...p, date: formattedDate, scheduleSlot: formattedSlot };
+    });
+    setAppointments(organizedAppointments);
+    setIsVerified(true);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 const handleFinish = (values) => {
   setIsLoading(true)
   const birthDate = new Date(
     Date.UTC(values.year, values.month - 1, values.day)
   ).toISOString();
-  const requestData = {
+   const requestData = {
     idNumber: values.idNumber,
     birthDate: birthDate, 
     recaptchaResponse: "test_recaptcha", 
-  };
-  const getAppointmentsDataAsync = async () => {
-    try {
-      const patientAppointments = await getAppointments(requestData)
-      if (
-        patientAppointments.data.message ===
-        "No appointments found for this patient."
-      ) {
-        setIsLoading(false)
-        messageApi.open({
-          type: "warning",
-          content: "查無掛號紀錄",
-        });
-        return;
-      }
-      
-      const weekDay = ["日", "一", "二", "三", "四", "五", "六"];
-      const organizedAppointments = patientAppointments.data.map((p) => {
-       const formattedDate = dayjs(p.date).format("M/D") + '（' +weekDay[dayjs(p.date).day()] + "）"
-       const formattedSlot = p.scheduleSlot.includes("Morning") ? "上午診" : "下午診"
-        return { ...p, date: formattedDate, scheduleSlot: formattedSlot };
-      })
-      setAppointments(organizedAppointments);
-      setIsVerified(true);
-    } catch(error) {
-      console.error(error);
-      
-        
-    }
-    
-}
-getAppointmentsDataAsync();
-
+  }
+getAppointmentsDataAsync(requestData);
 }
 
 const idNumberValidation = async (_, value) => {
@@ -213,8 +218,30 @@ const idNumberValidation = async (_, value) => {
   }
 
   const handleClick = (value) => {
-    if(value === "cancel") console.log('取消');
-    
+    if(value === "cancel") {
+      setConfirmModal({...confirmModal, cancelModal: true}) 
+      return
+    }
+    setConfirmModal({ ...confirmModal, againModal: true });
+  }
+  const handleAppointment = async (value, id) => {
+    if (value === "cancel") {
+    await cancelAppointment(id)
+    setAppointments(appointments.map((a) => {
+      a.appointmentId === id
+    return { ...a, status: "CANCELED" };
+    }));
+  }
+  console.log('重新掛號');
+  console.log(requestData);
+  
+  await createAppointment(requestData)
+  setConfirmModal({
+    ...confirmModal,
+    againModal: false,
+  });
+  await getAppointmentsDataAsync(requestData)
+  
   }
 
   return (
@@ -241,9 +268,50 @@ const idNumberValidation = async (_, value) => {
                     <p>看診號碼：{a.consultationNumber}</p>
 
                     {a.status === "CONFIRMED" ? (
-                      <Button onClick={() => handleClick('cancel')}>取消掛號</Button>
+                      <>
+                        <Button onClick={() => handleClick("cancel")}>
+                          取消掛號
+                        </Button>
+                        <Modal
+                          title="取消掛號確認"
+                          open={confirmModal.cancelModal}
+                          onOk={() =>
+                            handleAppointment("cancel", a.appointmentId)
+                          }
+                          onCancel={() =>
+                            setConfirmModal({
+                              ...confirmModal,
+                              cancelModal: false,
+                            })
+                          }
+                        >
+                          <p>您確定要取消掛號？若取消，再次看診需要重新掛號</p>
+                        </Modal>
+                      </>
                     ) : (
-                      <Button onClick={() => handleClick('again')}>重新掛號</Button>
+                      <>
+                        <Button
+                          onClick={() => handleClick(a.appointmentId, "again")}
+                        >
+                          重新掛號
+                        </Button>
+                        <Modal
+                          title="重新掛號確認"
+                          open={confirmModal.againModal}
+                          onOk={() => handleAppointment("again")}
+                          onCancel={() =>
+                            setConfirmModal({
+                              ...confirmModal,
+                              againModal: false,
+                            })
+                          }
+                        >
+                          <p>將重新為您掛號同一診次</p>
+                          <p>{a.date + a.scheduleSlot}</p>
+                          <p>{a.doctorSpecialty}</p>
+                          <p>醫師：{a.doctorName}</p>
+                        </Modal>
+                      </>
                     )}
                   </List.Item>
                 ))}

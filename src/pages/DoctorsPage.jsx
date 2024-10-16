@@ -4,7 +4,7 @@ import Sidebar from "../components/Sidebar";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import { useState, useEffect } from "react";
-import { getDoctors } from "../api/doctors";
+import { getDoctors, searchDoctors } from "../api/doctors";
 
 const { Content } = Layout;
 const { Search } = Input;
@@ -143,18 +143,15 @@ const DoctorsPage = () => {
     });
   }
   
-  const handleSearch = (value, _, {source}) => {
+  const handleSearch = async (value, _, {source}) => {
     if(source === "clear") return;
     const filteredData = value.trim();
     if(filteredData.length === 0) return warning("請輸入有效關鍵字")
-    const resultData = doctors.filter(
-      (d) =>
-        d.name.includes(filteredData) ||
-        d.specialty.includes(filteredData) ||
-        JSON.parse(d.description).some((item) => item.includes(filteredData))
-    );
+      const resultData = await searchDoctors(filteredData)
     if (resultData.length === 0) return warning("查無此醫師");
-    setDoctors(resultData)
+    setDoctors(
+      resultData
+    );
   };
 
   const handleSearchChange = (event) => {
