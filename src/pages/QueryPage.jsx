@@ -1,4 +1,4 @@
-import { Layout, Form, Card, Input, Flex, Checkbox, Button, Modal, List, message,} from "antd";
+import { Layout, Form, Input, Button, Modal, List, message,} from "antd";
 import Sidebar from "../components/Sidebar";
 import { useNavigate, useLocation } from "react-router-dom";
 import useRWD from "../hooks/useRWD";
@@ -11,7 +11,6 @@ import {
 } from "../api/appointments";
 import { FaRegUser } from "react-icons/fa";
 import DatePicker from "../components/DatePicker";
-import { patchAppointment } from "../api/schedules";
 import dayjs from "dayjs";
 import {useSelector} from 'react-redux'
 import { useDispatch } from "react-redux";
@@ -24,12 +23,10 @@ const { Content } = Layout;
 
 
 const QueryPage = () => {
-  const location = useLocation();
   const navigate = useNavigate();
   const isDesktop = useRWD();
   const [form] = Form.useForm();
   const dispatch = useDispatch()
-  
   const [appointments, setAppointments] = useState([])
   const [messageApi, contextHolder] = message.useMessage();
   const [isVerified, setIsVerified] = useState(false)
@@ -222,6 +219,7 @@ const idNumberValidation = async (_, value) => {
       setAppointments(newAppointments)
       return
     }
+    
     if(act === "cancel") {
       setConfirmModal({...confirmModal, cancelModal: true}) 
       return
@@ -229,18 +227,19 @@ const idNumberValidation = async (_, value) => {
     setConfirmModal({ ...confirmModal, againModal: true });
   }
 
-  const handleAppointment = async (value, id) => {
+  const handleAppointment = async (value, data) => {
     if (value === "cancel") {
-    await cancelAppointment(id)
+    await cancelAppointment(data.appointmentId)
     setAppointments(appointments.map((a) => {
-      a.appointmentId === id
+      a.appointmentId === data.appointmentId
     return { ...a, status: "CANCELED" };
     }));
   }
-  console.log('重新掛號');
-  console.log(requestData);
   
-  await createAppointment(requestData)
+  await createAppointment({
+    ...requestData,
+    doctorScheduleId: data.doctorScheduleId,
+  });
   setConfirmModal({
     ...confirmModal,
     againModal: false,
@@ -285,14 +284,14 @@ const idNumberValidation = async (_, value) => {
 
                     {a.status === "CONFIRMED" ? (
                       <>
-                        <Button onClick={() => handleClick("cancel")}>
+                        <Button onClick={() => handleClick(a.appointmentId, "cancel")}>
                           取消掛號
                         </Button>
                         <Modal
                           title="取消掛號確認"
                           open={confirmModal.cancelModal}
                           onOk={() =>
-                            handleAppointment("cancel", a.appointmentId)
+                            handleAppointment("cancel", a)
                           }
                           onCancel={() =>
                             setConfirmModal({
@@ -314,7 +313,7 @@ const idNumberValidation = async (_, value) => {
                         <Modal
                           title="重新掛號確認"
                           open={confirmModal.againModal}
-                          onOk={() => handleAppointment("again")}
+                          onOk={() => handleAppointment("again", a)}
                           onCancel={() =>
                             setConfirmModal({
                               ...confirmModal,

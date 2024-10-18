@@ -11,14 +11,8 @@ const { Content } = Layout;
 
 
 const RecordsPage = () => {
-  
 
   const navigate = useNavigate();
- 
-
-  const handleClickLogin = () => {
-    navigate("/login");
-  };
   const handleClickLogo = () => {
      navigate("/*")
   }

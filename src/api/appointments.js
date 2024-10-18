@@ -71,7 +71,6 @@ export const cancelAppointment = async (id) => {
     const res = await axios.put(`${baseURL}/appointments/${id}`, {
       status: "CANCELED",
     });
-    console.log(res);
     
  return res
   } catch(error) {
