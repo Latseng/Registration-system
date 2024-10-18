@@ -12,7 +12,7 @@ export const getAppointments = async (payload) => {
       idNumber,
       birthDate,
       recaptchaResponse,
-    });  
+    });
     return res.data;
   } catch (error) {
     console.error('[Get Appointments failed]: ', error);
@@ -36,7 +36,7 @@ export const createAppointment = async (payload) => {
        "[Create Appointment failed]: ",
        error
      );
-     return error.response.data.message;
+     return error.response.message;
    }
 };
 
@@ -79,11 +79,11 @@ export const cancelAppointment = async (id) => {
   }
 };
 
-// export const deleteAppointment = async (id) => {
-//   try {
-//     await axios.delete(`${baseUrl}/appointment/${id}`);
-    
-//   } catch (error) {
-//     console.error('[Delete Appointment failed]:', error);
-//   }
-// };
+export const deleteAppointment = async (id) => {
+  try {
+   const res = await axios.delete(`${baseURL}/appointments/${id}`);
+    return res.data
+  } catch (error) {
+    console.error('[Delete Appointment failed]:', error);
+  }
+};

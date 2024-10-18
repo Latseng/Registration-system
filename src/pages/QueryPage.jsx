@@ -3,11 +3,20 @@ import Sidebar from "../components/Sidebar";
 import { useNavigate, useLocation } from "react-router-dom";
 import useRWD from "../hooks/useRWD";
 import { useState, useEffect } from "react";
-import { getAppointments, cancelAppointment, createAppointment } from "../api/appointments";
+import {
+  getAppointments,
+  cancelAppointment,
+  createAppointment,
+  deleteAppointment,
+} from "../api/appointments";
 import { FaRegUser } from "react-icons/fa";
 import DatePicker from "../components/DatePicker";
 import { patchAppointment } from "../api/schedules";
 import dayjs from "dayjs";
+import {useSelector} from 'react-redux'
+import { useDispatch } from "react-redux";
+import {resetNewAppointment} from "../store/appointmentSlice"
+import { GrStatusGood } from "react-icons/gr";
 
 
 const { Content } = Layout;
@@ -19,46 +28,68 @@ const QueryPage = () => {
   const navigate = useNavigate();
   const isDesktop = useRWD();
   const [form] = Form.useForm();
+  const dispatch = useDispatch()
   
   const [appointments, setAppointments] = useState([])
-  const [appointmentState, setAppointmentState] = useState(location.state || "");
   const [messageApi, contextHolder] = message.useMessage();
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isVerified, setIsVerified] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [confirmModal, setConfirmModal] = useState({cancelModal: false, againModal: false})
   const [requestData, setRequestData] = useState({})
-  
-  const handleshowModal = () => {
-    setIsModalOpen(true);
-  };
+  const [isPageLoading, setIsPageLoading] = useState(false)
+  const [isAppointmentSuccess, setIsAppointmentSuccess] = useState(false)
+  const newAppointment = useSelector(
+    (state) => state.appointment.newAppointment
+  );
 
+const getAppointmentsDataAsync = async (data) => {
+  try {
+    const patientAppointments = await getAppointments(data);
+    if (
+      patientAppointments.data.message ===
+      "No appointments found for this patient."
+    ) {
+      setIsLoading(false);
+      messageApi.open({
+        type: "warning",
+        content: "查無掛號紀錄",
+      });
+      return;
+    }
 
-  const handleModalCancel = () => {
-    setIsModalOpen(false);
-  };
+    const weekDay = ["日", "一", "二", "三", "四", "五", "六"];
+    const organizedAppointments = patientAppointments.data.map((p) => {
+      const formattedDate =
+        dayjs(p.date).format("M/D") +
+        "（" +
+        weekDay[dayjs(p.date).day()] +
+        "）";
+      const formattedSlot = p.scheduleSlot.includes("Morning")
+        ? "上午診"
+        : "下午診";
+      return { ...p, date: formattedDate, scheduleSlot: formattedSlot };
+    });
 
-
-  // useEffect(() => {
-  //   const getAppointmentData = async () => {
-  //     try {
-  //      const response = await getAppointments();
-  //      console.log(response.data)
-  //      setAppointments(response.data)
-       
-  //     } catch (error) {
-  //       console.error(error);
-  //     }
-  //   }
-  //   getAppointmentData()
-  //   if(appointmentState === 'success') {
-  //     messageApi.open({
-  //       type: "success",
-  //       content: "掛號成功",
-  //     });
-  //     setAppointmentState("")
-  //   }
-  // }, []);
+    setRequestData(data);
+    setAppointments(organizedAppointments);
+    setIsVerified(true);
+    setIsPageLoading(false)
+  } catch (error) {
+    console.error(error);
+  }
+};
+ 
+useEffect(() => {
+    if(newAppointment) {
+      setIsVerified(true);
+      setIsPageLoading(true)
+      getAppointmentsDataAsync(newAppointment.requestData);
+      setIsAppointmentSuccess(true)
+    }
+    return () => {
+      dispatch(resetNewAppointment());
+    };
+  }, []);
 
 
   const handleClickLogin = () => {
@@ -86,40 +117,6 @@ const QueryPage = () => {
     }
   };
 
-const getAppointmentsDataAsync = async (data) => {
-  try {
-    const patientAppointments = await getAppointments(data);
-    if (
-      patientAppointments.data.message ===
-      "No appointments found for this patient."
-    ) {
-      setIsLoading(false);
-      messageApi.open({
-        type: "warning",
-        content: "查無掛號紀錄",
-      });
-      return;
-    }
-    setRequestData(data); 
-    const weekDay = ["日", "一", "二", "三", "四", "五", "六"];
-    const organizedAppointments = patientAppointments.data.map((p) => {
-      const formattedDate =
-        dayjs(p.date).format("M/D") +
-        "（" +
-        weekDay[dayjs(p.date).day()] +
-        "）";
-      const formattedSlot = p.scheduleSlot.includes("Morning")
-        ? "上午診"
-        : "下午診";
-      return { ...p, date: formattedDate, scheduleSlot: formattedSlot };
-    });
-    setAppointments(organizedAppointments);
-    setIsVerified(true);
-  } catch (error) {
-    console.error(error);
-  }
-};
-
 const handleFinish = (values) => {
   setIsLoading(true)
   const birthDate = new Date(
@@ -132,6 +129,7 @@ const handleFinish = (values) => {
   }
 getAppointmentsDataAsync(requestData);
 }
+
 
 const idNumberValidation = async (_, value) => {
     function validateIdNumber(idNumber) {
@@ -217,13 +215,20 @@ const idNumberValidation = async (_, value) => {
     })
   }
 
-  const handleClick = (value) => {
-    if(value === "cancel") {
+  const handleClick = async (id, act) => {
+    if(act === "delete") {
+      await deleteAppointment(id);
+      const newAppointments = appointments.filter((a) => a.appointmentId !== id);
+      setAppointments(newAppointments)
+      return
+    }
+    if(act === "cancel") {
       setConfirmModal({...confirmModal, cancelModal: true}) 
       return
     }
     setConfirmModal({ ...confirmModal, againModal: true });
   }
+
   const handleAppointment = async (value, id) => {
     if (value === "cancel") {
     await cancelAppointment(id)
@@ -256,10 +261,21 @@ const idNumberValidation = async (_, value) => {
       )}
       <Content className="bg-gray-100 p-6">
         {isVerified ? (
-          appointments ? (
+          isPageLoading ? (
+            <List loading={isPageLoading}></List>
+          ) : appointments ? (
             <>
               <h1 className="text-2xl mb-6">您的看診時段</h1>
               <List bordered className="bg-white px-8 py-4">
+                {isAppointmentSuccess && (
+                  <div className="flex items-center justify-center text-lg">
+                    <GrStatusGood className="text-green-500" />
+                    <span>掛號成功</span>
+                  </div>
+                )}
+                {appointments.length === 0 && (
+                  <List.Item>沒有掛號紀錄</List.Item>
+                )}
                 {appointments.map((a) => (
                   <List.Item key={a.appointmentId}>
                     <p>{a.date + a.scheduleSlot}</p>
@@ -313,6 +329,11 @@ const idNumberValidation = async (_, value) => {
                         </Modal>
                       </>
                     )}
+                    <Button
+                      onClick={() => handleClick(a.appointmentId, "delete")}
+                    >
+                      刪除掛號
+                    </Button>
                   </List.Item>
                 ))}
                 {/* <Card

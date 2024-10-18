@@ -26,6 +26,8 @@ import { MdPermContactCalendar } from "react-icons/md";
 import DatePicker from "../components/DatePicker";
 import ReCAPTCHA from "react-google-recaptcha";
 import { getDoctorById } from "../api/doctors";
+import { useDispatch } from "react-redux";
+import { setNewAppointment } from "../store/appointmentSlice";
 
 
 const { Content } = Layout;
@@ -66,13 +68,14 @@ const ClinicSchedulePage = () => {
   const [schedules, setSchedules] = useState([]);
   const [displayMode, setDisplayMode] = useState("schedule");
   // const [visitType, setVisitType] = useState("initial");
+  const [isSubmitLoading, setIsSubmitLoading] = useState(false)
   const [searchValue, setSearchValue] = useState("");
   const [isDoctorModalLoading, setIsDoctorModalLoading] = useState(false)
   const [isScheduleLoaing, setScheduleLoading] = useState(true)
-  const [firstCreateAppointment, setFirstCreateAppointment] = useState(false)
-
+  const [isFirstCreateAppointment, setIsFirstCreateAppointment] = useState(false)
   const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
+  const dispatch = useDispatch();
 
   const getSchedulesAsync = async () => {
      
@@ -221,9 +224,11 @@ setIsDoctorModalOpen(true)
   };
 
   const handleSubmit = async (values) => {
+    setIsSubmitLoading(true)
     const birthDate = new Date(
       Date.UTC(values.year, values.month - 1, values.day)
     ).toISOString();
+    
     let requestData = {
       idNumber: values.idNumber,
       birthDate: birthDate,
@@ -231,7 +236,7 @@ setIsDoctorModalOpen(true)
       doctorScheduleId: selectedAppointment.scheduleId,
     };
 
-     if (firstCreateAppointment) {
+     if (isFirstCreateAppointment) {
       requestData = {
         idNumber: values.idNumber,
         birthDate: birthDate,
@@ -244,26 +249,35 @@ setIsDoctorModalOpen(true)
       console.log(newFistAppointment);
       return
      } 
-    
+     
      const newAppointment =  await createAppointment(requestData);
+
      if (newAppointment === "You have already booked this time slot.") messageApi.open({
        type: "warning",
        content: "重複掛號",
      });
-     
-
-     if(newAppointment.includes('初診')) {
-      console.log('填資料');
-      setFirstCreateAppointment(true)
+     if(typeof newAppointment === "string" && newAppointment.includes('初診')) {
+      setIsFirstCreateAppointment(true)
      }
-     
-      // setIsModalOpen(false);
-      // form.resetFields();
-      // messageApi.open({
-      //   type: "success",
-      //   content: "掛號成功",
-      // });
-      // navigate("/query", { state: "success" });
+      setIsModalOpen(false);
+
+      form.resetFields();
+      messageApi.open({
+        type: "success",
+        content: "掛號成功",
+      });
+
+      dispatch(
+        setNewAppointment({
+          ...newAppointment,
+          requestData: {
+            idNumber: requestData.idNumber,
+            birthDate: requestData.birthDate,
+            recaptchaResponse: requestData.recaptchaResponse
+          },
+        })
+      );
+      navigate("/query");
     
   };
 
@@ -489,7 +503,7 @@ if (resultData.length === 0) return warning("查無此醫師");
             <Form.Item label="生日" name="birthday">
               <DatePicker form={form} />
             </Form.Item>
-            {firstCreateAppointment && (
+            {isFirstCreateAppointment && (
               <>
               <h4>您為初次掛號，請填寫以下資料</h4>
                 <Form.Item
@@ -518,7 +532,7 @@ if (resultData.length === 0) return warning("查無此醫師");
               <Flex gap="middle" justify="center">
                 <Button onClick={handleCancel}>取消</Button>
 
-                <Button type="primary" htmlType="submit">
+                <Button type="primary" loading={isSubmitLoading} htmlType="submit">
                   送出
                 </Button>
               </Flex>
