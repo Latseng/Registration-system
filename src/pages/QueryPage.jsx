@@ -1,6 +1,6 @@
 import { Layout, Form, Input, Button, Modal, List, message,} from "antd";
 import Sidebar from "../components/Sidebar";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import useRWD from "../hooks/useRWD";
 import { useState, useEffect } from "react";
 import {
@@ -234,8 +234,8 @@ const idNumberValidation = async (_, value) => {
       a.appointmentId === data.appointmentId
     return { ...a, status: "CANCELED" };
     }));
+    return
   }
-  
   await createAppointment({
     ...requestData,
     doctorScheduleId: data.doctorScheduleId,
@@ -245,7 +245,6 @@ const idNumberValidation = async (_, value) => {
     againModal: false,
   });
   await getAppointmentsDataAsync(requestData)
-  
   }
 
   return (
