@@ -70,6 +70,7 @@ const getAppointmentsDataAsync = async (data) => {
     setRequestData(data);
     setAppointments(organizedAppointments);
     setIsVerified(true);
+    setIsLoading(false)
     setIsPageLoading(false)
   } catch (error) {
     console.error(error);
@@ -229,22 +230,38 @@ const idNumberValidation = async (_, value) => {
 
   const handleAppointment = async (value, data) => {
     if (value === "cancel") {
+      setConfirmModal({
+        ...confirmModal,
+        cancelModal: false,
+      });
+      setIsLoading(true)
     await cancelAppointment(data.appointmentId)
     setAppointments(appointments.map((a) => {
       a.appointmentId === data.appointmentId
     return { ...a, status: "CANCELED" };
     }));
+    setIsLoading(false)
+    messageApi.open({
+      type: "warning",
+      content: "掛號已取消",
+    });
+    
     return
   }
-  await createAppointment({
-    ...requestData,
-    doctorScheduleId: data.doctorScheduleId,
-  });
   setConfirmModal({
     ...confirmModal,
     againModal: false,
   });
+  setIsPageLoading(true)
+  await createAppointment({
+    ...requestData,
+    doctorScheduleId: data.doctorScheduleId,
+  });
   await getAppointmentsDataAsync(requestData)
+  messageApi.open({
+    type: "success",
+    content: "掛號成功",
+  });
   }
 
   return (
@@ -283,15 +300,16 @@ const idNumberValidation = async (_, value) => {
 
                     {a.status === "CONFIRMED" ? (
                       <>
-                        <Button onClick={() => handleClick(a.appointmentId, "cancel")}>
-                          取消掛號
+                        <Button
+                        loading={isLoading}
+                          onClick={() => handleClick(a.appointmentId, "cancel")}
+                        >
+                          {isLoading ? "" : "取消掛號"}
                         </Button>
                         <Modal
                           title="取消掛號確認"
                           open={confirmModal.cancelModal}
-                          onOk={() =>
-                            handleAppointment("cancel", a)
-                          }
+                          onOk={() => handleAppointment("cancel", a)}
                           onCancel={() =>
                             setConfirmModal({
                               ...confirmModal,
@@ -334,33 +352,6 @@ const idNumberValidation = async (_, value) => {
                     </Button>
                   </List.Item>
                 ))}
-                {/* <Card
-                title="目前看診進度"
-                bordered={false}
-                style={{ width: 300 }}
-              >
-                <p>門診尚未開始</p>
-              </Card>
-              <Button className="mt-6" onClick={handleshowModal}>
-                取消掛號
-              </Button>
-              <Modal
-                title="您確定要取消掛號？"
-                open={isModalOpen}
-                onCancel={handleModalCancel}
-                footer={null}
-              >
-                <p className="my-6">
-                  若取消掛號，再次看診必須重新掛號、重新候診。
-                </p>
-                <Button
-                  className="w-full"
-                  // onClick={() => handleDelete(appointment.id)}
-                  danger
-                >
-                  確定取消
-                </Button>
-              </Modal> */}
               </List>
             </>
           ) : (
