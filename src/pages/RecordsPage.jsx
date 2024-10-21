@@ -8,7 +8,24 @@ import { useNavigate } from "react-router-dom";
 
 const { Content } = Layout;
 
-
+const items = [
+  {
+    key: "1",
+    label: "快速掛號",
+  },
+  {
+    key: "2",
+    label: "掛號查詢",
+  },
+  {
+    key: "3",
+    label: "看診紀錄",
+  },
+  {
+    key: "4",
+    label: "醫師專長查詢",
+  },
+];
 
 const RecordsPage = () => {
 
@@ -37,7 +54,7 @@ const RecordsPage = () => {
 
   return (
     <Layout className="min-h-screen">
-      <Sidebar onClickPage={handleClickPage} onClickLogo={handleClickLogo} />
+      <Sidebar items={items} onClickPage={handleClickPage} onClickLogo={handleClickLogo} />
 
       <Content className="bg-gray-100 p-6">
         <h1 className="text-2xl mb-6">看診紀錄</h1>

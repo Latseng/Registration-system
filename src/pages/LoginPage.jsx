@@ -10,6 +10,10 @@ const LoginPage = () => {
     console.log("Received values of form: ", values);
   };
 
+const handleClick = () => {
+navigate("/admin/departments");
+}
+
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
       <button
@@ -55,6 +59,7 @@ const LoginPage = () => {
           </Button>
         </Form.Item>
       </Form>
+      <Button onClick={handleClick}>管理員登入</Button>
     </div>
   );
 };

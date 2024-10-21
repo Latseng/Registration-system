@@ -8,7 +8,7 @@ axios.defaults.headers.common["x-api-key"] = APIKey;
 export const getSpecialties = async () => {
   try {
     const res = await axios.get(`${baseURL}/doctors/specialties`);
-    return res.data.data;
+    return res;
   } catch (error) {
     console.error("[Get specialties failed]: ", error);
   }

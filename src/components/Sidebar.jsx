@@ -8,27 +8,7 @@ import { useState } from "react";
 
 const {Header, Sider} = Layout
 
-const items = [
-  {
-    key: "1",
-    label: "快速掛號",
-  },
-  {
-    key: "2",
-    label: "掛號查詢",
-  },
-  {
-    key: "3",
-    label: "看診紀錄",
-  },
-  {
-    key: "4",
-    label: "醫師專長查詢",
-  },
-];
-
-
-const Sidebar = ({onClickPage, onClickLogo}) => {
+const Sidebar = ({onClickPage, onClickLogo, items}) => {
   const [openMenu, setOpenMenu] = useState(false)
   const location = useLocation();
   const navigate = useNavigate();

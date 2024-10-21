@@ -20,7 +20,24 @@ import { GrStatusGood } from "react-icons/gr";
 
 const { Content } = Layout;
 
-
+const items = [
+  {
+    key: "1",
+    label: "快速掛號",
+  },
+  {
+    key: "2",
+    label: "掛號查詢",
+  },
+  {
+    key: "3",
+    label: "看診紀錄",
+  },
+  {
+    key: "4",
+    label: "醫師專長查詢",
+  },
+];
 
 const QueryPage = () => {
   const navigate = useNavigate();
@@ -267,7 +284,7 @@ const idNumberValidation = async (_, value) => {
   return (
     <Layout className="min-h-screen">
       {contextHolder}
-      <Sidebar onClickPage={handleClickPage} onClickLogo={handleClickLogo} />
+      <Sidebar items={items} onClickPage={handleClickPage} onClickLogo={handleClickLogo} />
 
       {isDesktop && (
         <button className="absolute right-8 top-4" onClick={handleClickLogin}>

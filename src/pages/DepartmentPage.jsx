@@ -12,12 +12,32 @@ const gridStyle = {
   textAlign: "center",
 };
 
+const items = [
+  {
+    key: "1",
+    label: "快速掛號",
+  },
+  {
+    key: "2",
+    label: "掛號查詢",
+  },
+  {
+    key: "3",
+    label: "看診紀錄",
+  },
+  {
+    key: "4",
+    label: "醫師專長查詢",
+  },
+];
+
+
 const DepartmentPage = () => {
   const navigate = useNavigate();
   const isDesktop = useRWD();
   const [departments, setDepartments] = useState([]);
   const [searchValue, setSearchValue] = useState("");
-
+  const [isPageLoading, setIsPageLoading] = useState(true)
   const [messageApi, contextHolder] = message.useMessage();
 
   const warning = (value) => {
@@ -30,8 +50,8 @@ const DepartmentPage = () => {
   const getSpecialtiesAsnc = async () => {
     try {
       const specialties = await getSpecialties();
-
-      setDepartments(specialties);
+      setDepartments(specialties.data.data);
+      setIsPageLoading(false);
     } catch (error) {
       console.error(error);
     }
@@ -98,8 +118,9 @@ const DepartmentPage = () => {
 
   return (
     <Layout className="min-h-screen">
-      <Sidebar onClickPage={handleClickPage} onClickLogo={handleClickLogo} />
+      <Sidebar items={items} onClickPage={handleClickPage} onClickLogo={handleClickLogo} />
       <Content className="bg-gray-100 p-6">
+       
         {isDesktop && (
           <button className="absolute right-8 top-4" onClick={handleClickLogin}>
             登入
@@ -118,7 +139,7 @@ const DepartmentPage = () => {
             }}
           />
         </div>
-
+         {isPageLoading && <Card loading={isPageLoading}></Card>}
         {departments.map((s) => (
           <Card className="my-4" key={s.category} title={s.category}>
             {s.specialties.map((s) => (
