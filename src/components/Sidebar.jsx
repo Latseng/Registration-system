@@ -80,7 +80,7 @@ const Sidebar = ({onClickPage, onClickLogo, items}) => {
               onClick={onClickPage}
               mode="vertical"
               items={items}
-              defaultSelectedKeys={["1"]}
+              selectedKeys={[currentPage()]}
             />
           </Drawer>
         </>

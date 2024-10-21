@@ -1,70 +1,15 @@
-import { Layout, List, message, Button, Input, Table, Avatar, Modal } from "antd";
+import { Layout, List, Card, message, Button, Input, Avatar, Modal } from "antd";
 import useRWD from "../hooks/useRWD";
 import Sidebar from "../components/Sidebar";
 import { useNavigate } from "react-router-dom";
-import dayjs from "dayjs";
 import { useState, useEffect } from "react";
-import { getDoctors, searchDoctors } from "../api/doctors";
+import { getDoctors, searchDoctors, getDoctorById } from "../api/doctors";
+import dayjs from "dayjs";
+import SelectedDoctorModal from "../components/SelectedDoctorModal";
 
 const { Content } = Layout;
 const { Search } = Input;
 
-
-
-const generateDates = () => {
-  const dates = [];
-  for (let i = 0; i < 7; i++) {
-    const date = dayjs().add(i, "day");
-    const formattedDate = `${date.format("M/D")}（${"日一二三四五六".charAt(
-      date.day()
-    )}）`;
-
-    dates.push(formattedDate);
-  }
-  return dates;
-};
-const dates = generateDates();
-
-const columns = [
-  {
-    title: "時間",
-    dataIndex: "time",
-    key: "time",
-    fixed: "left",
-  },
-  ...dates.map((date, index) => ({
-    title: date,
-    dataIndex: `date${index}`,
-    key: `date${index}`,
-    // render: (_, record) => {
-    //   const doctorSlot = record[`date${index}`];
-    //   return doctorSlot.map(({ numOfPatients, isFull }, idx) => (
-    //     <Button
-    //       // onClick={() =>
-    //       //   handleAppointment({ date: date, doctor: doctor, time: record.time })
-    //       // }
-    //       key={idx}
-    //       type="link"
-    //       disabled={isFull}
-    //     >
-    //       <br /> {isFull ? "額滿" : `掛號人數: ${numOfPatients}`}
-    //     </Button>
-    //   ));
-    // },
-  })),
-];
-const dataSource = [
-  {
-    key: "morning",
-    time: "上午診",
-    // ...doctorSchedule.morning,
-  },
-  {
-    key: "afternoon",
-    time: "下午診",
-    // ...doctorSchedule.afternoon,
-  },
-];
 
 const items = [
   {
@@ -88,11 +33,12 @@ const items = [
 const DoctorsPage = () => {
   const isDesktop = useRWD();
   const navigate = useNavigate();
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [doctors, setDoctors] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [searchValue, setSearchValue] = useState("");
+  const [isDoctorModalOpen, setIsDoctorModalOpen] = useState(false);
+
   const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
@@ -114,21 +60,36 @@ const DoctorsPage = () => {
    
   }, [searchValue])
 
-  const data = doctors.map((d, i) => ({
+  const data = doctors.map((d) => ({
+    doctorId: d.id,
     href: "https://ant.design",
     title: `${d.name} 醫師`,
-    avatar: `https://api.dicebear.com/7.x/miniavs/svg?seed=${i}`,
+    avatar: `https://api.dicebear.com/7.x/miniavs/svg?seed=${d.id}`,
     description: d.specialty,
     content: `專長： ${JSON.parse(d.description).join('、')}`,
   }));
 
-  const showDoctorInfo = (doctor) => {
-    setSelectedDoctor(doctor);
-    setIsModalOpen(true);
+  const showDoctorInfo = async (id) => {
+    const doctor = await getDoctorById(id);
+    const weekDay = ["日", "一", "二", "三", "四", "五", "六"];
+    const organizedSchedules = doctor.schedules.map((s) => {
+      const formattedDate =
+        dayjs(s.date).format("M/D") +
+        "（" +
+        weekDay[dayjs(s.date).day()] +
+        "）";
+      const formattedSlot = s.scheduleSlot.includes("Morning")
+        ? "上午診"
+        : "下午診";
+      return { ...s, date: formattedDate, scheduleSlot: formattedSlot };
+    });
+    const organizedDoctor = { ...doctor, schedules: organizedSchedules };
+    setSelectedDoctor(organizedDoctor);
+   setIsDoctorModalOpen(true);
   };
 
   const handleCancel = () => {
-    setIsModalOpen(false);
+    setIsDoctorModalOpen(false);
   };
 
   const handleClickLogo = () => {
@@ -176,7 +137,11 @@ const DoctorsPage = () => {
   const handleSearchChange = (event) => {
     setSearchValue(event.target.value);
   };
-  
+   const handleAppointment = (appointment) => {
+    //  setSelectedAppointment(appointment);
+    //  setIsModalOpen(true);
+     setIsDoctorModalOpen(false);
+   };
   // const handleSearch = (value, _, { source }) => {
   //   if (source === "clear") return;
   //   const filteredData = value.trim();
@@ -190,7 +155,11 @@ const DoctorsPage = () => {
   return (
     <Layout className="min-h-screen">
       {contextHolder}
-      <Sidebar items={items} onClickPage={handleClickPage} onClickLogo={handleClickLogo} />
+      <Sidebar
+        items={items}
+        onClickPage={handleClickPage}
+        onClickLogo={handleClickLogo}
+      />
       {isDesktop && (
         <button className="absolute right-8 top-4" onClick={handleClickLogin}>
           登入
@@ -227,7 +196,7 @@ const DoctorsPage = () => {
               </div>
               <Button
                 className="absolute right-8 top-8"
-                onClick={() => showDoctorInfo(item)}
+                onClick={() => showDoctorInfo(item.doctorId)}
               >
                 詳細資訊
               </Button>
@@ -235,35 +204,12 @@ const DoctorsPage = () => {
           )}
         />
         {selectedDoctor && (
-          <Modal open={isModalOpen} onCancel={handleCancel} footer={null}>
-            <div className="p-4">
-              <h2 className="text-2xl">{selectedDoctor.title}</h2>
-              <Avatar
-                shape="square"
-                size={100}
-                src={selectedDoctor.avatar}
-                alt={`${selectedDoctor.title}照片`}
-                style={{ width: "100px", marginBottom: "10px" }}
-              />
-              <div className="my-4 text-base">
-                <p>科別： {selectedDoctor.description}</p>
-                <p>{selectedDoctor.content}</p>
-              </div>
-              <h4 className="text-lg my-4">可看診時間:</h4>
-              <div className="overflow-x-auto">
-                <Table
-                  columns={columns}
-                  dataSource={dataSource}
-                  pagination={false}
-                />
-                {/* <ul>
-                {selectedDoctor.availableTimes.map((time, index) => (
-                  <li key={index}>{time}</li>
-                ))}
-              </ul> */}
-              </div>
-            </div>
-          </Modal>
+          <SelectedDoctorModal
+            selectedDoctor={selectedDoctor}
+            isDoctorModalOpen={isDoctorModalOpen}
+            handleCancel={handleCancel}
+            handleAppointment={handleAppointment}
+          />
         )}
       </Content>
     </Layout>
