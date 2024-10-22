@@ -251,6 +251,7 @@ const idNumberValidation = async (_, value) => {
         ...confirmModal,
         cancelModal: false,
       });
+      setIsAppointmentSuccess(false);
       setIsLoading(true)
     await cancelAppointment(data.appointmentId)
     setAppointments(appointments.map((a) => {

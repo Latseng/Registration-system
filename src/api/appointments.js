@@ -36,7 +36,7 @@ export const createAppointment = async (payload) => {
        "[Create Appointment failed]: ",
        error
      );
-     return error.response.message;
+     return error.response.data.message;
    }
 };
 

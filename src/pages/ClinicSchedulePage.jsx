@@ -6,7 +6,6 @@ import {
   Button,
   Radio,
   Table,
-  Modal,
   Form,
   Card,
   Input,
@@ -22,15 +21,17 @@ import { getSchedules } from "../api/schedules";
 import { AiOutlineTeam } from "react-icons/ai";
 import { LuCalendarDays } from "react-icons/lu";
 import { MdPermContactCalendar } from "react-icons/md";
-import DatePicker from "../components/DatePicker";
-import ReCAPTCHA from "react-google-recaptcha";
 import { getDoctorById } from "../api/doctors";
 import { useDispatch } from "react-redux";
 import { setNewAppointment } from "../store/appointmentSlice";
-import SelectedDoctorModal from "../components/SelectedDoctorModal";
+import SelectedModal from "../components/SelectedModal";
 
 const { Content } = Layout;
 const { Search } = Input;
+const gridStyle = {
+  width: "25%",
+  textAlign: "center",
+};
 
 const generateDates = () => {
   const dates = [];
@@ -50,24 +51,19 @@ const ClinicSchedulePage = () => {
   const isDesktop = useRWD();
   const location = useLocation()
   const {specialty} = location.state
-
   const dates = generateDates();
   const [currentWeek, setCurrentWeek] = useState(0);
   const weekDates = dates.slice(currentWeek * 7, (currentWeek + 1) * 7);
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isDoctorModalOpen, setIsDoctorModalOpen] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
-
   const [schedules, setSchedules] = useState([]);
   const [displayMode, setDisplayMode] = useState("schedule");
-  // const [visitType, setVisitType] = useState("initial");
   const [isSubmitLoading, setIsSubmitLoading] = useState(false)
   const [searchValue, setSearchValue] = useState("");
-  const [isDoctorModalLoading, setIsDoctorModalLoading] = useState(false)
   const [isScheduleLoaing, setScheduleLoading] = useState(true)
   const [isFirstCreateAppointment, setIsFirstCreateAppointment] = useState(false)
+  const [isModalLoading, setIsModalLoading] = useState(false)
   const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
   const dispatch = useDispatch();
@@ -140,18 +136,15 @@ const ClinicSchedulePage = () => {
           <Flex key={idx} className="my-2">
             <Button
               onClick={() => handleClickDoctorInfo(doc.doctorId)}
-              loading={isDoctorModalLoading}
               size="small"
               className="mr-1"
             >
-              {!isDoctorModalLoading && (
-                <MdPermContactCalendar className="text-xl" />
-              )}
+                <MdPermContactCalendar className="text-xl" /> 
             </Button>
             <Button
               onClick={() =>
                 handleAppointment({
-                  scheduleId: doc.doctorScheduleId,
+                  id: doc.doctorScheduleId,
                   date: date,
                   doctor: doc.doctorName,
                   time: record.time,
@@ -193,13 +186,13 @@ const ClinicSchedulePage = () => {
   };
 
   const handleAppointment = (appointment) => {
+    setSelectedDoctor(null)
     setSelectedAppointment(appointment);
-    setIsModalOpen(true);
-    setIsDoctorModalOpen(false)
+    setIsModalOpen(true)
   };
 
   const handleClickDoctorInfo = (id) => {
-    setIsDoctorModalLoading(true);
+    setIsModalLoading(true);
     const getDoctorByIdAsync = async () => {
       try {
         const doctor = await getDoctorById(id);
@@ -218,21 +211,21 @@ const ClinicSchedulePage = () => {
         const organizedDoctor = { ...doctor, schedules: organizedSchedules };
         setSelectedDoctor(organizedDoctor);
         
-        setIsDoctorModalLoading(false);
+        setIsModalLoading(false);
       } catch (error) {
         console.error(error);
       }
     };
     getDoctorByIdAsync();
-setIsDoctorModalOpen(true)
+setIsModalOpen(true)
   }
 
-  const handleCancel = (value) => {
-    if(value === "doctor") {
-      setIsDoctorModalOpen(false) 
-      setSelectedDoctor(null)}
+  const handleCancel = () => {
+    
+      setIsModalOpen(false) 
+      setSelectedDoctor(null)
 
-    setIsModalOpen(false);
+    setSelectedAppointment(null)
     form.resetFields();
   };
 
@@ -246,15 +239,15 @@ setIsDoctorModalOpen(true)
       idNumber: values.idNumber,
       birthDate: birthDate,
       recaptchaResponse: "test_recaptcha",
-      doctorScheduleId: selectedAppointment.scheduleId,
+      doctorScheduleId: selectedAppointment.id,
     };
-
+    
      if (isFirstCreateAppointment) {
       requestData = {
         idNumber: values.idNumber,
         birthDate: birthDate,
         recaptchaResponse: "test_recaptcha",
-        doctorScheduleId: selectedAppointment.scheduleId,
+        doctorScheduleId: selectedAppointment.id,
         name: values.name,
         contactInfo: values.number
       };
@@ -264,21 +257,21 @@ setIsDoctorModalOpen(true)
      } 
      
      const newAppointment =  await createAppointment(requestData);
-
-     if (newAppointment === "You have already booked this time slot.") messageApi.open({
-       type: "warning",
-       content: "重複掛號",
-     });
+     console.log(newAppointment);
+     
+     if (newAppointment === "You have already booked this time slot."){
+      messageApi.open({
+        type: "warning",
+        content: "重複掛號",
+      });
+      setIsSubmitLoading(false);
+      return
+     } 
      if(typeof newAppointment === "string" && newAppointment.includes('初診')) {
       setIsFirstCreateAppointment(true)
      }
-      setIsModalOpen(false);
 
       form.resetFields();
-      messageApi.open({
-        type: "success",
-        content: "掛號成功",
-      });
 
       dispatch(
         setNewAppointment({
@@ -363,9 +356,6 @@ if (resultData.length === 0) return warning("查無此醫師");
   const onChange = (value) => {
   console.log("Captcha value:", value);
 }
-//  const handleVisitTypeChange = (e) => {
-//    setVisitType(e.target.value); 
-//  };
 
  const handleSearchChange = (event) => {
    setSearchValue(event.target.value);
@@ -374,7 +364,11 @@ if (resultData.length === 0) return warning("查無此醫師");
   return (
     <Layout className="min-h-screen">
       {contextHolder}
-      <Sidebar items={items} onClickPage={handleClickPage} onClickLogo={handleClickLogo} />
+      <Sidebar
+        items={items}
+        onClickPage={handleClickPage}
+        onClickLogo={handleClickLogo}
+      />
 
       <Layout className="bg-gray-100 p-6">
         {isDesktop && (
@@ -452,6 +446,7 @@ if (resultData.length === 0) return warning("查無此醫師");
                             date: schedule.date,
                             doctor: d.doctorName,
                             time: schedule.scheduleSlot,
+                            id: schedule.doctorScheduleId,
                           })
                         }
                       >
@@ -478,84 +473,18 @@ if (resultData.length === 0) return warning("查無此醫師");
           </div>
         </Content>
       </Layout>
-
-      <Modal open={isModalOpen} onCancel={handleCancel} footer={null}>
-        {selectedAppointment && (
-          <Form
-            form={form}
-            onFinish={handleSubmit}
-            labelCol={{ span: 8 }}
-            className="w-full max-w-md"
-          >
-            <h1 className="text-center text-xl font-bold">掛號資訊</h1>
-            <div className="my-4 text-center text-lg">
-              <h3>一般內科</h3>
-              <p>
-                {selectedAppointment.date}
-                {selectedAppointment.time}
-              </p>
-              <h3>{selectedAppointment.doctor} 醫師</h3>
-            </div>
-            {/* <Form.Item
-              name="visitType"
-              label="就診類別"
-              rules={[{ required: true, message: "請選擇就診類別" }]}
-            >
-              <Radio.Group onChange={handleVisitTypeChange} value={visitType}>
-                <Radio value={"initial"}>初診</Radio>
-                <Radio value={"return"}>複診</Radio>
-              </Radio.Group>
-            </Form.Item> */}
-            <Form.Item
-              label="身分證字號"
-              name="idNumber"
-              rules={[{ required: true, message: "請輸入身分證字號" }]}
-            >
-              <Input placeholder="請輸入身分證字號" />
-            </Form.Item>
-            <Form.Item label="生日" name="birthday">
-              <DatePicker form={form} />
-            </Form.Item>
-            {isFirstCreateAppointment && (
-              <>
-              <h4>您為初次掛號，請填寫以下資料</h4>
-                <Form.Item
-                  label="姓名"
-                  name="name"
-                  rules={[{ required: true, message: "請輸入姓名" }]}
-                >
-                  <Input placeholder="請輸入姓名" />
-                </Form.Item>
-                <Form.Item
-                  label="聯絡電話"
-                  name="number"
-                  rules={[{ required: true, message: "請輸入聯絡電話" }]}
-                >
-                  <Input placeholder="請輸入聯絡電話" />
-                </Form.Item>
-              </>
-            )}
-
-            <ReCAPTCHA
-              className="my-4 ml-20"
-              sitekey="Your client site key"
-              onChange={onChange}
-            />
-            <Form.Item>
-              <Flex gap="middle" justify="center">
-                <Button onClick={handleCancel}>取消</Button>
-
-                <Button type="primary" loading={isSubmitLoading} htmlType="submit">
-                  送出
-                </Button>
-              </Flex>
-            </Form.Item>
-          </Form>
-        )}
-      </Modal>
-      {selectedDoctor && (
-<SelectedDoctorModal selectedDoctor={selectedDoctor} isDoctorModalOpen={isDoctorModalOpen} handleCancel={handleCancel} handleAppointment={handleAppointment} />
-      )}
+      <SelectedModal
+        selectedDoctor={selectedDoctor}
+        isModalOpen={isModalOpen}
+        handleCancel={handleCancel}
+        handleAppointment={handleAppointment}
+        selectedAppointment={selectedAppointment}
+        handleSubmit={handleSubmit}
+        isFirstCreateAppointment={isFirstCreateAppointment}
+        onChange={onChange}
+        isModalLoading={isModalLoading}
+        isSubmitLoading={isSubmitLoading}
+      />
     </Layout>
   );
 };

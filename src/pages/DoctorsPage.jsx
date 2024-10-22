@@ -1,11 +1,14 @@
-import { Layout, List, Card, message, Button, Input, Avatar, Modal } from "antd";
+import { Layout, List, message, Button, Input, Avatar, Form } from "antd";
 import useRWD from "../hooks/useRWD";
 import Sidebar from "../components/Sidebar";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { getDoctors, searchDoctors, getDoctorById } from "../api/doctors";
+import { createAppointment, createFirstAppointment } from "../api/appointments";
 import dayjs from "dayjs";
-import SelectedDoctorModal from "../components/SelectedDoctorModal";
+import SelectedModal from "../components/SelectedModal";
+import { useDispatch } from "react-redux";
+import { setNewAppointment } from "../store/appointmentSlice";
 
 const { Content } = Layout;
 const { Search } = Input;
@@ -37,9 +40,16 @@ const DoctorsPage = () => {
   const [doctors, setDoctors] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [searchValue, setSearchValue] = useState("");
-  const [isDoctorModalOpen, setIsDoctorModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState(null)
+  const [isFirstCreateAppointment, setIsFirstCreateAppointment] =
+    useState(false);
+    const [isSubmitLoading, setIsSubmitLoading] = useState(false);
+    const [isModalLoading, setIsModalLoading] = useState(false);
 
+    const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const getDoctorsData = async () => {
@@ -70,6 +80,7 @@ const DoctorsPage = () => {
   }));
 
   const showDoctorInfo = async (id) => {
+    setIsModalLoading(true);
     const doctor = await getDoctorById(id);
     const weekDay = ["日", "一", "二", "三", "四", "五", "六"];
     const organizedSchedules = doctor.schedules.map((s) => {
@@ -85,11 +96,13 @@ const DoctorsPage = () => {
     });
     const organizedDoctor = { ...doctor, schedules: organizedSchedules };
     setSelectedDoctor(organizedDoctor);
-   setIsDoctorModalOpen(true);
+    setIsModalLoading(false);
+   setIsModalOpen(true);
   };
 
   const handleCancel = () => {
-    setIsDoctorModalOpen(false);
+    setIsModalOpen(false);
+    setSelectedAppointment(null)
   };
 
   const handleClickLogo = () => {
@@ -137,21 +150,79 @@ const DoctorsPage = () => {
   const handleSearchChange = (event) => {
     setSearchValue(event.target.value);
   };
+
    const handleAppointment = (appointment) => {
-    //  setSelectedAppointment(appointment);
-    //  setIsModalOpen(true);
-     setIsDoctorModalOpen(false);
+     setSelectedDoctor(null);
+     setSelectedAppointment(appointment);
    };
-  // const handleSearch = (value, _, { source }) => {
-  //   if (source === "clear") return;
-  //   const filteredData = value.trim();
-  //   if (filteredData.length === 0) return warning("請輸入有效關鍵字");
-  //   const resultData = schedules.filter((s) =>
-  //     s.doctorName.includes(filteredData)
-  //   );
-  //   if (resultData.length === 0) return warning("查無此醫師");
-  //   setSchedules(resultData);
-  // };
+
+    const handleSubmit = async (values) => {
+      setIsSubmitLoading(true);
+      const birthDate = new Date(
+        Date.UTC(values.year, values.month - 1, values.day)
+      ).toISOString();
+
+      let requestData = {
+        idNumber: values.idNumber,
+        birthDate: birthDate,
+        recaptchaResponse: "test_recaptcha",
+        doctorScheduleId: selectedAppointment.id,
+      };
+      
+      if (isFirstCreateAppointment) {
+        requestData = {
+          idNumber: values.idNumber,
+          birthDate: birthDate,
+          recaptchaResponse: "test_recaptcha",
+          doctorScheduleId: selectedAppointment.id,
+          name: values.name,
+          contactInfo: values.number,
+        };
+        const newFistAppointment = await createFirstAppointment(requestData);
+        console.log(newFistAppointment);
+        return;
+      }
+
+      const newAppointment = await createAppointment(requestData);
+
+      if (newAppointment === "You have already booked this time slot.") {
+        messageApi.open({
+          type: "warning",
+          content: "重複掛號",
+        });
+        setIsSubmitLoading(false);
+        return
+      }
+        
+      if (
+        typeof newAppointment === "string" &&
+        newAppointment.includes("初診")
+      ) {
+        setIsFirstCreateAppointment(true);
+      }
+
+      form.resetFields();
+      messageApi.open({
+        type: "success",
+        content: "掛號成功",
+      });
+
+      dispatch(
+        setNewAppointment({
+          ...newAppointment,
+          requestData: {
+            idNumber: requestData.idNumber,
+            birthDate: requestData.birthDate,
+            recaptchaResponse: requestData.recaptchaResponse,
+          },
+        })
+      );
+      navigate("/query");
+    };
+    const onChange = (value) => {
+      console.log("Captcha value:", value);
+    };
+  
   return (
     <Layout className="min-h-screen">
       {contextHolder}
@@ -203,14 +274,18 @@ const DoctorsPage = () => {
             </List.Item>
           )}
         />
-        {selectedDoctor && (
-          <SelectedDoctorModal
+          <SelectedModal
             selectedDoctor={selectedDoctor}
-            isDoctorModalOpen={isDoctorModalOpen}
+            isModalOpen={isModalOpen}
             handleCancel={handleCancel}
             handleAppointment={handleAppointment}
+            selectedAppointment={selectedAppointment}
+            handleSubmit={handleSubmit}
+            isFirstCreateAppointment={isFirstCreateAppointment}
+            onChange={onChange}
+            isModalLoading={isModalLoading}
+            isSubmitLoading={isSubmitLoading}
           />
-        )}
       </Content>
     </Layout>
   );
