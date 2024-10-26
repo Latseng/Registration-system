@@ -1,27 +1,36 @@
 import Logo from "./Logo";
-import { Layout, Menu, ConfigProvider } from "antd";
+import { Layout, Button } from "antd";
 
 
 const { Header } = Layout
 
-const Navbar = ({onClick , items}) => {
+const Navbar = ({handleClick}) => {
   return (
-    <Header className="flex justify-between items-center bg-mainColor px-6">
-      <Logo />
-      <ConfigProvider
-        theme={{
-          components: {
-            Menu: {
-              itemColor: "white",
-            },
-          },
-        }}
+    <Header className="grid grid-cols-12 gap-4 grid-rows-1   bg-mainColor px-8">
+      <Logo className="col-start-1 col-end-5 row-span-1" />
+      <Button
+        className="my-auto col-start-8 col-end-10 row-span-1"
+        type="primary"
+        size="large"
+        onClick={() => handleClick("query")}
       >
-        <Menu className="bg-mainColor text-lg" mode="horizontal" items={items} />
-      </ConfigProvider>
-      <button className="text-white" onClick={onClick}>
+        掛號查詢
+      </Button>
+      <Button
+        className="my-auto col-start-10 col-end-12 row-span-1"
+        type="primary"
+        size="large"
+        onClick={() => handleClick("doctors")}
+      >
+        醫師專長查詢
+      </Button>
+      <Button
+        className="my-auto col-start-12 col-end-13 row-span-1"
+        type="primary"
+        onClick={() => handleClick("login")}
+      >
         登入
-      </button>
+      </Button>
     </Header>
   );
 };

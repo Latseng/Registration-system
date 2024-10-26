@@ -1,46 +1,36 @@
 import MainContent from "../components/MainContent";
 import Navbar from "../components/Navbar";
 import { useNavigate } from "react-router-dom";
-import{ Button } from "antd"
-
 
 const MainPage = () => {
   const navigate = useNavigate();
-  const items = [
-    {
-      key: "1",
-      label: "掛號查詢"
-    },
-    {
-      key: "2",
-      label: "醫師專長查詢"
-    }
-  ]
-  
+ 
+
   const handleClick = (route) => {
     switch (route) {
-      case "department":
+      case "departments":
         navigate("/departments");
         break;
-        case "query":
-        navigate("/query"); 
-         break;
-         case "records":
-          navigate("/records");
-          break;
+      case "query":
+        navigate("/query");
+        break;
+      case "doctors":
+        navigate("/doctors");
+        break;
+      case "login":
+        navigate("/login");
+        break;
       default:
         break;
     }
-  }
-  const handleClickNav = () =>{
-     navigate("/login");
-  }
+  };
+
   return (
     <>
-      <Navbar onClick={handleClickNav} items={items} />
-      <MainContent />
+      <Navbar handleClick={handleClick} />
+      <MainContent handleClick={handleClick} />
     </>
   );
-}
+};
 
-export default MainPage
+export default MainPage;
