@@ -285,7 +285,11 @@ const idNumberValidation = async (_, value) => {
   return (
     <Layout className="min-h-screen">
       {contextHolder}
-      <Sidebar items={items} onClickPage={handleClickPage} onClickLogo={handleClickLogo} />
+      <Sidebar
+        items={items}
+        onClickPage={handleClickPage}
+        onClickLogo={handleClickLogo}
+      />
 
       {isDesktop && (
         <button className="absolute right-8 top-4" onClick={handleClickLogin}>
@@ -319,7 +323,7 @@ const idNumberValidation = async (_, value) => {
                     {a.status === "CONFIRMED" ? (
                       <>
                         <Button
-                        loading={isLoading}
+                          loading={isLoading}
                           onClick={() => handleClick(a.appointmentId, "cancel")}
                         >
                           {isLoading ? "" : "取消掛號"}

@@ -1,9 +1,21 @@
 import MainContent from "../components/MainContent";
 import Navbar from "../components/Navbar";
 import { useNavigate } from "react-router-dom";
+import{ Button } from "antd"
+
 
 const MainPage = () => {
   const navigate = useNavigate();
+  const items = [
+    {
+      key: "1",
+      label: "掛號查詢"
+    },
+    {
+      key: "2",
+      label: "醫師專長查詢"
+    }
+  ]
   
   const handleClick = (route) => {
     switch (route) {
@@ -25,8 +37,8 @@ const MainPage = () => {
   }
   return (
     <>
-     <Navbar onClick={handleClickNav} />
-     <MainContent onClick={handleClick} />
+      <Navbar onClick={handleClickNav} items={items} />
+      <MainContent />
     </>
   );
 }

@@ -18,7 +18,7 @@ navigate("/admin/departments");
     <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
       <button
         onClick={() => navigate("/*")}
-        className="mb-10 flex items-center text-blue-500 text-6xl"
+        className="mb-10 flex items-center text-mainColor text-6xl"
       >
         <FaSuitcaseMedical className="mr-2" />
         <h1>MA</h1>

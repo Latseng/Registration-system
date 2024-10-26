@@ -6,7 +6,7 @@ import { getSpecialties } from "../api/specialties";
 
 const { Content } = Layout;
 
-const items = [
+const sidebarItems = [
   {
     key: "1",
     label: "門診科別",
@@ -21,6 +21,7 @@ const items = [
   },
 ];
 
+
 const AdminDepartmentPage = () => {
 const [isLoading, setIsLoading] = useState(false)
 const [departments, setDepartments] = useState([])
@@ -30,7 +31,6 @@ const [departments, setDepartments] = useState([])
       try {
         setIsLoading(true);
         const response = await getSpecialties();
-        console.log(response.data.data);
         setDepartments(response.data.data);
         setIsLoading(false);
       } catch (error) {
@@ -46,30 +46,40 @@ const [departments, setDepartments] = useState([])
   }
   return (
     <Layout className="min-h-screen">
-      <Sidebar items={items} />
+      <Sidebar items={sidebarItems} />
       <Content className="bg-gray-100 p-6">
         {departments.map((d) => (
-          <List key={d.category} className="bg-white pb-4">
-            <h3>{d.category}</h3>
+          <List
+            key={d.category}
+            header={<h3 className="text-lg">{d.category}</h3>}
+            bordered
+            className="bg-white p-4 mb-2"
+          >
             {d.specialties.map((item) => (
               <List.Item key={item}>
-                {item}
-                <Button type="text">
+                <span>{item}</span>
+                <Button onClick={handleClick} type="text">
                   <IoIosMore className="text-xl" />
                 </Button>
               </List.Item>
             ))}
+            <List.Item>
+              <Button type="text" className="mt-3 mx-auto" size="large">
+                <IoIosAddCircleOutline className="text-2xl" />
+              </Button>
+            </List.Item>
           </List>
         ))}
         <List
-          className="bg-white pb-4"
+          className="bg-white pb-4 text-center"
+          bordered
           itemLayout="vertical"
           loading={isLoading}
           size="large"
         >
           {!isLoading && (
-            <Button type="text">
-              <IoIosAddCircleOutline />
+            <Button type="text" className="mt-3" size="large">
+              <IoIosAddCircleOutline className="text-3xl" />
             </Button>
           )}
         </List>

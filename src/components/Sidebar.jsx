@@ -31,7 +31,7 @@ const Sidebar = ({onClickPage, onClickLogo, items}) => {
       {isDesktop ? (
         <Sider
           width={200}
-          style={{ backgroundColor: "rgb(37 99 235)" }}
+          style={{ backgroundColor: "rgb(81 182 182)" }}
           className="px-6 flex flex-col items-center py-6"
         >
           <button
@@ -47,15 +47,18 @@ const Sidebar = ({onClickPage, onClickLogo, items}) => {
               components: {
                 Menu: {
                   itemColor: "white",
-                  itemSelectedColor: "rgb(59 130 246)",
+                  itemSelectedColor: "#51b6b6",
+                  itemHoverColor: "white",
+                  itemHoverBg: "#99d9d9",
                 },
               },
             }}
           >
             <Menu
               mode="vertical"
+              style={{width: 200}}
               selectedKeys={[currentPage()]}
-              className="bg-blue-600 px-6"
+              className="bg-mainColor px-6"
               items={items}
               onClick={onClickPage}
             />
@@ -63,7 +66,7 @@ const Sidebar = ({onClickPage, onClickLogo, items}) => {
         </Sider>
       ) : (
         <>
-          <Header className="flex justify-between items-center bg-blue-600 px-6">
+          <Header className="flex justify-between bg-mainColor items-centerpx-6">
             <button className="text-white" onClick={() => setOpenMenu(true)}>
               <IoMenu className="size-6" />
             </button>
