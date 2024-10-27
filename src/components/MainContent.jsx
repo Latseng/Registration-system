@@ -5,19 +5,19 @@ const {Content} = Layout
 
 const MainContent = ({handleClick}) => {
   return (
-    <Content className="p-6 min-h-screen relative">
+    <Content className="p-6 min-h-screen flex flex-wrap justify-center md:relative">
       <img
-        className="w-3/5 absolute -top-2 right-20 -z-10 animate-slideInRight"
+        className="md:w-3/5 md:absolute md:-top-2 md:right-16 md:-z-10 animate-slideInRight"
         src={doctorImage}
       />
-      <div className="absolute top-48  text-4xl left-32 animate-fadeIn">
+      <div className="text-center text-2xl top-96 left-64 md:absolute md:top-48 md:text-4xl md:left-24 animate-fadeIn">
         <p className="text-mainColor mb-8 font-bold animate-slideInLeft">
           掛號看診，一鍵搞定
         </p>
         <Button
           size="large"
           onClick={() => handleClick("departments")}
-          className="w-48 h-12 ml-20 animate-slideInRight"
+          className="w-48 h-12 md:ml-20 animate-slideInRight"
           type="primary"
         >
           快速掛號

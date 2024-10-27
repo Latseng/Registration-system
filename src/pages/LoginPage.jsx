@@ -26,12 +26,10 @@ navigate("/admin/departments");
       <Form
         form={form}
         name="basic"
-        labelCol={{ span: 8 }}
-        wrapperCol={{ span: 16 }}
         initialValues={{ remember: true }}
         onFinish={onFinish}
         autoComplete="off"
-        className="w-full max-w-lg pr-28"
+        className="flex flex-col md:w-1/3 text-center"
       >
         <Form.Item
           label="身分證字號"
@@ -50,11 +48,8 @@ navigate("/admin/departments");
         <Form.Item label="生日">
           <DatePicker />
         </Form.Item>
-
-        {/* 其他欄位：手機、驗證碼等 */}
-
-        <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-          <Button className="w-full" type="primary" htmlType="submit">
+        <Form.Item >
+          <Button className="w-1/2" type="primary" htmlType="submit">
             登入
           </Button>
         </Form.Item>

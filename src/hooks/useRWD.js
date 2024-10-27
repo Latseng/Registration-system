@@ -26,11 +26,11 @@ import { useState, useEffect } from "react";
 const useRWD = () => {
   
   const [isDesktop, setIsDesktop] = useState(() => {
-    return window.innerWidth > 576 
+    return window.innerWidth > 720 
   });
 
   const handleRWD = () => {
-    setIsDesktop(window.innerWidth > 576);
+    setIsDesktop(window.innerWidth > 720);
   };
 
   useEffect(() => {
