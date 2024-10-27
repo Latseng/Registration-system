@@ -80,6 +80,7 @@ const DoctorsPage = () => {
   }));
 
   const showDoctorInfo = async (id) => {
+    setIsModalOpen(true);
     setIsModalLoading(true);
     const doctor = await getDoctorById(id);
     const weekDay = ["日", "一", "二", "三", "四", "五", "六"];
@@ -97,7 +98,6 @@ const DoctorsPage = () => {
     const organizedDoctor = { ...doctor, schedules: organizedSchedules };
     setSelectedDoctor(organizedDoctor);
     setIsModalLoading(false);
-   setIsModalOpen(true);
   };
 
   const handleCancel = () => {

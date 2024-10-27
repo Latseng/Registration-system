@@ -438,35 +438,22 @@ if (resultData.length === 0) return warning("查無此醫師");
                   {d.schedules.map((schedule) => (
                     <Card.Grid
                       key={schedule.doctorScheduleId}
+                      className="cursor-pointer"
                       style={gridStyle}
+                      onClick={() =>
+                        handleAppointment({
+                          date: schedule.date,
+                          doctor: d.doctorName,
+                          time: schedule.scheduleSlot,
+                          id: schedule.doctorScheduleId,
+                        })
+                      }
                     >
-                      <Button
-                        onClick={() =>
-                          handleAppointment({
-                            date: schedule.date,
-                            doctor: d.doctorName,
-                            time: schedule.scheduleSlot,
-                            id: schedule.doctorScheduleId,
-                          })
-                        }
-                      >
-                        {schedule.date}
-                        <br />
-                        {schedule.scheduleSlot}
-                        <br />
-                        已掛號{schedule.bookedAppointments}人
-                      </Button>
+                      <p>{schedule.date}</p>
+                      <p>{schedule.scheduleSlot}診</p>
+                      <p>已掛號{schedule.bookedAppointments}人</p>
                     </Card.Grid>
                   ))}
-                  <Card.Grid hoverable={false} style={gridStyle}>
-                    已滿
-                  </Card.Grid>
-                  <Card.Grid hoverable={false} style={gridStyle}>
-                    已滿
-                  </Card.Grid>
-                  <Card.Grid hoverable={false} style={gridStyle}>
-                    已滿
-                  </Card.Grid>
                 </Card>
               ))
             )}

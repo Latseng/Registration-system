@@ -118,9 +118,12 @@ const DepartmentPage = () => {
 
   return (
     <Layout className="min-h-screen">
-      <Sidebar items={items} onClickPage={handleClickPage} onClickLogo={handleClickLogo} />
+      <Sidebar
+        items={items}
+        onClickPage={handleClickPage}
+        onClickLogo={handleClickLogo}
+      />
       <Content className="bg-gray-100 p-6">
-       
         {isDesktop && (
           <button className="absolute right-8 top-4" onClick={handleClickLogin}>
             登入
@@ -139,12 +142,17 @@ const DepartmentPage = () => {
             }}
           />
         </div>
-         {isPageLoading && <Card loading={isPageLoading}></Card>}
+        {isPageLoading && <Card loading={isPageLoading}></Card>}
         {departments.map((s) => (
           <Card className="my-4" key={s.category} title={s.category}>
             {s.specialties.map((s) => (
-              <Card.Grid key={s} style={gridStyle}>
-                <Button onClick={() => handleClickSpecialties(s)}>{s}</Button>
+              <Card.Grid
+                onClick={() => handleClickSpecialties(s)}
+                className="flex justify-center text-base cursor-pointer hover:text-mainColorLight"
+                key={s}
+                style={gridStyle}
+              >
+                {s}
               </Card.Grid>
             ))}
           </Card>

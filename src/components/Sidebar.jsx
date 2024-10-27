@@ -58,7 +58,7 @@ const Sidebar = ({onClickPage, onClickLogo, items}) => {
               mode="vertical"
               style={{width: 200}}
               selectedKeys={[currentPage()]}
-              className="bg-mainColor px-6"
+              className="bg-mainColor text-center px-6"
               items={items}
               onClick={onClickPage}
             />

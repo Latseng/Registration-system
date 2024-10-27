@@ -296,7 +296,7 @@ const idNumberValidation = async (_, value) => {
           登入
         </button>
       )}
-      <Content className="bg-gray-100 p-6">
+      <Content className="bg-gray-100 p-4">
         {isVerified ? (
           isPageLoading ? (
             <List loading={isPageLoading}></List>
@@ -382,15 +382,13 @@ const idNumberValidation = async (_, value) => {
         ) : (
           <Form
             name="login"
+            className="mx-auto mt-8 text-center rounded-2xl md:w-1/2 bg-white p-4"
             initialValues={{
               remember: true,
             }}
-            style={{
-              maxWidth: 360,
-            }}
             onFinish={handleFinish}
           >
-            <h1 className="text-2xl mb-6">查詢您的掛號資訊</h1>
+            <h1 className="text-2xl mb-6">掛號資訊查詢</h1>
             <Form.Item
               label="身份證字號"
               name="idNumber"

@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 
 const { Option } = Select;
 
-const DatePicker = ({form}) => {
+const DatePicker = () => {
   const [year, setYear] = useState(null); 
   const [month, setMonth] = useState(null); 
   const [day, setDay] = useState(null); 
@@ -42,9 +42,9 @@ const DatePicker = ({form}) => {
           rules={[{ required: true, message: "請選擇年份" }]}
         >
           <Select
-            value={year} 
+            value={year}
             onChange={handleYearChange}
-            placeholder="西元年" 
+            placeholder="西元年"
             style={{ width: "100%" }}
           >
             {years.map((y) => (
@@ -61,10 +61,11 @@ const DatePicker = ({form}) => {
           rules={[{ required: true, message: "請選擇月份" }]}
         >
           <Select
-            value={month} 
+            value={month}
             onChange={handleMonthChange}
-            placeholder="月" 
+            placeholder="月"
             style={{ width: "100%" }}
+            disabled={!year}
           >
             {months.map((m) => (
               <Option key={m} value={m}>
@@ -80,10 +81,11 @@ const DatePicker = ({form}) => {
           rules={[{ required: true, message: "請選擇日期" }]}
         >
           <Select
-            value={day} 
+            value={day}
             onChange={setDay}
             placeholder="日"
             style={{ width: "100%" }}
+            disabled={!month}
           >
             {days.map((d) => (
               <Option key={d} value={d}>
