@@ -5,17 +5,16 @@ const {Content} = Layout
 
 const MainContent = ({handleClick}) => {
   return (
-    <Content className="p-6 min-h-screen flex flex-wrap justify-center md:relative">
-      <img
-        className="md:w-3/5 md:absolute md:-top-2 md:right-16 md:-z-10 animate-slideInRight"
-        src={doctorImage}
-      />
-      <div className="text-center text-2xl top-96 left-64 md:absolute md:top-48 md:text-4xl md:left-24 animate-fadeIn">
+    <Content className="w-screen p-6 md:relative">
+      <div className="md:bg-contain md:w-3/5 md:absolute md:-top-2 md:right-16 md:-z-10 animate-slideInRight">
+        <img src={doctorImage} />
+      </div>
+      <div className="text-center mt-8 text-2xl md:absolute md:top-48 md:text-4xl md:left-24 animate-fadeIn">
         <p className="text-mainColor mb-8 font-bold animate-slideInLeft">
           掛號看診，一鍵搞定
         </p>
         <Button
-          size="large"
+          size="large" 
           onClick={() => handleClick("departments")}
           className="w-48 h-12 md:ml-20 animate-slideInRight"
           type="primary"

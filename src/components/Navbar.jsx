@@ -38,15 +38,15 @@ const Navbar = ({handleClick}) => {
     },
   ];
   return (
-    <Header className="grid grid-cols-12 gap-1 grid-rows-1   bg-mainColor px-8">
-      <div className="flex items-center text-white text-2xl col-start-6 col-end-8 md:col-start-1 md:col-end-3 row-span-1">
+    <Header className="w-screen grid grid-cols-12 gap-1 grid-rows-1  bg-mainColor px-8">
+      <div className="flex items-center text-white text-2xl col-start-6 col-end-9 md:col-start-1 md:col-end-3 row-span-1">
         <FaSuitcaseMedical className="mr-2" />
         <h1>MA</h1>
       </div>
       {isDesktop ? (
         <>
           <Button
-            className="my-auto col-start-8 col-end-10 row-span-1"
+            className="my-auto col-start-9 col-end-10 row-span-1"
             type="primary"
             size="large"
             onClick={() => handleClick("query")}
