@@ -8,24 +8,13 @@ import { useState } from "react";
 
 const {Header, Sider} = Layout
 
-const Sidebar = ({onClickPage, onClickLogo, items}) => {
+const Sidebar = ({onClickPage, onClickLogo, items, currentPage}) => {
   const [openMenu, setOpenMenu] = useState(false)
   const location = useLocation();
   const navigate = useNavigate();
   const isDesktop = useRWD()
 
-  const currentPage = () => {
-    switch (location.pathname) {
-      case "/query":
-        return "2";
-      case "/records":
-        return "3";
-      case "/doctors":
-        return "4";
-      default:
-        return "1";
-    }
-  };
+
   return (
     <>
       {isDesktop ? (
@@ -66,7 +55,7 @@ const Sidebar = ({onClickPage, onClickLogo, items}) => {
         </Sider>
       ) : (
         <>
-          <Header className="flex justify-between bg-mainColor items-centerpx-6">
+          <Header className="flex justify-between bg-mainColor items-center px-6">
             <button className="text-white" onClick={() => setOpenMenu(true)}>
               <IoMenu className="size-6" />
             </button>
@@ -75,6 +64,7 @@ const Sidebar = ({onClickPage, onClickLogo, items}) => {
           </Header>
           <Drawer
             open={openMenu}
+            width={200}
             closable={false}
             placement="left"
             onClose={() => setOpenMenu(false)}

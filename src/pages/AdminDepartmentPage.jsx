@@ -3,13 +3,14 @@ import { Layout, List, Button } from "antd";
 import { useState, useEffect } from "react";
 import { IoIosMore, IoIosAddCircleOutline } from "react-icons/io";
 import { getSpecialties } from "../api/specialties";
+import { useNavigate } from "react-router-dom";
 
 const { Content } = Layout;
 
 const sidebarItems = [
   {
     key: "1",
-    label: "門診科別",
+    label: "科別管理",
   },
   {
     key: "2",
@@ -17,7 +18,7 @@ const sidebarItems = [
   },
   {
     key: "3",
-    label: "病患管理",
+    label: "掛號管理",
   },
 ];
 
@@ -25,6 +26,7 @@ const sidebarItems = [
 const AdminDepartmentPage = () => {
 const [isLoading, setIsLoading] = useState(false)
 const [departments, setDepartments] = useState([])
+const navigate = useNavigate()
 
   useEffect(() => {
     const getDepartmentsData = async () => {
@@ -44,9 +46,35 @@ const [departments, setDepartments] = useState([])
   const handleClick = () => {
     console.log("更多")
   }
+  
+  const handleClickPage = (e) => {
+    switch (e.key) {
+      case "1":
+        navigate("/admin/departments");
+        break;
+      case "2":
+        navigate("/admin/doctors");
+        break;
+      case "3":
+        navigate("/admin/appointments");
+        break;
+      default:
+        break;
+    }
+  };
+  const currentPage = () => {
+    switch (location.pathname) {
+      case "/admin/doctors":
+        return "2";
+      case "admin/appointments":
+        return "3";
+      default:
+        return "1";
+    }
+  };
   return (
     <Layout className="min-h-screen">
-      <Sidebar items={sidebarItems} />
+      <Sidebar items={sidebarItems} onClickPage={handleClickPage} currentPage={currentPage}/>
       <Content className="bg-gray-100 p-6">
         {departments.map((d) => (
           <List

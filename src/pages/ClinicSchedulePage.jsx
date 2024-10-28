@@ -61,7 +61,7 @@ const ClinicSchedulePage = () => {
   const [displayMode, setDisplayMode] = useState("schedule");
   const [isSubmitLoading, setIsSubmitLoading] = useState(false)
   const [searchValue, setSearchValue] = useState("");
-  const [isScheduleLoaing, setScheduleLoading] = useState(true)
+  const [isScheduleLoading, setScheduleLoading] = useState(true)
   const [isFirstCreateAppointment, setIsFirstCreateAppointment] = useState(false)
   const [isModalLoading, setIsModalLoading] = useState(false)
   const [form] = Form.useForm();
@@ -305,6 +305,18 @@ setIsModalOpen(true)
         break;
     }
   };
+const currentPage = () => {
+  switch (location.pathname) {
+    case "/query":
+      return "2";
+    case "/records":
+      return "3";
+    case "/doctors":
+      return "4";
+    default:
+      return "1";
+  }
+};
 
   const handleClickLogin = () => {
     navigate("/login");
@@ -368,6 +380,7 @@ if (resultData.length === 0) return warning("查無此醫師");
         items={items}
         onClickPage={handleClickPage}
         onClickLogo={handleClickLogo}
+        currentPage={currentPage}
       />
 
       <Layout className="bg-gray-100 p-6">
@@ -422,7 +435,7 @@ if (resultData.length === 0) return warning("查無此醫師");
             {displayMode === "schedule" ? (
               <Table
                 bordered
-                loading={isScheduleLoaing}
+                loading={isScheduleLoading}
                 tableLayout="auto"
                 columns={columns}
                 dataSource={dataSource}

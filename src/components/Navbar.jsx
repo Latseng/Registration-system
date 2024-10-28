@@ -38,15 +38,15 @@ const Navbar = ({handleClick}) => {
     },
   ];
   return (
-    <Header className="w-screen grid grid-cols-12 gap-1 grid-rows-1  bg-mainColor px-8">
-      <div className="flex items-center text-white text-2xl col-start-6 col-end-9 md:col-start-1 md:col-end-3 row-span-1">
-        <FaSuitcaseMedical className="mr-2" />
+    <Header className="w-screen flex justify-center md:grid md:grid-cols-12 md:gap-1 md:grid-rows-1  bg-mainColor px-8">
+      <div className="flex items-center mx-auto text-white text-2xl col-start-6 col-end-9 md:col-start-1 md:col-end-3 row-span-1">
+        <FaSuitcaseMedical className="mr-2 size-6" />
         <h1>MA</h1>
       </div>
       {isDesktop ? (
         <>
           <Button
-            className="my-auto col-start-9 col-end-10 row-span-1"
+            className="my-auto md:col-start-9 md:col-end-10 md:row-span-1"
             type="primary"
             size="large"
             onClick={() => handleClick("query")}
@@ -54,7 +54,7 @@ const Navbar = ({handleClick}) => {
             掛號查詢
           </Button>
           <Button
-            className="my-auto col-start-10 col-end-12 row-span-1"
+            className="my-auto md:col-start-10 md:col-end-12 md:row-span-1"
             type="primary"
             size="large"
             onClick={() => handleClick("doctors")}
@@ -62,7 +62,7 @@ const Navbar = ({handleClick}) => {
             醫師專長查詢
           </Button>
           <Button
-            className="my-auto col-start-12 col-end-13 row-span-1"
+            className="my-auto md:col-start-12 md:col-end-13 md:row-span-1"
             type="primary"
             onClick={() => handleClick("login")}
           >
@@ -71,7 +71,6 @@ const Navbar = ({handleClick}) => {
         </>
       ) : (
         <Dropdown
-          className="col-start-12 col-end-13"
           menu={{
             items,
           }}

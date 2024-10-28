@@ -88,6 +88,19 @@ const DepartmentPage = () => {
     }
   };
 
+  const currentPage = () => {
+    switch (location.pathname) {
+      case "/query":
+        return "2";
+      case "/records":
+        return "3";
+      case "/doctors":
+        return "4";
+      default:
+        return "1";
+    }
+  };
+
   const handleClickSpecialties = (specialty) => {
     navigate("/departments/schedule", { state: { specialty: specialty } });
   };
@@ -122,6 +135,7 @@ const DepartmentPage = () => {
         items={items}
         onClickPage={handleClickPage}
         onClickLogo={handleClickLogo}
+        currentPage={currentPage}
       />
       <Content className="bg-gray-100 p-6">
         {isDesktop && (

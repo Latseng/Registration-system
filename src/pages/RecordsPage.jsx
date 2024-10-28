@@ -51,10 +51,22 @@ const RecordsPage = () => {
          break;
      }
    };
+   const currentPage = () => {
+     switch (location.pathname) {
+       case "/query":
+         return "2";
+       case "/records":
+         return "3";
+       case "/doctors":
+         return "4";
+       default:
+         return "1";
+     }
+   };
 
   return (
     <Layout className="min-h-screen">
-      <Sidebar items={items} onClickPage={handleClickPage} onClickLogo={handleClickLogo} />
+      <Sidebar items={items} onClickPage={handleClickPage} onClickLogo={handleClickLogo} currentPage={currentPage} />
 
       <Content className="bg-gray-100 p-6">
         <h1 className="text-2xl mb-6">看診紀錄</h1>

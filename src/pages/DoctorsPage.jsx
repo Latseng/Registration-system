@@ -126,6 +126,18 @@ const DoctorsPage = () => {
         break;
     }
   };
+  const currentPage = () => {
+    switch (location.pathname) {
+      case "/query":
+        return "2";
+      case "/records":
+        return "3";
+      case "/doctors":
+        return "4";
+      default:
+        return "1";
+    }
+  };
   const handleClickLogin = () => {
     navigate("/login");
   };
@@ -230,6 +242,7 @@ const DoctorsPage = () => {
         items={items}
         onClickPage={handleClickPage}
         onClickLogo={handleClickLogo}
+        currentPage={currentPage}
       />
       {isDesktop && (
         <button className="absolute right-8 top-4" onClick={handleClickLogin}>

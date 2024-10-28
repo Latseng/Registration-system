@@ -131,6 +131,18 @@ useEffect(() => {
         break;
     }
   };
+  const currentPage = () => {
+    switch (location.pathname) {
+      case "/query":
+        return "2";
+      case "/records":
+        return "3";
+      case "/doctors":
+        return "4";
+      default:
+        return "1";
+    }
+  };
 
 const handleFinish = (values) => {
   setIsLoading(true)
@@ -289,6 +301,7 @@ const idNumberValidation = async (_, value) => {
         items={items}
         onClickPage={handleClickPage}
         onClickLogo={handleClickLogo}
+        currentPage={currentPage}
       />
 
       {isDesktop && (
