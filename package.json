@@ -12,6 +12,7 @@
     "dev-server": "json-server --watch db.json --port 3004"
   },
   "dependencies": {
+    "@ant-design/icons": "^5.5.1",
     "@reduxjs/toolkit": "^2.3.0",
     "antd": "^5.20.3",
     "axios": "^1.7.7",

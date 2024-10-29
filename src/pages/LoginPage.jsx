@@ -16,21 +16,21 @@ navigate("/admin/departments");
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
-      <button
-        onClick={() => navigate("/*")}
-        className="mb-10 flex items-center text-mainColor text-6xl"
-      >
-        <FaSuitcaseMedical className="mr-2" />
-        <h1>MA</h1>
-      </button>
       <Form
         form={form}
         name="basic"
         initialValues={{ remember: true }}
         onFinish={onFinish}
         autoComplete="off"
-        className="flex flex-col md:w-1/3 text-center"
+        className="bg-white mb-8 p-12 flex flex-col md:w-1/2 rounded-2xl text-center"
       >
+        <button
+          onClick={() => navigate("/*")}
+          className="mx-auto mb-10 flex items-center text-mainColor text-6xl"
+        >
+          <FaSuitcaseMedical className="mr-2" />
+          <h1>MA</h1>
+        </button>
         <Form.Item
           label="身分證字號"
           name="idNumber"
@@ -48,7 +48,7 @@ navigate("/admin/departments");
         <Form.Item label="生日">
           <DatePicker />
         </Form.Item>
-        <Form.Item >
+        <Form.Item>
           <Button className="w-1/2" type="primary" htmlType="submit">
             登入
           </Button>

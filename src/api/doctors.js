@@ -37,6 +37,13 @@ export const searchDoctors = async (keyword) => {
 
 export const createDoctor = () => {};
 
-export const patchDoctor = () => {};
+export const patchDoctorById = async (id, payload) => {
+  try {
+    const res = await axios.put(`${baseURL}/doctors/${id}`, payload);
+    return res.data.status;
+  } catch (error) {
+    console.error("[Get doctor by id failed]: ", error);
+  }
+};
 
 export const deleteDoctor = () => {};

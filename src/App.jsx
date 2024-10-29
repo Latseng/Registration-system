@@ -23,7 +23,7 @@ function App() {
           <Route path="admin/departments" element={<AdminDepartmentPage />} />
           <Route path="admin/doctors" element={<AdminDoctorPage />} />
           <Route path="admin/appointments" element={<AdminAppointmentPage />} />
-          <Route path="admin/schedules" element={<AdminSchedulePage />} />
+          <Route path="admin/schedules/:doctorId" element={<AdminSchedulePage />} />
         </Routes>
       </BrowserRouter>
     </ConfigProvider>
