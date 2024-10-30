@@ -42,8 +42,16 @@ export const patchDoctorById = async (id, payload) => {
     const res = await axios.put(`${baseURL}/doctors/${id}`, payload);
     return res.data.status;
   } catch (error) {
-    console.error("[Get doctor by id failed]: ", error);
+    console.error("[Update doctorInfo by id failed]: ", error);
   }
 };
 
-export const deleteDoctor = () => {};
+export const deleteDoctorById = async (id) => {
+  try {
+    console.log(typeof id);
+    const res = await axios.delete(`${baseURL}/doctors/${id}`);
+    return res.data.status;
+  } catch (error) {
+    console.error("[Delete doctor by id failed]: ", error);
+  }
+};

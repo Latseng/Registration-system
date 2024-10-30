@@ -1,11 +1,30 @@
 import Sidebar from "../components/Sidebar";
-import { Layout, Button, Table, Flex, Modal, Form, Input, Space, message } from "antd";
+import {
+  Layout,
+  Button,
+  Table,
+  Flex,
+  Modal,
+  Form,
+  Input,
+  Space,
+  message,
+} from "antd";
 import { useState, useEffect } from "react";
-import { IoIosAddCircleOutline } from "react-icons/io";
 import { FaTable, FaEdit } from "react-icons/fa";
-import { getDoctors, getDoctorById, patchDoctorById } from "../api/doctors";
+import {
+  getDoctors,
+  getDoctorById,
+  patchDoctorById,
+  deleteDoctorById,
+} from "../api/doctors";
 import { useNavigate } from "react-router-dom";
-import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  MinusCircleOutlined,
+  PlusOutlined,
+  ExclamationCircleFilled,
+} from "@ant-design/icons";
+import { v4 as uuidv4 } from "uuid";
 
 const { Content } = Layout;
 
@@ -27,17 +46,28 @@ const sidebarItems = [
 const AdminDoctorPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isDoctorModalOpen, setIsDoctorModalOpen] = useState(false);
+  const [isDeleteConfirmModalOpen, setIsDeleteConfirmModalOpen] =
+    useState(false);
+    const [isAddNewDoctorModalOpen, setIsAddNewDoctorModalOpen] = useState(false)
   const [doctorInfo, setDoctorInfo] = useState({
     id: null,
     name: "",
     specialty: "",
     description: [],
   });
+  const [newDoctorInfo, setNewDoctorInfo] = useState({
+    name: "",
+    specialty: "",
+    description: [""],
+  });
   const [isDoctorModalLoading, setIsDoctorModalLoading] = useState(false);
   const [isSubmitLoading, setIsSubmitLoading] = useState(false);
   const [doctors, setDoctors] = useState([]);
-const [messageApi, contextHolder] = message.useMessage();
+  const [deleteDoctorId, setDeleteDoctorId] = useState(null);
+  const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
+
+  const [form] = Form.useForm();
 
   const columns = [
     {
@@ -65,7 +95,7 @@ const [messageApi, contextHolder] = message.useMessage();
           <Button type="text" onClick={() => handleClick("edit", record.id)}>
             <FaEdit size={24} />
           </Button>
-          <Button danger onClick={() => console.log(record)}>
+          <Button danger onClick={() => handleClick("delete", record.id)}>
             X
           </Button>
         </Flex>
@@ -81,7 +111,10 @@ const [messageApi, contextHolder] = message.useMessage();
       id: doctor.id,
       name: doctor.name,
       specialty: doctor.specialty,
-      description: JSON.parse(doctor.description),
+      description: JSON.parse(doctor.description).map((item) => ({
+        id: uuidv4(),
+        value: item,
+      })),
     });
     setIsDoctorModalLoading(false);
   };
@@ -91,14 +124,14 @@ const [messageApi, contextHolder] = message.useMessage();
   const handleDescriptionChange = (index, value) => {
     setDoctorInfo((prev) => {
       const newDescription = [...prev.description];
-      newDescription[index] = value;
+      newDescription[index].value = value;
       return { ...prev, description: newDescription };
     });
   };
   const addDescriptionField = () => {
     setDoctorInfo((prev) => ({
       ...prev,
-      description: [...prev.description, ""],
+      description: [...prev.description, {id: uuidv4(), value: ""}],
     }));
   };
   const removeDescriptionField = (index) => {
@@ -151,13 +184,36 @@ const [messageApi, contextHolder] = message.useMessage();
     });
   };
 
-  const handleClick = (action, value) => {
+  const handleDelete = async () => {
+    console.log(deleteDoctorId);
+    
+    const result = await deleteDoctorById(deleteDoctorId);
+    if (result === "success") {
+      await getDoctorsData();
+      setIsDeleteConfirmModalOpen(false);
+      messageApi.open({
+        type: "success",
+        content: "資料刪除成功",
+      });
+      return;
+    }
+    messageApi.open({
+      type: "error",
+      content: "錯誤！資料刪除失敗",
+    });
+  };
+
+  const handleClick = (action, id) => {
     switch (action) {
       case "edit":
-        handleEditDoctorInfo(value);
+        handleEditDoctorInfo(id);
         break;
-        case "delete":
-        console.log("刪除");
+      case "delete":
+        setIsDeleteConfirmModalOpen(true);
+        setDeleteDoctorId(id);
+        break;
+      case "add":
+        setIsAddNewDoctorModalOpen(true);
         break;
       default:
         break;
@@ -200,7 +256,30 @@ const [messageApi, contextHolder] = message.useMessage();
         return "1";
     }
   };
+  const handleCreateDoctorData = (values) => {
+    console.log(values);
+    
+  }
+  const addNewDoctorDescriptionField = () => {
+    setNewDoctorInfo((prev) => ({
+      ...prev,
+      description: [...prev.description, ""],
+    }));
+  }
 
+  const handleNewDoctorDescriptionChange = (index, value) => {
+    setNewDoctorInfo((prev) => {
+      const newDescription = [...prev.description];
+      newDescription[index] = value;
+      return { ...prev, description: newDescription };
+    });
+  }
+  const removeNewDoctorDescriptionField = (index) => {
+    setNewDoctorInfo((prev) => {
+      const newDescription = prev.description.filter((_, idx) => idx !== index);
+      return { ...prev, description: newDescription };
+    });
+  }
   return (
     <Layout className="min-h-screen">
       {contextHolder}
@@ -209,8 +288,11 @@ const [messageApi, contextHolder] = message.useMessage();
         onClickPage={handleClickPage}
         currentPage={currentPage}
       />
-      <Content className="bg-gray-100 p-6">
-        <h1 className="text-2xl mb-4">醫師管理</h1>
+      <Content className="bg-gray-100 p-6 relative">
+        <h1 className="text-2xl">醫師管理</h1>
+        <Button onClick={() => handleClick("add")} className="my-4">
+          新增醫師
+        </Button>
         <Table loading={isLoading} columns={columns} dataSource={data} />
         <Modal
           title="醫師資料編輯"
@@ -249,13 +331,13 @@ const [messageApi, contextHolder] = message.useMessage();
             <Form.Item label="專長">
               {doctorInfo.description.map((item, index) => (
                 <Space
-                  key={item + index}
+                  key={item.id}
                   style={{ display: "flex", marginBottom: 8 }}
                   align="baseline"
                 >
                   <Input
                     placeholder="請輸入專長"
-                    defaultValue={item}
+                    defaultValue={item.value}
                     onChange={(e) =>
                       handleDescriptionChange(index, e.target.value)
                     }
@@ -283,6 +365,86 @@ const [messageApi, contextHolder] = message.useMessage();
                     handleInputChange("description", e.target.value)
                   }
                 /> */}
+            </Form.Item>
+          </Form>
+        </Modal>
+        <Modal
+          title="刪除醫師資料"
+          open={isDeleteConfirmModalOpen}
+          onOk={handleDelete}
+          onCancel={() => setIsDeleteConfirmModalOpen(false)}
+          okType="danger"
+          cancelText="返回"
+          okText="刪除"
+        >
+          <div className="flex p-8">
+            <ExclamationCircleFilled className="text-yellow-500 text-2xl pr-2" />
+            <p>將從資料庫中，刪除該筆醫師資料，確定要進行此一操作？</p>
+          </div>
+        </Modal>
+        <Modal
+          title="建立醫師資料"
+          open={isAddNewDoctorModalOpen}
+          onCancel={() => setIsAddNewDoctorModalOpen(false)}
+          footer={null}
+        >
+          <Form
+            className="p-4"
+            form={form}
+            layout="vertical"
+            onFinish={handleCreateDoctorData}
+          >
+            <Form.Item
+              label="姓名"
+              name="name"
+              rules={[{ required: true, message: "請輸入醫師姓名" }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              label="科別"
+              name="specialty"
+              rules={[{ required: true, message: "請輸入醫師科別" }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item label="專長">
+              {newDoctorInfo.description.map((item, index) => (
+                <Space
+                  key={item + index}
+                  style={{ display: "flex", marginBottom: 8 }}
+                  align="baseline"
+                >
+                  <Input
+                    placeholder="請輸入專長"
+                    defaultValue={item}
+                    onChange={(e) =>
+                      handleNewDoctorDescriptionChange(index, e.target.value)
+                    }
+                  />
+                  {index > 0 && (
+                    <Button
+                      type="text"
+                      danger
+                      onClick={() => removeNewDoctorDescriptionField(index)}
+                    >
+                      <MinusCircleOutlined />
+                    </Button>
+                  )}
+                </Space>
+              ))}
+              <Button
+                type="dashed"
+                onClick={addNewDoctorDescriptionField}
+                icon={<PlusOutlined />}
+              >
+                新增專長
+              </Button>
+            </Form.Item>
+            <Form.Item>
+              <Button type="primary" htmlType="submit">
+                提交
+              </Button>
             </Form.Item>
           </Form>
         </Modal>
