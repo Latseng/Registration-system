@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { IoIosAddCircleOutline } from "react-icons/io";
 import { FaTable, FaEdit } from "react-icons/fa";
 import { getDoctors } from "../api/doctors";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate,useLocation, Link } from "react-router-dom";
 
 const { Content } = Layout;
 
@@ -25,6 +25,8 @@ const sidebarItems = [
 
 const AdminSchedulePage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { doctorName } = location.state;
 
 const handleClickPage = (e) => {
   switch (e.key) {
@@ -66,7 +68,7 @@ const currentPage = () => {
             },
           ]}
         />
-        <h1 className="text-2xl mb-4">門診班表</h1>
+        <h1 className="text-2xl mb-4">{doctorName} 門診班表</h1>
       </Content>
     </Layout>
   );

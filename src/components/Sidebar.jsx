@@ -1,19 +1,23 @@
 import { Layout, Divider, ConfigProvider, Menu, Drawer } from "antd"
 import { FaSuitcaseMedical } from "react-icons/fa6";
 import { IoMenu } from "react-icons/io5";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import useRWD from "../hooks/useRWD";
 import Logo from "./Logo";
 import { useState } from "react";
+import Proptypes from "prop-types"
 
 const {Header, Sider} = Layout
 
-const Sidebar = ({onClickPage, onClickLogo, items, currentPage}) => {
+const Sidebar = ({onClickPage, items, currentPage}) => {
   const [openMenu, setOpenMenu] = useState(false)
-  const location = useLocation();
   const navigate = useNavigate();
   const isDesktop = useRWD()
 
+  const handleClickLogo = () => {
+    navigate("/*");
+  };
+  
 
   return (
     <>
@@ -59,7 +63,7 @@ const Sidebar = ({onClickPage, onClickLogo, items, currentPage}) => {
             <button className="text-white" onClick={() => setOpenMenu(true)}>
               <IoMenu className="size-6" />
             </button>
-            <Logo onClick={onClickLogo} />
+            <Logo onClick={handleClickLogo} />
             <button className="text-white">登入</button>
           </Header>
           <Drawer
@@ -81,5 +85,11 @@ const Sidebar = ({onClickPage, onClickLogo, items, currentPage}) => {
     </>
   );
 }
+
+Sidebar.propTypes = {
+  onClickPage: Proptypes.func,
+  items: Proptypes.object,
+  currentPage: Proptypes.func
+};
 
 export default Sidebar

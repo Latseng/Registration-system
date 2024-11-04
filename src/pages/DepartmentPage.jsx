@@ -1,6 +1,6 @@
 import useRWD from "../hooks/useRWD";
 import Sidebar from "../components/Sidebar";
-import { Layout, Button, Input, Card, message } from "antd";
+import { Layout, Input, Card, message } from "antd";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getSpecialties } from "../api/specialties";
@@ -66,9 +66,7 @@ const DepartmentPage = () => {
   const handleClickLogin = () => {
     navigate("/login");
   };
-  const handleClickLogo = () => {
-    navigate("/*");
-  };
+  
   const handleClickPage = (e) => {
     switch (e.key) {
       case "1":
@@ -125,6 +123,7 @@ const DepartmentPage = () => {
 
     setDepartments(resultData);
   };
+
   const handleChange = (event) => {
     setSearchValue(event.target.value);
   };
@@ -134,7 +133,6 @@ const DepartmentPage = () => {
       <Sidebar
         items={items}
         onClickPage={handleClickPage}
-        onClickLogo={handleClickLogo}
         currentPage={currentPage}
       />
       <Content className="bg-gray-100 p-6">

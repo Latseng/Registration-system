@@ -58,7 +58,7 @@ const AdminDoctorPage = () => {
   const [newDoctorInfo, setNewDoctorInfo] = useState({
     name: "",
     specialty: "",
-    description: [""],
+    description: [{id: uuidv4(), value: ""}],
   });
   const [isDoctorModalLoading, setIsDoctorModalLoading] = useState(false);
   const [isSubmitLoading, setIsSubmitLoading] = useState(false);
@@ -69,14 +69,12 @@ const AdminDoctorPage = () => {
 
   const [form] = Form.useForm();
 
+  
   const columns = [
     {
       title: "門診班表",
       render: (_, record) => (
-        <Button
-          type="text"
-          onClick={() => navigate(`/admin/schedules/${record.id}`)}
-        >
+        <Button type="text" onClick={() => handleClickSchedules(record)}>
           <FaTable size={24} />
         </Button>
       ),
@@ -165,7 +163,9 @@ const AdminDoctorPage = () => {
     setIsSubmitLoading(true);
     const updatedData = {
       ...doctorInfo,
-      description: JSON.stringify(doctorInfo.description),
+      description: JSON.stringify(
+        doctorInfo.description.map((item) => item.value)
+      ),
     };
     const result = await patchDoctorById(doctorInfo.id, updatedData);
     if (result === "success") {
@@ -263,14 +263,14 @@ const AdminDoctorPage = () => {
   const addNewDoctorDescriptionField = () => {
     setNewDoctorInfo((prev) => ({
       ...prev,
-      description: [...prev.description, ""],
+      description: [...prev.description, {id: uuidv4(), value: ""}],
     }));
   }
 
   const handleNewDoctorDescriptionChange = (index, value) => {
     setNewDoctorInfo((prev) => {
       const newDescription = [...prev.description];
-      newDescription[index] = value;
+      newDescription[index].value = value;
       return { ...prev, description: newDescription };
     });
   }
@@ -280,6 +280,13 @@ const AdminDoctorPage = () => {
       return { ...prev, description: newDescription };
     });
   }
+  const handleClickSchedules = (record) => {
+   navigate(`/admin/schedules/${record.id}`, {
+     state: {
+       doctorName: record.name,
+     },
+   });
+  };
   return (
     <Layout className="min-h-screen">
       {contextHolder}
@@ -358,13 +365,6 @@ const AdminDoctorPage = () => {
               >
                 新增專長
               </Button>
-              {/* <Input
-                  placeholder="請輸入專長"
-                  defaultValue={doctorInfo.description}
-                  onChange={(e) =>
-                    handleInputChange("description", e.target.value)
-                  }
-                /> */}
             </Form.Item>
           </Form>
         </Modal>
@@ -385,7 +385,13 @@ const AdminDoctorPage = () => {
         <Modal
           title="建立醫師資料"
           open={isAddNewDoctorModalOpen}
-          onCancel={() => setIsAddNewDoctorModalOpen(false)}
+          onCancel={() => {setIsAddNewDoctorModalOpen(false)
+            setNewDoctorInfo({
+    name: "",
+    specialty: "",
+    description: [{id: uuidv4(), value: ""}],
+  })
+           } }
           footer={null}
         >
           <Form
@@ -411,18 +417,17 @@ const AdminDoctorPage = () => {
             <Form.Item label="專長">
               {newDoctorInfo.description.map((item, index) => (
                 <Space
-                  key={item + index}
+                  key={item.id}
                   style={{ display: "flex", marginBottom: 8 }}
                   align="baseline"
                 >
                   <Input
                     placeholder="請輸入專長"
-                    defaultValue={item}
+                    defaultValue={item.value}
                     onChange={(e) =>
                       handleNewDoctorDescriptionChange(index, e.target.value)
                     }
                   />
-                  {index > 0 && (
                     <Button
                       type="text"
                       danger
@@ -430,7 +435,6 @@ const AdminDoctorPage = () => {
                     >
                       <MinusCircleOutlined />
                     </Button>
-                  )}
                 </Space>
               ))}
               <Button

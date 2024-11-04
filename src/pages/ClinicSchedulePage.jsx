@@ -49,21 +49,22 @@ const generateDates = () => {
 const ClinicSchedulePage = () => {
   const navigate = useNavigate();
   const isDesktop = useRWD();
-  const location = useLocation()
-  const {specialty} = location.state
+  const location = useLocation();
+  const { specialty } = location.state;
   const dates = generateDates();
   const [currentWeek, setCurrentWeek] = useState(0);
   const weekDates = dates.slice(currentWeek * 7, (currentWeek + 1) * 7);
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [schedules, setSchedules] = useState([]);
   const [displayMode, setDisplayMode] = useState("schedule");
-  const [isSubmitLoading, setIsSubmitLoading] = useState(false)
+  const [isSubmitLoading, setIsSubmitLoading] = useState(false);
   const [searchValue, setSearchValue] = useState("");
-  const [isScheduleLoading, setScheduleLoading] = useState(true)
-  const [isFirstCreateAppointment, setIsFirstCreateAppointment] = useState(false)
-  const [isModalLoading, setIsModalLoading] = useState(false)
+  const [isScheduleLoading, setScheduleLoading] = useState(true);
+  const [isFirstCreateAppointment, setIsFirstCreateAppointment] =
+    useState(false);
+  const [isModalLoading, setIsModalLoading] = useState(false);
   const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
   const dispatch = useDispatch();
@@ -88,22 +89,18 @@ const ClinicSchedulePage = () => {
   ];
 
   const getSchedulesAsync = async () => {
-     
     try {
-     
       const schedules = await getSchedules(specialty);
       setSchedules(schedules);
-      setScheduleLoading(false)
-      
+      setScheduleLoading(false);
     } catch (error) {
       console.error(error);
     }
   };
   useEffect(() => {
     if (!searchValue) {
-     getSchedulesAsync();
+      getSchedulesAsync();
     }
-    
   }, [searchValue]);
 
   const mapSchedulesToSlots = (schedules, time, dates) => {
@@ -139,7 +136,7 @@ const ClinicSchedulePage = () => {
               size="small"
               className="mr-1"
             >
-                <MdPermContactCalendar className="text-xl" /> 
+              <MdPermContactCalendar className="text-xl" />
             </Button>
             <Button
               onClick={() =>
@@ -163,7 +160,7 @@ const ClinicSchedulePage = () => {
     })),
   ];
 
-  // 生成上午診與下午診的表格資料源
+ 
   const dataSource = [
     {
       key: "morning",
@@ -186,9 +183,9 @@ const ClinicSchedulePage = () => {
   };
 
   const handleAppointment = (appointment) => {
-    setSelectedDoctor(null)
+    setSelectedDoctor(null);
     setSelectedAppointment(appointment);
-    setIsModalOpen(true)
+    setIsModalOpen(true);
   };
 
   const handleClickDoctorInfo = (id) => {
@@ -210,81 +207,78 @@ const ClinicSchedulePage = () => {
         });
         const organizedDoctor = { ...doctor, schedules: organizedSchedules };
         setSelectedDoctor(organizedDoctor);
-        
+
         setIsModalLoading(false);
       } catch (error) {
         console.error(error);
       }
     };
     getDoctorByIdAsync();
-setIsModalOpen(true)
-  }
+    setIsModalOpen(true);
+  };
 
   const handleCancel = () => {
-    
-      setIsModalOpen(false) 
-      setSelectedDoctor(null)
-
-    setSelectedAppointment(null)
+    setIsModalOpen(false);
+    setSelectedDoctor(null);
+    setSelectedAppointment(null);
     form.resetFields();
   };
 
   const handleSubmit = async (values) => {
-    setIsSubmitLoading(true)
+    setIsSubmitLoading(true);
     const birthDate = new Date(
       Date.UTC(values.year, values.month - 1, values.day)
     ).toISOString();
-    
+
     let requestData = {
       idNumber: values.idNumber,
       birthDate: birthDate,
       recaptchaResponse: "test_recaptcha",
       doctorScheduleId: selectedAppointment.id,
     };
-    
-     if (isFirstCreateAppointment) {
+
+    if (isFirstCreateAppointment) {
       requestData = {
         idNumber: values.idNumber,
         birthDate: birthDate,
         recaptchaResponse: "test_recaptcha",
         doctorScheduleId: selectedAppointment.id,
         name: values.name,
-        contactInfo: values.number
+        contactInfo: values.number,
       };
       const newFistAppointment = await createFirstAppointment(requestData);
       console.log(newFistAppointment);
-      return
-     } 
-     
-     const newAppointment =  await createAppointment(requestData);
-     console.log(newAppointment);
-     
-     if (newAppointment === "You have already booked this time slot."){
+      return;
+    }
+
+    const newAppointment = await createAppointment(requestData);
+    console.log(newAppointment);
+
+    if (newAppointment === "You have already booked this time slot.") {
       messageApi.open({
         type: "warning",
         content: "重複掛號",
       });
       setIsSubmitLoading(false);
-      return
-     } 
-     if(typeof newAppointment === "string" && newAppointment.includes('初診')) {
-      setIsFirstCreateAppointment(true)
-     }
+      return;
+    }
+    if (typeof newAppointment === "string" && newAppointment.includes("初診")) {
+      setIsFirstCreateAppointment(true);
+    }
 
-      form.resetFields();
+    form.resetFields();
 
-      dispatch(
-        setNewAppointment({
-          ...newAppointment,
-          requestData: {
-            idNumber: requestData.idNumber,
-            birthDate: requestData.birthDate,
-            recaptchaResponse: requestData.recaptchaResponse
-          },
-        })
-      );
-      navigate("/query");
-    
+    dispatch(
+      setNewAppointment({
+        ...newAppointment,
+        requestData: {
+          idNumber: requestData.idNumber,
+          birthDate: requestData.birthDate,
+          recaptchaResponse: requestData.recaptchaResponse,
+        },
+      })
+    );
+    navigate("/query");
   };
 
   const handleClickPage = (e) => {
@@ -305,18 +299,18 @@ setIsModalOpen(true)
         break;
     }
   };
-const currentPage = () => {
-  switch (location.pathname) {
-    case "/query":
-      return "2";
-    case "/records":
-      return "3";
-    case "/doctors":
-      return "4";
-    default:
-      return "1";
-  }
-};
+  const currentPage = () => {
+    switch (location.pathname) {
+      case "/query":
+        return "2";
+      case "/records":
+        return "3";
+      case "/doctors":
+        return "4";
+      default:
+        return "1";
+    }
+  };
 
   const handleClickLogin = () => {
     navigate("/login");
@@ -330,17 +324,18 @@ const currentPage = () => {
       content: value,
     });
   };
-  const handleSearch = (value, _, {source}) => {
+  const handleSearch = (value, _, { source }) => {
     if (source === "clear") return;
     const filteredData = value.trim();
     if (filteredData.length === 0) return warning("請輸入有效關鍵字");
-    const resultData = schedules.filter((s) => s.doctorName.includes(filteredData));
-if (resultData.length === 0) return warning("查無此醫師");
+    const resultData = schedules.filter((s) =>
+      s.doctorName.includes(filteredData)
+    );
+    if (resultData.length === 0) return warning("查無此醫師");
     setSchedules(resultData);
   };
 
   const groupedSchedulesForList = schedules.reduce((acc, schedule) => {
-    //重整班表資料給列表渲染使用
     if (!acc[schedule.doctorId]) {
       acc[schedule.doctorId] = {
         doctorId: schedule.doctorId,
@@ -365,13 +360,9 @@ if (resultData.length === 0) return warning("查無此醫師");
 
   const doctorListData = Object.values(groupedSchedulesForList);
 
-  const onChange = (value) => {
-  console.log("Captcha value:", value);
-}
-
- const handleSearchChange = (event) => {
-   setSearchValue(event.target.value);
- };
+  const handleSearchChange = (event) => {
+    setSearchValue(event.target.value);
+  };
 
   return (
     <Layout className="min-h-screen">
@@ -481,7 +472,6 @@ if (resultData.length === 0) return warning("查無此醫師");
         selectedAppointment={selectedAppointment}
         handleSubmit={handleSubmit}
         isFirstCreateAppointment={isFirstCreateAppointment}
-        onChange={onChange}
         isModalLoading={isModalLoading}
         isSubmitLoading={isSubmitLoading}
       />

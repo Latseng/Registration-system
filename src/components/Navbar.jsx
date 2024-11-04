@@ -2,7 +2,7 @@ import { Layout, Button, Dropdown, Space } from "antd";
 import useRWD from "../hooks/useRWD";
 import { IoMenu } from "react-icons/io5";
 import { FaSuitcaseMedical } from "react-icons/fa6";
-
+import PropTypes from "prop-types"
 
 const { Header } = Layout
 
@@ -87,6 +87,10 @@ const Navbar = ({handleClick}) => {
       )}
     </Header>
   );
+};
+
+Navbar.propTypes = {
+  handleClick: PropTypes.func,
 };
 
 export default Navbar;

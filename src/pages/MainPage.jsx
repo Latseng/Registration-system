@@ -4,8 +4,6 @@ import { useNavigate } from "react-router-dom";
 
 const MainPage = () => {
   const navigate = useNavigate();
- 
-
   const handleClick = (route) => {
     switch (route) {
       case "departments":

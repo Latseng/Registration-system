@@ -1,4 +1,5 @@
 import { FaSuitcaseMedical } from "react-icons/fa6";
+import PropTypes from "prop-types";
 
 const Logo = ({onClick}) => {
   return (
@@ -11,5 +12,7 @@ const Logo = ({onClick}) => {
     </button>
   );
 };
-
+Logo.propTypes = {
+  onClick: PropTypes.func,
+};
 export default Logo;

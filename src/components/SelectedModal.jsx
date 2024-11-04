@@ -1,14 +1,29 @@
-import {Modal, Avatar, Card, Form, Flex, Button, Input} from "antd"
+import { Modal, Avatar, Card, Form, Flex, Button, Input } from "antd";
 import DatePicker from "./DatePicker";
 import ReCAPTCHA from "react-google-recaptcha";
+import PropTypes from "prop-types";
 
 const gridStyle = {
   width: "25%",
   textAlign: "center",
 };
 
-const SelectedModal = ({selectedDoctor, isModalOpen, handleCancel, handleAppointment, selectedAppointment, handleSubmit, isFirstCreateAppointment, onChange,isModalLoading, isSubmitLoading}) => {
+
+const SelectedModal = ({
+  selectedDoctor,
+  isModalOpen,
+  handleCancel,
+  handleAppointment,
+  selectedAppointment,
+  handleSubmit,
+  isFirstCreateAppointment,
+  isModalLoading,
+  isSubmitLoading,
+}) => {
   const [form] = Form.useForm();
+   const onChange = (value) => {
+     console.log("Captcha value:", value);
+   };
   return (
     <Modal
       open={isModalOpen}
@@ -40,7 +55,7 @@ const SelectedModal = ({selectedDoctor, isModalOpen, handleCancel, handleAppoint
                     date: schedule.date,
                     doctor: selectedDoctor.name,
                     time: schedule.scheduleSlot,
-                    id: schedule.id
+                    id: schedule.id,
                   })
                 }
                 key={schedule.id}
@@ -122,6 +137,17 @@ const SelectedModal = ({selectedDoctor, isModalOpen, handleCancel, handleAppoint
       )}
     </Modal>
   );
-}
+};
+SelectedModal.propTypes = {
+  selectedDoctor: PropTypes.object,
+  isModalOpen: PropTypes.bool.isRequired,
+  handleCancel: PropTypes.func,
+  handleAppointment: PropTypes.func,
+  selectedAppointment: PropTypes.object,
+  handleSubmit: PropTypes.func,
+  isFirstCreateAppointment: PropTypes.bool,
+  isModalLoading: PropTypes.bool,
+  isSubmitLoading: PropTypes.bool,
+};
 
-export default SelectedModal
+export default SelectedModal;

@@ -1,10 +1,10 @@
-import { Layout, Form, Input, Button, Modal, List, message,} from "antd";
+import { Layout, Form, Input, Button, Modal, List, message } from "antd";
 import Sidebar from "../components/Sidebar";
 import { useNavigate } from "react-router-dom";
 import useRWD from "../hooks/useRWD";
 import { useState, useEffect } from "react";
 import {
-  getAppointments,
+  getAppointmentsBypatient,
   cancelAppointment,
   createAppointment,
   deleteAppointment,
@@ -12,11 +12,10 @@ import {
 import { FaRegUser } from "react-icons/fa";
 import DatePicker from "../components/DatePicker";
 import dayjs from "dayjs";
-import {useSelector} from 'react-redux'
+import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import {resetNewAppointment} from "../store/appointmentSlice"
+import { resetNewAppointment } from "../store/appointmentSlice";
 import { GrStatusGood } from "react-icons/gr";
-
 
 const { Content } = Layout;
 
@@ -43,69 +42,71 @@ const QueryPage = () => {
   const navigate = useNavigate();
   const isDesktop = useRWD();
   const [form] = Form.useForm();
-  const dispatch = useDispatch()
-  const [appointments, setAppointments] = useState([])
+  const dispatch = useDispatch();
+  const [appointments, setAppointments] = useState([]);
   const [messageApi, contextHolder] = message.useMessage();
-  const [isVerified, setIsVerified] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [confirmModal, setConfirmModal] = useState({cancelModal: false, againModal: false})
-  const [requestData, setRequestData] = useState({})
-  const [isPageLoading, setIsPageLoading] = useState(false)
-  const [isAppointmentSuccess, setIsAppointmentSuccess] = useState(false)
+  const [isVerified, setIsVerified] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [confirmModal, setConfirmModal] = useState({
+    cancelModal: false,
+    againModal: false,
+  });
+  const [requestData, setRequestData] = useState({});
+  const [isPageLoading, setIsPageLoading] = useState(false);
+  const [isAppointmentSuccess, setIsAppointmentSuccess] = useState(false);
   const newAppointment = useSelector(
     (state) => state.appointment.newAppointment
   );
 
-const getAppointmentsDataAsync = async (data) => {
-  try {
-    const patientAppointments = await getAppointments(data);
-    if (
-      patientAppointments.data.message ===
-      "No appointments found for this patient."
-    ) {
-      setIsLoading(false);
-      messageApi.open({
-        type: "warning",
-        content: "查無掛號紀錄",
+  const getAppointmentsDataAsync = async (data) => {
+    try {
+      const patientAppointments = await getAppointmentsBypatient(data);
+      if (
+        patientAppointments.data.message ===
+        "No appointments found for this patient."
+      ) {
+        setIsLoading(false);
+        messageApi.open({
+          type: "warning",
+          content: "查無掛號紀錄",
+        });
+        return;
+      }
+
+      const weekDay = ["日", "一", "二", "三", "四", "五", "六"];
+      const organizedAppointments = patientAppointments.data.map((p) => {
+        const formattedDate =
+          dayjs(p.date).format("M/D") +
+          "（" +
+          weekDay[dayjs(p.date).day()] +
+          "）";
+        const formattedSlot = p.scheduleSlot.includes("Morning")
+          ? "上午診"
+          : "下午診";
+        return { ...p, date: formattedDate, scheduleSlot: formattedSlot };
       });
-      return;
-    }
 
-    const weekDay = ["日", "一", "二", "三", "四", "五", "六"];
-    const organizedAppointments = patientAppointments.data.map((p) => {
-      const formattedDate =
-        dayjs(p.date).format("M/D") +
-        "（" +
-        weekDay[dayjs(p.date).day()] +
-        "）";
-      const formattedSlot = p.scheduleSlot.includes("Morning")
-        ? "上午診"
-        : "下午診";
-      return { ...p, date: formattedDate, scheduleSlot: formattedSlot };
-    });
-
-    setRequestData(data);
-    setAppointments(organizedAppointments);
-    setIsVerified(true);
-    setIsLoading(false)
-    setIsPageLoading(false)
-  } catch (error) {
-    console.error(error);
-  }
-};
- 
-useEffect(() => {
-    if(newAppointment) {
+      setRequestData(data);
+      setAppointments(organizedAppointments);
       setIsVerified(true);
-      setIsPageLoading(true)
+      setIsLoading(false);
+      setIsPageLoading(false);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    if (newAppointment) {
+      setIsVerified(true);
+      setIsPageLoading(true);
       getAppointmentsDataAsync(newAppointment.requestData);
-      setIsAppointmentSuccess(true)
+      setIsAppointmentSuccess(true);
     }
     return () => {
       dispatch(resetNewAppointment());
     };
   }, []);
-
 
   const handleClickLogin = () => {
     navigate("/login");
@@ -144,21 +145,20 @@ useEffect(() => {
     }
   };
 
-const handleFinish = (values) => {
-  setIsLoading(true)
-  const birthDate = new Date(
-    Date.UTC(values.year, values.month - 1, values.day)
-  ).toISOString();
-   const requestData = {
-    idNumber: values.idNumber,
-    birthDate: birthDate, 
-    recaptchaResponse: "test_recaptcha", 
-  }
-getAppointmentsDataAsync(requestData);
-}
+  const handleFinish = (values) => {
+    setIsLoading(true);
+    const birthDate = new Date(
+      Date.UTC(values.year, values.month - 1, values.day)
+    ).toISOString();
+    const requestData = {
+      idNumber: values.idNumber,
+      birthDate: birthDate,
+      recaptchaResponse: "test_recaptcha",
+    };
+    getAppointmentsDataAsync(requestData);
+  };
 
-
-const idNumberValidation = async (_, value) => {
+  const idNumberValidation = async (_, value) => {
     function validateIdNumber(idNumber) {
       const regex = /^[A-Z][12]\d{8}$/;
 
@@ -236,26 +236,28 @@ const idNumberValidation = async (_, value) => {
     }
     const isValid = validateIdNumber(value);
     return Promise.resolve().then(() => {
-    if(!isValid) {
-    return Promise.reject(new Error("身分證字號格式錯誤"));
-    }
-    })
-  }
+      if (!isValid) {
+        return Promise.reject(new Error("身分證字號格式錯誤"));
+      }
+    });
+  };
 
   const handleClick = async (id, act) => {
-    if(act === "delete") {
+    if (act === "delete") {
       await deleteAppointment(id);
-      const newAppointments = appointments.filter((a) => a.appointmentId !== id);
-      setAppointments(newAppointments)
-      return
+      const newAppointments = appointments.filter(
+        (a) => a.appointmentId !== id
+      );
+      setAppointments(newAppointments);
+      return;
     }
-    
-    if(act === "cancel") {
-      setConfirmModal({...confirmModal, cancelModal: true}) 
-      return
+
+    if (act === "cancel") {
+      setConfirmModal({ ...confirmModal, cancelModal: true });
+      return;
     }
     setConfirmModal({ ...confirmModal, againModal: true });
-  }
+  };
 
   const handleAppointment = async (value, data) => {
     if (value === "cancel") {
@@ -264,35 +266,37 @@ const idNumberValidation = async (_, value) => {
         cancelModal: false,
       });
       setIsAppointmentSuccess(false);
-      setIsLoading(true)
-    await cancelAppointment(data.appointmentId)
-    setAppointments(appointments.map((a) => {
-      a.appointmentId === data.appointmentId
-    return { ...a, status: "CANCELED" };
-    }));
-    setIsLoading(false)
-    messageApi.open({
-      type: "warning",
-      content: "掛號已取消",
+      setIsLoading(true);
+      await cancelAppointment(data.appointmentId);
+      setAppointments(
+        appointments.map((a) => {
+          a.appointmentId === data.appointmentId;
+          return { ...a, status: "CANCELED" };
+        })
+      );
+      setIsLoading(false);
+      messageApi.open({
+        type: "warning",
+        content: "掛號已取消",
+      });
+
+      return;
+    }
+    setConfirmModal({
+      ...confirmModal,
+      againModal: false,
     });
-    
-    return
-  }
-  setConfirmModal({
-    ...confirmModal,
-    againModal: false,
-  });
-  setIsPageLoading(true)
-  await createAppointment({
-    ...requestData,
-    doctorScheduleId: data.doctorScheduleId,
-  });
-  await getAppointmentsDataAsync(requestData)
-  messageApi.open({
-    type: "success",
-    content: "掛號成功",
-  });
-  }
+    setIsPageLoading(true);
+    await createAppointment({
+      ...requestData,
+      doctorScheduleId: data.doctorScheduleId,
+    });
+    await getAppointmentsDataAsync(requestData);
+    messageApi.open({
+      type: "success",
+      content: "掛號成功",
+    });
+  };
 
   return (
     <Layout className="min-h-screen">

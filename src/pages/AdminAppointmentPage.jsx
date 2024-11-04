@@ -1,6 +1,8 @@
 import Sidebar from "../components/Sidebar";
-import { Layout } from "antd";
+import { Layout, Table } from "antd";
 import { useNavigate } from "react-router-dom";
+import { getAppointments } from "../api/appointments";
+import { useEffect, useState } from "react";
 
 const { Content } = Layout;
 
@@ -18,8 +20,37 @@ const sidebarItems = [
     label: "掛號管理",
   },
 ];
+const columns = [
+ 
+  {
+    title: "姓名",
+    dataIndex: "name",
+  },
+  {
+    title: "科別",
+    dataIndex: "department",
+  },
+];
+
+
 const AdminAppointmentPage = () => {
   const navigate = useNavigate();
+  const [appointments, setAppoinetments] = useState([])
+  const [isLoading, setIsLoading] = useState(false)
+  useEffect(() => {
+    
+const getAppointmentsData = async () => {
+  setIsLoading(true);
+  const response = await getAppointments();
+  setAppoinetments(response.data)
+  setIsLoading(false);
+};
+getAppointmentsData()
+  }, [])
+  // const data = appointments.map((item) => ({
+  //   key: item.id,
+  //   id: item.id,
+  // }));
   const handleClickPage = (e) => {
     switch (e.key) {
       case "1":
@@ -52,6 +83,7 @@ const AdminAppointmentPage = () => {
         onClickPage={handleClickPage}
         currentPage={currentPage}
       />
+      {/* <Table loading={isLoading} columns={columns} dataSource={data} /> */}
       <Content className="bg-gray-100 p-6"></Content>
     </Layout>
   );
