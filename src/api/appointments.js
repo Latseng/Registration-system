@@ -18,17 +18,19 @@ try {
 
 export const getAppointmentsBypatient = async (payload) => {
    const { idNumber, birthDate, recaptchaResponse } = payload;
-   console.log(payload);
   if (payload.authToken) {
     try {
-      const res = await axios.post(`${baseURL}/appointments/by-patient`, {
-        idNumber,
-        birthDate,
-        recaptchaResponse,
-        headers: {
-          authorization: "Bearer " + payload.authToken,
+      const res = await axios.post(
+        `${baseURL}/appointments/by-patient`,
+        {
+          recaptchaResponse,
         },
-      });
+        {
+          headers: {
+            authorization: "Bearer " + payload.authToken,
+          },
+        }
+      );
       return res.data;
     } catch (error) {
       console.error("[Get Appointments failed]: ", error);
@@ -50,6 +52,28 @@ export const getAppointmentsBypatient = async (payload) => {
 };
 
 export const createAppointment = async (payload) => {
+  if(payload.authToken) {
+    const { authToken, recaptchaResponse, doctorScheduleId } =
+      payload;
+    try {
+      const res = await axios.post(
+        `${baseURL}/appointments`,
+        {
+          recaptchaResponse,
+          doctorScheduleId,
+        },
+        {
+          headers: {
+            authorization: "Bearer " + authToken,
+          },
+        }
+      );
+      return res.data;
+    } catch (error) {
+      console.error("[Create Appointment failed]: ", error);
+      return error.response.data.message;
+    }
+  }
   const { idNumber, birthDate, recaptchaResponse, doctorScheduleId } = payload;
   try {
     const res = await axios.post(`${baseURL}/appointments`, {

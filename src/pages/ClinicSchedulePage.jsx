@@ -21,7 +21,7 @@ import { AiOutlineTeam } from "react-icons/ai";
 import { LuCalendarDays } from "react-icons/lu";
 import { MdPermContactCalendar } from "react-icons/md";
 import { getDoctorById } from "../api/doctors";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setNewAppointment } from "../store/appointmentSlice";
 import SelectedModal from "../components/SelectedModal";
 import LoginButton from "../components/LoginButton";
@@ -143,6 +143,7 @@ const ClinicSchedulePage = () => {
                   id: doc.doctorScheduleId,
                   date: date,
                   doctor: doc.doctorName,
+                  specialty: doc.specialty,
                   time: record.time,
                 })
               }
@@ -251,7 +252,6 @@ const ClinicSchedulePage = () => {
     }
 
     const newAppointment = await createAppointment(requestData);
-    console.log(newAppointment);
 
     if (newAppointment === "You have already booked this time slot.") {
       messageApi.open({
@@ -264,9 +264,7 @@ const ClinicSchedulePage = () => {
     if (typeof newAppointment === "string" && newAppointment.includes("初診")) {
       setIsFirstCreateAppointment(true);
     }
-
     form.resetFields();
-
     dispatch(
       setNewAppointment({
         ...newAppointment,

@@ -3,7 +3,6 @@ import { Layout, Input, Card, message } from "antd";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getSpecialties } from "../api/specialties";
-import { useSelector } from "react-redux";
 import LoginButton from "../components/LoginButton";
 
 const { Content } = Layout;
@@ -38,9 +37,6 @@ const DepartmentPage = () => {
   const [searchValue, setSearchValue] = useState("");
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [messageApi, contextHolder] = message.useMessage();
-
-  const user = useSelector((state) => state.auth.user);
-  console.log(user);
 
   const warning = (value) => {
     messageApi.open({

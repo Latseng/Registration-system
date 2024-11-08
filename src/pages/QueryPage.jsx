@@ -57,8 +57,6 @@ const QueryPage = () => {
     (state) => state.appointment.newAppointment
   );
   const user = useSelector((state) => state.auth.user)
-  console.log(user);
-  
 
   const getAppointmentsDataAsync = async (data) => {
     try {
@@ -68,10 +66,8 @@ const QueryPage = () => {
         "No appointments found for this patient."
       ) {
         setIsLoading(false);
-        messageApi.open({
-          type: "warning",
-          content: "查無掛號紀錄",
-        });
+        setAppointments([]);
+        setIsPageLoading(false)
         return;
       }
 
@@ -100,6 +96,8 @@ const QueryPage = () => {
 
   useEffect(() => {
     if(user) {
+      setIsVerified(true)
+      setIsPageLoading(true)
       const queryPayload = {
         idNumber: user.idNumber,
         birthDate: user.birthDate,

@@ -1,13 +1,16 @@
-import { Modal, Avatar, Card, Form, Flex, Button, Input } from "antd";
+import { Modal, Avatar, Card, Form, Flex, Button, Input, message } from "antd";
 import DatePicker from "./DatePicker";
 import ReCAPTCHA from "react-google-recaptcha";
 import PropTypes from "prop-types";
+import { useSelector } from "react-redux";
+import { useState } from "react";
+import { createAppointment } from "../api/appointments";
+import { useNavigate } from "react-router-dom";
 
 const gridStyle = {
   width: "25%",
   textAlign: "center",
 };
-
 
 const SelectedModal = ({
   selectedDoctor,
@@ -21,9 +24,37 @@ const SelectedModal = ({
   isSubmitLoading,
 }) => {
   const [form] = Form.useForm();
-   const onChange = (value) => {
-     console.log("Captcha value:", value);
-   };
+  const [isAppointmentLoading, setIsAppointmentLoading] = useState(false);
+  const user = useSelector((state) => state.auth.user);
+  const navigate = useNavigate();
+  const [messageApi, contextHolder] = message.useMessage();
+
+  const onChange = (value) => {
+    console.log("Captcha value:", value);
+  };
+
+  const handleAppointmentLogin = async () => {
+    setIsAppointmentLoading(true);
+    const requestData = {
+      authToken: localStorage.getItem("authToken"),
+      recaptchaResponse: "test_recaptcha",
+      doctorScheduleId: selectedAppointment.id,
+    };
+
+    const newAppointment = await createAppointment(requestData);
+
+    if (newAppointment === "You have already booked this time slot.") {
+      messageApi.open({
+        type: "warning",
+        content: "重複掛號",
+      });
+      setIsAppointmentLoading(false);
+      return;
+    }
+    form.resetFields();
+
+    navigate("/query");
+  };
   return (
     <Modal
       open={isModalOpen}
@@ -32,6 +63,7 @@ const SelectedModal = ({
       onCancel={() => handleCancel("doctor")}
       footer={null}
     >
+      {contextHolder}
       {selectedDoctor && (
         <div className="p-4">
           <h3 className="text-2xl">{selectedDoctor.name} 醫師</h3>
@@ -69,72 +101,94 @@ const SelectedModal = ({
           </Card>
         </div>
       )}
-      {selectedAppointment && (
-        <Form
-          form={form}
-          onFinish={handleSubmit}
-          labelCol={{ span: 8 }}
-          className="w-full max-w-md"
-        >
-          <h1 className="text-center text-xl font-bold">掛號資訊</h1>
-          <div className="my-4 text-center text-lg">
-            <h3>一般內科</h3>
-            <p>
-              {selectedAppointment.date}
-              {selectedAppointment.time}
-            </p>
-            <h3>{selectedAppointment.doctor} 醫師</h3>
+      {selectedAppointment &&
+        (user ? (
+          <div className="text-center">
+            <h1 className="text-xl font-bold">掛號資訊</h1>
+            <div className="my-4 text-base">
+              <p>
+                {selectedAppointment.date}
+                {selectedAppointment.time}
+              </p>
+              <p>{selectedAppointment.specialty}</p>
+              <p>{selectedAppointment.doctor} 醫師</p>
+            </div>
+            <p className="my-4">將幫您預約以上門診，確定要掛號嗎？</p>
+            <Button
+              loading={isAppointmentLoading}
+              onClick={handleAppointmentLogin}
+              className="w-1/2"
+              type="primary"
+            >
+              確定
+            </Button>
           </div>
-          <Form.Item
-            label="身分證字號"
-            name="idNumber"
-            rules={[{ required: true, message: "請輸入身分證字號" }]}
+        ) : (
+          <Form
+            form={form}
+            onFinish={handleSubmit}
+            labelCol={{ span: 8 }}
+            className="w-full max-w-md"
           >
-            <Input placeholder="請輸入身分證字號" />
-          </Form.Item>
-          <Form.Item label="生日" name="birthday">
-            <DatePicker form={form} />
-          </Form.Item>
-          {isFirstCreateAppointment && (
-            <>
-              <h4>您為初次掛號，請填寫以下資料</h4>
-              <Form.Item
-                label="姓名"
-                name="name"
-                rules={[{ required: true, message: "請輸入姓名" }]}
-              >
-                <Input placeholder="請輸入姓名" />
-              </Form.Item>
-              <Form.Item
-                label="聯絡電話"
-                name="number"
-                rules={[{ required: true, message: "請輸入聯絡電話" }]}
-              >
-                <Input placeholder="請輸入聯絡電話" />
-              </Form.Item>
-            </>
-          )}
+            <h1 className="text-center text-xl font-bold">掛號資訊</h1>
+            <div className="my-4 text-center text-lg">
+              <p>{selectedAppointment.specialty}</p>
+              <p>
+                {selectedAppointment.date}
+                {selectedAppointment.time}
+              </p>
+              <p>{selectedAppointment.doctor} 醫師</p>
+            </div>
+            <Form.Item
+              label="身分證字號"
+              name="idNumber"
+              rules={[{ required: true, message: "請輸入身分證字號" }]}
+            >
+              <Input placeholder="請輸入身分證字號" />
+            </Form.Item>
+            <Form.Item label="生日" name="birthday">
+              <DatePicker form={form} />
+            </Form.Item>
+            {isFirstCreateAppointment && (
+              <>
+                <h4>您為初次掛號，請填寫以下資料</h4>
+                <Form.Item
+                  label="姓名"
+                  name="name"
+                  rules={[{ required: true, message: "請輸入姓名" }]}
+                >
+                  <Input placeholder="請輸入姓名" />
+                </Form.Item>
+                <Form.Item
+                  label="聯絡電話"
+                  name="number"
+                  rules={[{ required: true, message: "請輸入聯絡電話" }]}
+                >
+                  <Input placeholder="請輸入聯絡電話" />
+                </Form.Item>
+              </>
+            )}
 
-          <ReCAPTCHA
-            className="my-4 ml-20"
-            sitekey="Your client site key"
-            onChange={onChange}
-          />
-          <Form.Item>
-            <Flex gap="middle" justify="center">
-              <Button onClick={handleCancel}>取消</Button>
+            <ReCAPTCHA
+              className="my-4 ml-20"
+              sitekey="Your client site key"
+              onChange={onChange}
+            />
+            <Form.Item>
+              <Flex gap="middle" justify="center">
+                <Button onClick={handleCancel}>取消</Button>
 
-              <Button
-                type="primary"
-                loading={isSubmitLoading}
-                htmlType="submit"
-              >
-                送出
-              </Button>
-            </Flex>
-          </Form.Item>
-        </Form>
-      )}
+                <Button
+                  type="primary"
+                  loading={isSubmitLoading}
+                  htmlType="submit"
+                >
+                  送出
+                </Button>
+              </Flex>
+            </Form.Item>
+          </Form>
+        ))}
     </Modal>
   );
 };
