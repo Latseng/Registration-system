@@ -1,6 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { ConfigProvider } from "antd";
-import { MainPage, LoginPage, DepartmentPage, RecordsPage, ClinicSchedulePage, QueryPage, DoctorsPage, AdminDepartmentPage, AdminDoctorPage, AdminAppointmentPage, AdminSchedulePage  } from "./pages";
+import { MainPage, LoginPage, DepartmentPage, RecordsPage, ClinicSchedulePage, QueryPage, DoctorsPage, AdminDepartmentPage, AdminDoctorPage, AdminAppointmentPage, AdminSchedulePage, RegisterPage  } from "./pages";
 
 function App() {
   return (
@@ -23,7 +23,14 @@ function App() {
           <Route path="admin/departments" element={<AdminDepartmentPage />} />
           <Route path="admin/doctors" element={<AdminDoctorPage />} />
           <Route path="admin/appointments" element={<AdminAppointmentPage />} />
-          <Route path="admin/schedules/:doctorId" element={<AdminSchedulePage />} />
+          <Route
+            path="admin/schedules/:doctorId"
+            element={<AdminSchedulePage />}
+          />
+          <Route
+            path="register"
+            element={<RegisterPage />}
+          />
         </Routes>
       </BrowserRouter>
     </ConfigProvider>

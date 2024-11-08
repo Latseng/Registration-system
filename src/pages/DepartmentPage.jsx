@@ -1,9 +1,10 @@
-import useRWD from "../hooks/useRWD";
 import Sidebar from "../components/Sidebar";
 import { Layout, Input, Card, message } from "antd";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getSpecialties } from "../api/specialties";
+import { useSelector } from "react-redux";
+import LoginButton from "../components/LoginButton";
 
 const { Content } = Layout;
 const { Search } = Input;
@@ -31,14 +32,15 @@ const items = [
   },
 ];
 
-
 const DepartmentPage = () => {
   const navigate = useNavigate();
-  const isDesktop = useRWD();
   const [departments, setDepartments] = useState([]);
   const [searchValue, setSearchValue] = useState("");
-  const [isPageLoading, setIsPageLoading] = useState(true)
+  const [isPageLoading, setIsPageLoading] = useState(true);
   const [messageApi, contextHolder] = message.useMessage();
+
+  const user = useSelector((state) => state.auth.user);
+  console.log(user);
 
   const warning = (value) => {
     messageApi.open({
@@ -63,10 +65,6 @@ const DepartmentPage = () => {
     }
   }, [searchValue]);
 
-  const handleClickLogin = () => {
-    navigate("/login");
-  };
-  
   const handleClickPage = (e) => {
     switch (e.key) {
       case "1":
@@ -136,11 +134,7 @@ const DepartmentPage = () => {
         currentPage={currentPage}
       />
       <Content className="bg-gray-100 p-6">
-        {isDesktop && (
-          <button className="absolute right-8 top-4" onClick={handleClickLogin}>
-            登入
-          </button>
-        )}
+        <LoginButton />
         <h1 className="text-2xl mb-4">門診科別</h1>
         {contextHolder}
         <div className="flex mb-4">

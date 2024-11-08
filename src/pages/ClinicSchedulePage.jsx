@@ -1,4 +1,3 @@
-import useRWD from "../hooks/useRWD";
 import Sidebar from "../components/Sidebar";
 import { useState, useEffect } from "react";
 import {
@@ -25,6 +24,7 @@ import { getDoctorById } from "../api/doctors";
 import { useDispatch } from "react-redux";
 import { setNewAppointment } from "../store/appointmentSlice";
 import SelectedModal from "../components/SelectedModal";
+import LoginButton from "../components/LoginButton";
 
 const { Content } = Layout;
 const { Search } = Input;
@@ -48,7 +48,6 @@ const generateDates = () => {
 
 const ClinicSchedulePage = () => {
   const navigate = useNavigate();
-  const isDesktop = useRWD();
   const location = useLocation();
   const { specialty } = location.state;
   const dates = generateDates();
@@ -312,9 +311,6 @@ const ClinicSchedulePage = () => {
     }
   };
 
-  const handleClickLogin = () => {
-    navigate("/login");
-  };
   const handleClickLogo = () => {
     navigate("/*");
   };
@@ -375,11 +371,7 @@ const ClinicSchedulePage = () => {
       />
 
       <Layout className="bg-gray-100 p-6">
-        {isDesktop && (
-          <button className="absolute right-8 top-4" onClick={handleClickLogin}>
-            登入
-          </button>
-        )}
+        <LoginButton />
         <Breadcrumb
           items={[
             {

@@ -6,6 +6,8 @@ import useRWD from "../hooks/useRWD";
 import Logo from "./Logo";
 import { useState } from "react";
 import Proptypes from "prop-types"
+import { useSelector } from "react-redux";
+import { FaCircleUser } from "react-icons/fa6";
 
 const {Header, Sider} = Layout
 
@@ -13,6 +15,7 @@ const Sidebar = ({onClickPage, items, currentPage}) => {
   const [openMenu, setOpenMenu] = useState(false)
   const navigate = useNavigate();
   const isDesktop = useRWD()
+  const user = useSelector((state) => state.auth.user)
 
   const handleClickLogo = () => {
     navigate("/*");
@@ -49,7 +52,7 @@ const Sidebar = ({onClickPage, items, currentPage}) => {
           >
             <Menu
               mode="vertical"
-              style={{width: 200}}
+              style={{ width: 200 }}
               selectedKeys={[currentPage()]}
               className="bg-mainColor text-center px-6"
               items={items}
@@ -64,7 +67,15 @@ const Sidebar = ({onClickPage, items, currentPage}) => {
               <IoMenu className="size-6" />
             </button>
             <Logo onClick={handleClickLogo} />
-            <button className="text-white">登入</button>
+            {user ? (
+              <button className=" text-white  hover:text-gray-300">
+                <FaCircleUser size={28} />
+              </button>
+            ) : (
+              <button className="text-white" onClick={() => navigate("/login")}>
+                登入
+              </button>
+            )}
           </Header>
           <Drawer
             open={openMenu}
@@ -88,7 +99,7 @@ const Sidebar = ({onClickPage, items, currentPage}) => {
 
 Sidebar.propTypes = {
   onClickPage: Proptypes.func,
-  items: Proptypes.object,
+  items: Proptypes.array,
   currentPage: Proptypes.func
 };
 

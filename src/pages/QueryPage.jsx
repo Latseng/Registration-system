@@ -1,7 +1,6 @@
 import { Layout, Form, Input, Button, Modal, List, message } from "antd";
 import Sidebar from "../components/Sidebar";
 import { useNavigate } from "react-router-dom";
-import useRWD from "../hooks/useRWD";
 import { useState, useEffect } from "react";
 import {
   getAppointmentsBypatient,
@@ -16,6 +15,7 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { resetNewAppointment } from "../store/appointmentSlice";
 import { GrStatusGood } from "react-icons/gr";
+import LoginButton from "../components/LoginButton";
 
 const { Content } = Layout;
 
@@ -40,7 +40,6 @@ const items = [
 
 const QueryPage = () => {
   const navigate = useNavigate();
-  const isDesktop = useRWD();
   const [form] = Form.useForm();
   const dispatch = useDispatch();
   const [appointments, setAppointments] = useState([]);
@@ -57,6 +56,9 @@ const QueryPage = () => {
   const newAppointment = useSelector(
     (state) => state.appointment.newAppointment
   );
+  const user = useSelector((state) => state.auth.user)
+  console.log(user);
+  
 
   const getAppointmentsDataAsync = async (data) => {
     try {
@@ -97,6 +99,16 @@ const QueryPage = () => {
   };
 
   useEffect(() => {
+    if(user) {
+      const queryPayload = {
+        idNumber: user.idNumber,
+        birthDate: user.birthDate,
+        recaptchaResponse: "test_recaptcha",
+        authToken: localStorage.getItem("authToken")
+      };
+      getAppointmentsDataAsync(queryPayload);
+      return
+    }
     if (newAppointment) {
       setIsVerified(true);
       setIsPageLoading(true);
@@ -107,10 +119,6 @@ const QueryPage = () => {
       dispatch(resetNewAppointment());
     };
   }, []);
-
-  const handleClickLogin = () => {
-    navigate("/login");
-  };
   const handleClickLogo = () => {
     navigate("/*");
   };
@@ -307,12 +315,7 @@ const QueryPage = () => {
         onClickLogo={handleClickLogo}
         currentPage={currentPage}
       />
-
-      {isDesktop && (
-        <button className="absolute right-8 top-4" onClick={handleClickLogin}>
-          登入
-        </button>
-      )}
+      <LoginButton />
       <Content className="bg-gray-100 p-4">
         {isVerified ? (
           isPageLoading ? (

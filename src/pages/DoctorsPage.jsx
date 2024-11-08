@@ -1,5 +1,4 @@
 import { Layout, List, message, Button, Input, Avatar, Form } from "antd";
-import useRWD from "../hooks/useRWD";
 import Sidebar from "../components/Sidebar";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -9,6 +8,7 @@ import dayjs from "dayjs";
 import SelectedModal from "../components/SelectedModal";
 import { useDispatch } from "react-redux";
 import { setNewAppointment } from "../store/appointmentSlice";
+import LoginButton from "../components/LoginButton";
 
 const { Content } = Layout;
 const { Search } = Input;
@@ -34,7 +34,6 @@ const items = [
 ];
 
 const DoctorsPage = () => {
-  const isDesktop = useRWD();
   const navigate = useNavigate();
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [doctors, setDoctors] = useState([])
@@ -137,9 +136,6 @@ const DoctorsPage = () => {
       default:
         return "1";
     }
-  };
-  const handleClickLogin = () => {
-    navigate("/login");
   };
   const warning = (value) => {
     messageApi.open({
@@ -244,11 +240,7 @@ const DoctorsPage = () => {
         onClickLogo={handleClickLogo}
         currentPage={currentPage}
       />
-      {isDesktop && (
-        <button className="absolute right-8 top-4" onClick={handleClickLogin}>
-          登入
-        </button>
-      )}
+     <LoginButton />
       <Content className="bg-gray-100 p-6">
         <h1 className="text-2xl mb-6">醫師專長查詢</h1>
         <Search

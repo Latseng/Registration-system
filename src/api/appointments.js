@@ -17,7 +17,25 @@ try {
 }
 
 export const getAppointmentsBypatient = async (payload) => {
-  const { idNumber, birthDate, recaptchaResponse } = payload;
+   const { idNumber, birthDate, recaptchaResponse } = payload;
+   console.log(payload);
+  if (payload.authToken) {
+    try {
+      const res = await axios.post(`${baseURL}/appointments/by-patient`, {
+        idNumber,
+        birthDate,
+        recaptchaResponse,
+        headers: {
+          authorization: "Bearer " + payload.authToken,
+        },
+      });
+      return res.data;
+    } catch (error) {
+      console.error("[Get Appointments failed]: ", error);
+      return error.response;
+    }
+  }
+  
   try {
     const res = await axios.post(`${baseURL}/appointments/by-patient`, {
       idNumber,

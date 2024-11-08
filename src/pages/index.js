@@ -9,6 +9,7 @@ import AdminDepartmentPage from "./AdminDepartmentPage";
 import AdminDoctorPage from "./AdminDoctorPage";
 import AdminAppointmentPage from "./AdminAppointmentPage";
 import AdminSchedulePage from "./AdminSchedulePage";
+import RegisterPage from "./RegisterPage";
 
 
-export { MainPage, LoginPage, DepartmentPage, RecordsPage, ClinicSchedulePage, QueryPage, DoctorsPage, AdminDepartmentPage, AdminDoctorPage, AdminAppointmentPage, AdminSchedulePage };
+export { MainPage, LoginPage, DepartmentPage, RecordsPage, ClinicSchedulePage, QueryPage, DoctorsPage, AdminDepartmentPage, AdminDoctorPage, AdminAppointmentPage, AdminSchedulePage, RegisterPage };
