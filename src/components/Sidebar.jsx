@@ -4,18 +4,35 @@ import { IoMenu } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 import useRWD from "../hooks/useRWD";
 import Logo from "./Logo";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Proptypes from "prop-types"
 import { useSelector } from "react-redux";
 import { FaCircleUser } from "react-icons/fa6";
+import DropdownProfile from "./DropdownProfile";
 
 const {Header, Sider} = Layout
 
 const Sidebar = ({onClickPage, items, currentPage}) => {
   const [openMenu, setOpenMenu] = useState(false)
+  const [isDropdownProfileOpen, setIsDropdownProfileOpen] = useState(false)
+const dropdownRef = useRef(null);
   const navigate = useNavigate();
   const isDesktop = useRWD()
   const user = useSelector((state) => state.auth.user)
+
+useEffect(() => {
+  const handleClickProfileOutside = (event) => {
+    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      setIsDropdownProfileOpen(false);
+    }
+  };
+
+  document.addEventListener("mousedown", handleClickProfileOutside);
+  return () => {
+    document.removeEventListener("mousedown", handleClickProfileOutside);
+  };
+}, []);
+
 
   const handleClickLogo = () => {
     navigate("/*");
@@ -62,15 +79,21 @@ const Sidebar = ({onClickPage, items, currentPage}) => {
         </Sider>
       ) : (
         <>
-          <Header className="flex justify-between bg-mainColor items-center px-6">
+          <Header className="flex justify-between bg-mainColor items-center px-6 relative">
             <button className="text-white" onClick={() => setOpenMenu(true)}>
               <IoMenu className="size-6" />
             </button>
             <Logo onClick={handleClickLogo} />
             {user ? (
-              <button className=" text-white  hover:text-gray-300">
-                <FaCircleUser size={28} />
-              </button>
+              <>
+                <button
+                  onClick={() => setIsDropdownProfileOpen(true)}
+                  className=" text-white  hover:text-gray-300"
+                >
+                  <FaCircleUser size={28} />
+                </button>
+                {isDropdownProfileOpen && <DropdownProfile ref={dropdownRef} />}
+              </>
             ) : (
               <button className="text-white" onClick={() => navigate("/login")}>
                 登入
