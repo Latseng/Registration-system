@@ -1,4 +1,3 @@
-import Sidebar from "../components/Sidebar";
 import {
   Layout,
   Button,
@@ -28,20 +27,6 @@ import { v4 as uuidv4 } from "uuid";
 
 const { Content } = Layout;
 
-const sidebarItems = [
-  {
-    key: "1",
-    label: "科別管理",
-  },
-  {
-    key: "2",
-    label: "醫師管理",
-  },
-  {
-    key: "3",
-    label: "掛號管理",
-  },
-];
 
 const AdminDoctorPage = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -231,31 +216,8 @@ const AdminDoctorPage = () => {
     department: d.specialty,
   }));
 
-  const handleClickPage = (e) => {
-    switch (e.key) {
-      case "1":
-        navigate("/admin/departments");
-        break;
-      case "2":
-        navigate("/admin/doctors");
-        break;
-      case "3":
-        navigate("/admin/appointments");
-        break;
-      default:
-        break;
-    }
-  };
-  const currentPage = () => {
-    switch (location.pathname) {
-      case "/admin/doctors":
-        return "2";
-      case "admin/appointments":
-        return "3";
-      default:
-        return "1";
-    }
-  };
+  
+ 
   const handleCreateDoctorData = (values) => {
     console.log(values);
     
@@ -288,14 +250,11 @@ const AdminDoctorPage = () => {
    });
   };
   return (
-    <Layout className="min-h-screen">
-      {contextHolder}
-      <Sidebar
-        items={sidebarItems}
-        onClickPage={handleClickPage}
-        currentPage={currentPage}
-      />
+   
+      
+      
       <Content className="bg-gray-100 p-6 relative">
+        {contextHolder}
         <h1 className="text-2xl">醫師管理</h1>
         <Button onClick={() => handleClick("add")} className="my-4">
           新增醫師
@@ -453,7 +412,6 @@ const AdminDoctorPage = () => {
           </Form>
         </Modal>
       </Content>
-    </Layout>
   );
 };
 

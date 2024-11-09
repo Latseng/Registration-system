@@ -1,4 +1,3 @@
-import Sidebar from "../components/Sidebar";
 import { useState, useEffect } from "react";
 import {
   Layout,
@@ -21,7 +20,7 @@ import { AiOutlineTeam } from "react-icons/ai";
 import { LuCalendarDays } from "react-icons/lu";
 import { MdPermContactCalendar } from "react-icons/md";
 import { getDoctorById } from "../api/doctors";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { setNewAppointment } from "../store/appointmentSlice";
 import SelectedModal from "../components/SelectedModal";
 import LoginButton from "../components/LoginButton";
@@ -68,24 +67,6 @@ const ClinicSchedulePage = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const dispatch = useDispatch();
 
-  const items = [
-    {
-      key: "1",
-      label: "快速掛號",
-    },
-    {
-      key: "2",
-      label: "掛號查詢",
-    },
-    {
-      key: "3",
-      label: "看診紀錄",
-    },
-    {
-      key: "4",
-      label: "醫師專長查詢",
-    },
-  ];
 
   const getSchedulesAsync = async () => {
     try {
@@ -278,40 +259,8 @@ const ClinicSchedulePage = () => {
     navigate("/query");
   };
 
-  const handleClickPage = (e) => {
-    switch (e.key) {
-      case "1":
-        navigate("/departments");
-        break;
-      case "2":
-        navigate("/query");
-        break;
-      case "3":
-        navigate("/records");
-        break;
-      case "4":
-        navigate("/doctors");
-        break;
-      default:
-        break;
-    }
-  };
-  const currentPage = () => {
-    switch (location.pathname) {
-      case "/query":
-        return "2";
-      case "/records":
-        return "3";
-      case "/doctors":
-        return "4";
-      default:
-        return "1";
-    }
-  };
+  
 
-  const handleClickLogo = () => {
-    navigate("/*");
-  };
   const warning = (value) => {
     messageApi.open({
       type: "warning",
@@ -359,16 +308,9 @@ const ClinicSchedulePage = () => {
   };
 
   return (
-    <Layout className="min-h-screen">
-      {contextHolder}
-      <Sidebar
-        items={items}
-        onClickPage={handleClickPage}
-        onClickLogo={handleClickLogo}
-        currentPage={currentPage}
-      />
-
+    <>
       <Layout className="bg-gray-100 p-6">
+        {contextHolder}
         <LoginButton />
         <Breadcrumb
           items={[
@@ -465,7 +407,7 @@ const ClinicSchedulePage = () => {
         isModalLoading={isModalLoading}
         isSubmitLoading={isSubmitLoading}
       />
-    </Layout>
+    </>
   );
 };
 
