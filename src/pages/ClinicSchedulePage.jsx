@@ -67,21 +67,20 @@ const ClinicSchedulePage = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const dispatch = useDispatch();
 
-
-  const getSchedulesAsync = async () => {
-    try {
-      const schedules = await getSchedules(specialty);
-      setSchedules(schedules);
-      setScheduleLoading(false);
-    } catch (error) {
-      console.error(error);
-    }
-  };
   useEffect(() => {
+    const getSchedulesAsync = async () => {
+      try {
+        const schedules = await getSchedules(specialty);
+        setSchedules(schedules);
+        setScheduleLoading(false);
+      } catch (error) {
+        console.error(error);
+      }
+    };
     if (!searchValue) {
       getSchedulesAsync();
     }
-  }, [searchValue]);
+  }, [searchValue, specialty]);
 
   const mapSchedulesToSlots = (schedules, time, dates) => {
     return dates.reduce((acc, date, index) => {

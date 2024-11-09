@@ -94,7 +94,7 @@ const QueryPage = () => {
     return () => {
       dispatch(resetNewAppointment());
     };
-  }, []);
+  }, [dispatch, newAppointment, user]);
 
   const handleFinish = (values) => {
     setIsLoading(true);

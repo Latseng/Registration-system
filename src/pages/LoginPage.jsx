@@ -56,7 +56,7 @@ const LoginPage = () => {
         initialValues={{ remember: true }}
         onFinish={handlePatientLogin}
         autoComplete="off"
-        className="bg-white mb-8 p-12 flex flex-col md:w-1/2 rounded-2xl text-center"
+        className="bg-white mb-8 p-12 flex flex-col md:w-1/3 rounded-2xl text-center"
       >
         <button
           onClick={() => navigate("/*")}
@@ -107,10 +107,7 @@ const LoginPage = () => {
           體驗更加便捷的看診功能！
         </p>
 
-        <Button
-          className="w-1/5 mx-auto"
-          onClick={() => handleClick("loginAdmin")}
-        >
+        <Button className=" mx-auto" onClick={() => handleClick("loginAdmin")}>
           管理員登入
         </Button>
       </Form>
