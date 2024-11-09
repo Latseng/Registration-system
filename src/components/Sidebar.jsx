@@ -1,43 +1,44 @@
-import { Layout, Divider, ConfigProvider, Menu, Drawer } from "antd"
+import { Layout, Divider, ConfigProvider, Menu, Drawer, Dropdown } from "antd";
 import { FaSuitcaseMedical } from "react-icons/fa6";
 import { IoMenu } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 import useRWD from "../hooks/useRWD";
 import Logo from "./Logo";
-import { useState, useEffect, useRef } from "react";
-import Proptypes from "prop-types"
+import { useState } from "react";
+import Proptypes from "prop-types";
 import { useSelector } from "react-redux";
 import { FaCircleUser } from "react-icons/fa6";
-import DropdownProfile from "./DropdownProfile";
 
-const {Header, Sider} = Layout
+const { Header, Sider } = Layout;
 
-const Sidebar = ({onClickPage, items, currentPage}) => {
-  const [openMenu, setOpenMenu] = useState(false)
-  const [isDropdownProfileOpen, setIsDropdownProfileOpen] = useState(false)
-const dropdownRef = useRef(null);
+const handleLogout = () => {
+  localStorage.removeItem("authToken");
+  window.location.reload();
+};
+
+const dropdownItems = [
+  {
+    label: <a>個人資訊</a>,
+    key: "0",
+  },
+  {
+    type: "divider",
+  },
+  {
+    label: <button onClick={handleLogout}>登出</button>,
+    key: "1",
+  },
+];
+
+const Sidebar = ({ onClickPage, items, currentPage }) => {
+  const [openMenu, setOpenMenu] = useState(false);
   const navigate = useNavigate();
-  const isDesktop = useRWD()
-  const user = useSelector((state) => state.auth.user)
-
-useEffect(() => {
-  const handleClickProfileOutside = (event) => {
-    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-      setIsDropdownProfileOpen(false);
-    }
-  };
-
-  document.addEventListener("mousedown", handleClickProfileOutside);
-  return () => {
-    document.removeEventListener("mousedown", handleClickProfileOutside);
-  };
-}, []);
-
+  const isDesktop = useRWD();
+  const user = useSelector((state) => state.auth.user);
 
   const handleClickLogo = () => {
     navigate("/*");
   };
-  
 
   return (
     <>
@@ -86,13 +87,18 @@ useEffect(() => {
             <Logo onClick={handleClickLogo} />
             {user ? (
               <>
-                <button
-                  onClick={() => setIsDropdownProfileOpen(true)}
-                  className=" text-white  hover:text-gray-300"
+                <Dropdown
+                  menu={{
+                    items: dropdownItems,
+                  }}
+                  trigger={["click"]}
                 >
-                  <FaCircleUser size={28} />
-                </button>
-                {isDropdownProfileOpen && <DropdownProfile ref={dropdownRef} />}
+                  <button className="text-white rounded-full hover:text-mainColorLight" onClick={(e) => e.preventDefault()}>
+                    
+                      <FaCircleUser size={28} />
+                    
+                  </button>
+                </Dropdown>
               </>
             ) : (
               <button className="text-white" onClick={() => navigate("/login")}>
@@ -118,12 +124,12 @@ useEffect(() => {
       )}
     </>
   );
-}
+};
 
 Sidebar.propTypes = {
   onClickPage: Proptypes.func,
   items: Proptypes.array,
-  currentPage: Proptypes.func
+  currentPage: Proptypes.func,
 };
 
-export default Sidebar
+export default Sidebar;
