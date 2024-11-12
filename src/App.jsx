@@ -3,6 +3,7 @@ import { ConfigProvider } from "antd";
 import { MainPage, LoginPage, DepartmentPage, RecordsPage, ClinicSchedulePage, QueryPage, DoctorsPage, AdminDepartmentPage, AdminDoctorPage, AdminAppointmentPage, AdminSchedulePage, RegisterPage  } from "./pages";
 import LayoutWithSidebar from "./components/LayoutWithSidebar";
 
+
 function App() {
   return (
     <ConfigProvider
@@ -14,8 +15,8 @@ function App() {
     >
       <BrowserRouter>
         <Routes>
-          <Route path="*" element={<MainPage />} />
-          <Route path="login" element={<LoginPage />} />
+          <Route path="*" element={<MainPage />} />    
+            <Route path="login" element={<LoginPage />} />
           <Route path="register" element={<RegisterPage />} />
           <Route element={<LayoutWithSidebar />}>
             <Route path="departments" element={<DepartmentPage />} />

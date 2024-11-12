@@ -8,6 +8,7 @@ import {
   Input,
   Space,
   message,
+  Dropdown
 } from "antd";
 import { useState, useEffect } from "react";
 import { FaTable, FaEdit } from "react-icons/fa";
@@ -24,9 +25,24 @@ import {
   ExclamationCircleFilled,
 } from "@ant-design/icons";
 import { v4 as uuidv4 } from "uuid";
+import { FaCircleUser } from "react-icons/fa6";
+import useRWD from "../hooks/useRWD";
 
 const { Content } = Layout;
 
+const dropdownItems = [
+  {
+    label: <a>個人資訊</a>,
+    key: "0",
+  },
+  {
+    type: "divider",
+  },
+  {
+    label: <button>登出</button>,
+    key: "1",
+  },
+];
 
 const AdminDoctorPage = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -51,6 +67,7 @@ const AdminDoctorPage = () => {
   const [deleteDoctorId, setDeleteDoctorId] = useState(null);
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
+  const isDesktop = useRWD()
 
   const [form] = Form.useForm();
 
@@ -249,169 +266,197 @@ const AdminDoctorPage = () => {
      },
    });
   };
+
+  const handleLogout = () => {
+    localStorage.removeItem("authToken");
+    window.location.reload();
+  };
+
   return (
-   
-      
-      
-      <Content className="bg-gray-100 p-6 relative">
-        {contextHolder}
-        <h1 className="text-2xl">醫師管理</h1>
-        <Button onClick={() => handleClick("add")} className="my-4">
-          新增醫師
-        </Button>
-        <Table loading={isLoading} columns={columns} dataSource={data} />
-        <Modal
-          title="醫師資料編輯"
-          open={isDoctorModalOpen}
-          loading={isDoctorModalLoading}
-          onCancel={handleCancel}
-          footer={[
-            <Button key="cancel" onClick={handleCancel}>
-              取消
-            </Button>,
-            <Button
-              key="save"
-              type="primary"
-              loading={isSubmitLoading}
-              onClick={handleSave}
-            >
-              儲存
-            </Button>,
-          ]}
+    <Content className="bg-gray-100 p-6 relative">
+      {contextHolder}
+      <h1 className="text-2xl">醫師管理</h1>
+      <Button onClick={() => handleClick("add")} className="my-4">
+        新增醫師
+      </Button>
+      {isDesktop && (
+        <Dropdown
+          menu={{
+            items: dropdownItems,
+            onClick: (items) => {
+              switch (items.key) {
+                case "1":
+                  handleLogout();
+                  break;
+                default:
+                  break;
+              }
+            },
+          }}
+          trigger={["click"]}
         >
-          <Form className="p-8">
-            <Form.Item label="姓名">
-              <Input
-                placeholder="請輸入姓名"
-                defaultValue={doctorInfo.name}
-                onChange={(e) => handleInputChange("name", e.target.value)}
-              />
-            </Form.Item>
-            <Form.Item label="科別">
-              <Input
-                placeholder="請輸入科別"
-                defaultValue={doctorInfo.specialty}
-                onChange={(e) => handleInputChange("specialty", e.target.value)}
-              />
-            </Form.Item>
-            <Form.Item label="專長">
-              {doctorInfo.description.map((item, index) => (
-                <Space
-                  key={item.id}
-                  style={{ display: "flex", marginBottom: 8 }}
-                  align="baseline"
-                >
-                  <Input
-                    placeholder="請輸入專長"
-                    defaultValue={item.value}
-                    onChange={(e) =>
-                      handleDescriptionChange(index, e.target.value)
-                    }
-                  />
-                  <Button
-                    type="text"
-                    danger
-                    onClick={() => removeDescriptionField(index)}
-                  >
-                    <MinusCircleOutlined />
-                  </Button>
-                </Space>
-              ))}
-              <Button
-                type="dashed"
-                onClick={addDescriptionField}
-                icon={<PlusOutlined />}
-              >
-                新增專長
-              </Button>
-            </Form.Item>
-          </Form>
-        </Modal>
-        <Modal
-          title="刪除醫師資料"
-          open={isDeleteConfirmModalOpen}
-          onOk={handleDelete}
-          onCancel={() => setIsDeleteConfirmModalOpen(false)}
-          okType="danger"
-          cancelText="返回"
-          okText="刪除"
-        >
-          <div className="flex p-8">
-            <ExclamationCircleFilled className="text-yellow-500 text-2xl pr-2" />
-            <p>將從資料庫中，刪除該筆醫師資料，確定要進行此一操作？</p>
-          </div>
-        </Modal>
-        <Modal
-          title="建立醫師資料"
-          open={isAddNewDoctorModalOpen}
-          onCancel={() => {setIsAddNewDoctorModalOpen(false)
-            setNewDoctorInfo({
-    name: "",
-    specialty: "",
-    description: [{id: uuidv4(), value: ""}],
-  })
-           } }
-          footer={null}
-        >
-          <Form
-            className="p-4"
-            form={form}
-            layout="vertical"
-            onFinish={handleCreateDoctorData}
+          <button
+            className="absolute right-8 top-4 text-mainColor rounded-full hover:text-mainColorLight"
+            onClick={(e) => e.preventDefault()}
           >
-            <Form.Item
-              label="姓名"
-              name="name"
-              rules={[{ required: true, message: "請輸入醫師姓名" }]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              label="科別"
-              name="specialty"
-              rules={[{ required: true, message: "請輸入醫師科別" }]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item label="專長">
-              {newDoctorInfo.description.map((item, index) => (
-                <Space
-                  key={item.id}
-                  style={{ display: "flex", marginBottom: 8 }}
-                  align="baseline"
-                >
-                  <Input
-                    placeholder="請輸入專長"
-                    defaultValue={item.value}
-                    onChange={(e) =>
-                      handleNewDoctorDescriptionChange(index, e.target.value)
-                    }
-                  />
-                    <Button
-                      type="text"
-                      danger
-                      onClick={() => removeNewDoctorDescriptionField(index)}
-                    >
-                      <MinusCircleOutlined />
-                    </Button>
-                </Space>
-              ))}
-              <Button
-                type="dashed"
-                onClick={addNewDoctorDescriptionField}
-                icon={<PlusOutlined />}
+            <FaCircleUser size={28} />
+          </button>
+        </Dropdown>
+      )}
+      <Table loading={isLoading} columns={columns} dataSource={data} />
+      <Modal
+        title="醫師資料編輯"
+        open={isDoctorModalOpen}
+        loading={isDoctorModalLoading}
+        onCancel={handleCancel}
+        footer={[
+          <Button key="cancel" onClick={handleCancel}>
+            取消
+          </Button>,
+          <Button
+            key="save"
+            type="primary"
+            loading={isSubmitLoading}
+            onClick={handleSave}
+          >
+            儲存
+          </Button>,
+        ]}
+      >
+        <Form className="p-8">
+          <Form.Item label="姓名">
+            <Input
+              placeholder="請輸入姓名"
+              defaultValue={doctorInfo.name}
+              onChange={(e) => handleInputChange("name", e.target.value)}
+            />
+          </Form.Item>
+          <Form.Item label="科別">
+            <Input
+              placeholder="請輸入科別"
+              defaultValue={doctorInfo.specialty}
+              onChange={(e) => handleInputChange("specialty", e.target.value)}
+            />
+          </Form.Item>
+          <Form.Item label="專長">
+            {doctorInfo.description.map((item, index) => (
+              <Space
+                key={item.id}
+                style={{ display: "flex", marginBottom: 8 }}
+                align="baseline"
               >
-                新增專長
-              </Button>
-            </Form.Item>
-            <Form.Item>
-              <Button type="primary" htmlType="submit">
-                提交
-              </Button>
-            </Form.Item>
-          </Form>
-        </Modal>
-      </Content>
+                <Input
+                  placeholder="請輸入專長"
+                  defaultValue={item.value}
+                  onChange={(e) =>
+                    handleDescriptionChange(index, e.target.value)
+                  }
+                />
+                <Button
+                  type="text"
+                  danger
+                  onClick={() => removeDescriptionField(index)}
+                >
+                  <MinusCircleOutlined />
+                </Button>
+              </Space>
+            ))}
+            <Button
+              type="dashed"
+              onClick={addDescriptionField}
+              icon={<PlusOutlined />}
+            >
+              新增專長
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+      <Modal
+        title="刪除醫師資料"
+        open={isDeleteConfirmModalOpen}
+        onOk={handleDelete}
+        onCancel={() => setIsDeleteConfirmModalOpen(false)}
+        okType="danger"
+        cancelText="返回"
+        okText="刪除"
+      >
+        <div className="flex p-8">
+          <ExclamationCircleFilled className="text-yellow-500 text-2xl pr-2" />
+          <p>將從資料庫中，刪除該筆醫師資料，確定要進行此一操作？</p>
+        </div>
+      </Modal>
+      <Modal
+        title="建立醫師資料"
+        open={isAddNewDoctorModalOpen}
+        onCancel={() => {
+          setIsAddNewDoctorModalOpen(false);
+          setNewDoctorInfo({
+            name: "",
+            specialty: "",
+            description: [{ id: uuidv4(), value: "" }],
+          });
+        }}
+        footer={null}
+      >
+        <Form
+          className="p-4"
+          form={form}
+          layout="vertical"
+          onFinish={handleCreateDoctorData}
+        >
+          <Form.Item
+            label="姓名"
+            name="name"
+            rules={[{ required: true, message: "請輸入醫師姓名" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="科別"
+            name="specialty"
+            rules={[{ required: true, message: "請輸入醫師科別" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item label="專長">
+            {newDoctorInfo.description.map((item, index) => (
+              <Space
+                key={item.id}
+                style={{ display: "flex", marginBottom: 8 }}
+                align="baseline"
+              >
+                <Input
+                  placeholder="請輸入專長"
+                  defaultValue={item.value}
+                  onChange={(e) =>
+                    handleNewDoctorDescriptionChange(index, e.target.value)
+                  }
+                />
+                <Button
+                  type="text"
+                  danger
+                  onClick={() => removeNewDoctorDescriptionField(index)}
+                >
+                  <MinusCircleOutlined />
+                </Button>
+              </Space>
+            ))}
+            <Button
+              type="dashed"
+              onClick={addNewDoctorDescriptionField}
+              icon={<PlusOutlined />}
+            >
+              新增專長
+            </Button>
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit">
+              提交
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+    </Content>
   );
 };
 

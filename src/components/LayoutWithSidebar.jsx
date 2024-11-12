@@ -12,7 +12,7 @@ import { FaCircleUser } from "react-icons/fa6";
 const { Header, Sider } = Layout;
 
 const handleLogout = () => {
-  localStorage.removeItem("authToken");
+  localStorage.removeItem("userData");
   window.location.reload();
 };
 
@@ -138,6 +138,8 @@ const LayoutWithSidebar = () => {
     navigate("/*");
   };
 
+const isAdminLogin = localStorage.getItem("userData")
+
   return (
     <Layout className="min-h-screen">
       {isDesktop ? (
@@ -183,7 +185,7 @@ const LayoutWithSidebar = () => {
               <IoMenu className="size-6" />
             </button>
             <Logo onClick={handleClickLogo} />
-            {user ? (
+            {user || isAdminLogin ? (
               <>
                 <Dropdown
                   menu={{
