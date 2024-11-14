@@ -11,14 +11,13 @@ import {
   Dropdown
 } from "antd";
 import { useState, useEffect } from "react";
-import { FaTable, FaEdit } from "react-icons/fa";
+import { FaEdit } from "react-icons/fa";
 import {
   getDoctors,
   getDoctorById,
   patchDoctorById,
   deleteDoctorById,
 } from "../api/doctors";
-import { useNavigate } from "react-router-dom";
 import {
   MinusCircleOutlined,
   PlusOutlined,
@@ -66,21 +65,12 @@ const AdminDoctorPage = () => {
   const [doctors, setDoctors] = useState([]);
   const [deleteDoctorId, setDeleteDoctorId] = useState(null);
   const [messageApi, contextHolder] = message.useMessage();
-  const navigate = useNavigate();
   const isDesktop = useRWD()
 
   const [form] = Form.useForm();
 
   
   const columns = [
-    {
-      title: "門診班表",
-      render: (_, record) => (
-        <Button type="text" onClick={() => handleClickSchedules(record)}>
-          <FaTable size={24} />
-        </Button>
-      ),
-    },
     {
       title: "姓名",
       dataIndex: "name",
@@ -259,13 +249,6 @@ const AdminDoctorPage = () => {
       return { ...prev, description: newDescription };
     });
   }
-  const handleClickSchedules = (record) => {
-   navigate(`/admin/schedules/${record.id}`, {
-     state: {
-       doctorName: record.name,
-     },
-   });
-  };
 
   const handleLogout = () => {
     localStorage.removeItem("authToken");

@@ -1,13 +1,14 @@
 
-import { Layout, List, Button, Dropdown } from "antd";
+import { Layout, Dropdown, Table } from "antd";
 import { useState, useEffect } from "react";
-import { IoIosMore, IoIosAddCircleOutline } from "react-icons/io";
 import { getSpecialties } from "../api/specialties";
 import { useNavigate } from "react-router-dom";
 import { FaCircleUser } from "react-icons/fa6";
 import useRWD from "../hooks/useRWD";
+import DepartmentTable from "../components/DepartmentTable";
 
 const { Content } = Layout;
+
 
 const dropdownItems = [
   {
@@ -34,7 +35,6 @@ const handleLogout = () => {
   window.location.reload();
 };
 
-
   useEffect(() => {
     const userData = localStorage.getItem("userData");
     if (!userData) {
@@ -54,9 +54,6 @@ const handleLogout = () => {
     
   }, []);
 
-  const handleClick = () => {
-    console.log("更多")
-  }
   
   return (
     <Content className="bg-gray-100 p-6">
@@ -84,42 +81,10 @@ const handleLogout = () => {
           </button>
         </Dropdown>
       )}
-
-      {departments.map((d) => (
-        <List
-          key={d.category}
-          header={<h3 className="text-lg">{d.category}</h3>}
-          bordered
-          className="bg-white p-4 my-8"
-        >
-          {d.specialties.map((item) => (
-            <List.Item key={item}>
-              <span>{item}</span>
-              <Button onClick={handleClick} type="text">
-                <IoIosMore className="text-xl" />
-              </Button>
-            </List.Item>
-          ))}
-          <List.Item>
-            <Button type="text" className="mt-3 mx-auto" size="large">
-              <IoIosAddCircleOutline className="text-2xl" />
-            </Button>
-          </List.Item>
-        </List>
-      ))}
-      <List
-        className="bg-white my-8 pb-4 text-center"
-        bordered
-        itemLayout="vertical"
-        loading={isLoading}
-        size="large"
-      >
-        {!isLoading && (
-          <Button type="text" className="mt-3" size="large">
-            <IoIosAddCircleOutline className="text-3xl" />
-          </Button>
-        )}
-      </List>
+     {departments.map((d, index) => (
+      <DepartmentTable key={index} category={d.category} specialties={d.specialties} />
+     ))}
+     {isLoading && <Table loading={isLoading} />}
     </Content>
   );
 
