@@ -1,12 +1,11 @@
 /* eslint-disable no-unused-vars */
-import { useSelector } from "react-redux";
 import useRWD from "../hooks/useRWD";
 import { FaCircleUser } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 import { Dropdown } from "antd";
 
 const handleLogout = () => {
-  localStorage.removeItem("authToken");
+  localStorage.removeItem("userData");
   window.location.reload();
 };
 
@@ -26,7 +25,7 @@ const dropdownItems = [
 
 const LoginButton = () => {
   const isDesktop = useRWD();
-  const user = useSelector((state) => state.auth.user);
+  const user = localStorage.getItem("userData");
   const navigate = useNavigate();
 
   const handleClickLogin = () => {
