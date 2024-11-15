@@ -1,27 +1,15 @@
 
-import { Layout, Breadcrumb, Table } from "antd";
-import dayjs from "dayjs";
+import { Layout, Breadcrumb } from "antd";
 import { useLocation, Link } from "react-router-dom";
+import ScheduleTable from "../components/ScheduleTable";
 
 const { Content } = Layout;
 
-const generateDates = () => {
-  const dates = [];
-  for (let i = 0; i < 14; i++) {
-    const date = dayjs("2024-09-01").add(i, "day");
-    const formattedDate = `${date.format("M/D")}(${"日一二三四五六".charAt(
-      date.day()
-    )})`;
-
-    dates.push(formattedDate);
-  }
-  return dates;
-};
 
 const AdminSchedulePage = () => {
   
   const location = useLocation();
-  const { doctorName } = location.state;
+  const { specialty } = location.state;
 
 
 
@@ -35,8 +23,8 @@ const AdminSchedulePage = () => {
             },
           ]}
         />
-        <h1 className="text-2xl mb-4">{doctorName} 門診班表</h1>
-        <Table />
+        <h1 className="text-2xl mb-4">{specialty} 門診班表</h1>
+        <ScheduleTable />
       </Content>
   );
 };

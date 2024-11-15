@@ -70,8 +70,8 @@ const ClinicSchedulePage = () => {
   useEffect(() => {
     const getSchedulesAsync = async () => {
       try {
-        const schedules = await getSchedules(specialty);
-        setSchedules(schedules);
+        const scheduleData = await getSchedules(specialty);
+        setSchedules(scheduleData);
         setScheduleLoading(false);
       } catch (error) {
         console.error(error);
@@ -107,8 +107,8 @@ const ClinicSchedulePage = () => {
       dataIndex: `date${index}`,
       key: `date${index}`,
       className: "min-w-44",
-      render: (doctors, record) =>
-        doctors.map((doc, idx) => (
+      render: (text, record) =>
+        text.map((doc, idx) => (
           <Flex key={idx} className="my-2">
             <Button
               onClick={() => handleClickDoctorInfo(doc.doctorId)}

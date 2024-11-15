@@ -26,7 +26,6 @@ console.error("[Get doctor by id failed]: ", error);
 export const searchDoctors = async (keyword) => {
   try {
     const res = await axios.get(`${baseURL}/doctors/search-doctors?keyword=${keyword}`);
-    console.log(res.data);
     return res.data
     
   } catch(error) {

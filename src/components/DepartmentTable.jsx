@@ -53,10 +53,11 @@ const DepartmentTable = ({category, specialties}) => {
   const handleClickSchedules = (record) => {
     navigate(`/admin/schedules/${record.specialty}`, {
       state: {
-        doctorName: record.specialty,
+        specialty: record.specialty,
       },
     });
   };
+  
   return (
     <div className="my-8 bg-white text-center">
       <Table className="my-4" dataSource={dataSource} pagination={false}>
