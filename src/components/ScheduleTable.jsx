@@ -104,7 +104,11 @@ useEffect(() => {
                   <Button onClick={() => handleEdit(item)}>
                     {item.doctorName}
                   </Button>
-                  <Button type="text" onClick={() => openDeleteConfirmModal(item)} danger>
+                  <Button
+                    type="text"
+                    onClick={() => openDeleteConfirmModal(item)}
+                    danger
+                  >
                     刪除
                   </Button>
                 </Flex>
@@ -113,14 +117,20 @@ useEffect(() => {
                 <Button
                   onClick={() => handleAddSchedule(record.time, date, text)}
                 >
-                  <IoIosAdd size={24} />
+                  <IoIosAdd
+                    className="text-gray-400 hover:text-mainColorLight"
+                    size={24}
+                  />
                 </Button>
               </Flex>
             </>
           ) : (
             <Flex justify="center" className="my-2">
               <Button onClick={() => handleAddSchedule(record.time, date)}>
-                <IoIosAdd size={24} />
+                <IoIosAdd
+                  className="text-gray-400 hover:text-mainColorLight"
+                  size={24}
+                />
               </Button>
             </Flex>
           )}
@@ -284,7 +294,7 @@ useEffect(() => {
           className="pt-8"
           initialValues={{
             selectField: "請選擇醫師",
-            inputNumberField: 0,
+            inputMaxAppointments: 0,
           }}
           onFinish={handleAddScheduleSubmit}
         >
@@ -301,7 +311,7 @@ useEffect(() => {
               }))}
             />
           </Form.Item>
-          <Form.Item name="inputNumberField" label="看診人數上限">
+          <Form.Item name="inputMaxAppointments" label="看診人數上限">
             <InputNumber
               className="mx-6"
               min={1}
@@ -325,8 +335,24 @@ useEffect(() => {
         </Form>
       </Modal>
       {/* 修改門診 */}
-      <Modal open={isSelectedDoctorModalOpen} onCancel={() => setIsSelectedDoctorModalOpen(false)} title="門診設定">
-        <h2>{selectedDoctor.name}</h2>
+      <Modal
+        className="text-center p-24"
+        open={isSelectedDoctorModalOpen}
+        onCancel={() => setIsSelectedDoctorModalOpen(false)}
+        title="門診設定"
+      >
+        <h2>門診醫師：{selectedDoctor.doctorName}</h2>
+        <Form
+          form={form}
+          className="pt-8"
+          initialValues={{
+            inputMaxAppointments: selectedDoctor.maxAppointments,
+          }}
+        >
+          <Form.Item name="inputMaxAppointments" label="看診人數上限">
+            <InputNumber className="mx-6" min={1} max={10} />
+          </Form.Item>
+        </Form>
       </Modal>
     </>
   );
