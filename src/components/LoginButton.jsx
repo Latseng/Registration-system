@@ -11,7 +11,7 @@ const handleLogout = () => {
 
 const dropdownItems = [
   {
-    label: <a>個人資訊</a>,
+    label: <a>使用者資訊</a>,
     key: "0",
   },
   {
@@ -37,7 +37,6 @@ const LoginButton = () => {
   return (
     <>
       {user ? (
-        <>
           <Dropdown
             menu={{
               items: dropdownItems,
@@ -60,7 +59,6 @@ const LoginButton = () => {
               <FaCircleUser size={28} />
             </button>
           </Dropdown>
-        </>
       ) : (
         <button
           className="absolute right-8 top-4 hover:text-mainColorLight"

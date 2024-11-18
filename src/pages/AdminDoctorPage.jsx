@@ -8,7 +8,7 @@ import {
   Input,
   Space,
   message,
-  Dropdown
+  Dropdown,
 } from "antd";
 import { useState, useEffect } from "react";
 import { FaEdit } from "react-icons/fa";
@@ -26,6 +26,7 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import { FaCircleUser } from "react-icons/fa6";
 import useRWD from "../hooks/useRWD";
+import { useNavigate } from "react-router-dom";
 
 const { Content } = Layout;
 
@@ -48,7 +49,7 @@ const AdminDoctorPage = () => {
   const [isDoctorModalOpen, setIsDoctorModalOpen] = useState(false);
   const [isDeleteConfirmModalOpen, setIsDeleteConfirmModalOpen] =
     useState(false);
-    const [isAddNewDoctorModalOpen, setIsAddNewDoctorModalOpen] = useState(false)
+  const [isAddNewDoctorModalOpen, setIsAddNewDoctorModalOpen] = useState(false);
   const [doctorInfo, setDoctorInfo] = useState({
     id: null,
     name: "",
@@ -58,18 +59,17 @@ const AdminDoctorPage = () => {
   const [newDoctorInfo, setNewDoctorInfo] = useState({
     name: "",
     specialty: "",
-    description: [{id: uuidv4(), value: ""}],
+    description: [{ id: uuidv4(), value: "" }],
   });
   const [isDoctorModalLoading, setIsDoctorModalLoading] = useState(false);
   const [isSubmitLoading, setIsSubmitLoading] = useState(false);
   const [doctors, setDoctors] = useState([]);
   const [deleteDoctorId, setDeleteDoctorId] = useState(null);
   const [messageApi, contextHolder] = message.useMessage();
-  const isDesktop = useRWD()
-
+  const isDesktop = useRWD();
+  const navigate = useNavigate();
   const [form] = Form.useForm();
 
-  
   const columns = [
     {
       title: "姓名",
@@ -121,7 +121,7 @@ const AdminDoctorPage = () => {
   const addDescriptionField = () => {
     setDoctorInfo((prev) => ({
       ...prev,
-      description: [...prev.description, {id: uuidv4(), value: ""}],
+      description: [...prev.description, { id: uuidv4(), value: "" }],
     }));
   };
   const removeDescriptionField = (index) => {
@@ -178,7 +178,7 @@ const AdminDoctorPage = () => {
 
   const handleDelete = async () => {
     console.log(deleteDoctorId);
-    
+
     const result = await deleteDoctorById(deleteDoctorId);
     if (result === "success") {
       await getDoctorsData();
@@ -213,6 +213,17 @@ const AdminDoctorPage = () => {
   };
 
   useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem("userData"));
+    if (userData) {
+      if (userData?.idNumber) {
+        navigate("/departments");
+        return;
+      }
+      navigate("/admin/departments");
+    } else {
+      navigate("/login");
+      return;
+    }
     getDoctorsData();
   }, []);
 
@@ -223,18 +234,15 @@ const AdminDoctorPage = () => {
     department: d.specialty,
   }));
 
-  
- 
   const handleCreateDoctorData = (values) => {
     console.log(values);
-    
-  }
+  };
   const addNewDoctorDescriptionField = () => {
     setNewDoctorInfo((prev) => ({
       ...prev,
-      description: [...prev.description, {id: uuidv4(), value: ""}],
+      description: [...prev.description, { id: uuidv4(), value: "" }],
     }));
-  }
+  };
 
   const handleNewDoctorDescriptionChange = (index, value) => {
     setNewDoctorInfo((prev) => {
@@ -242,13 +250,13 @@ const AdminDoctorPage = () => {
       newDescription[index].value = value;
       return { ...prev, description: newDescription };
     });
-  }
+  };
   const removeNewDoctorDescriptionField = (index) => {
     setNewDoctorInfo((prev) => {
       const newDescription = prev.description.filter((_, idx) => idx !== index);
       return { ...prev, description: newDescription };
     });
-  }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("authToken");

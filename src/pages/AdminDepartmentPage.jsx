@@ -1,4 +1,3 @@
-
 import { Layout, Dropdown, Table } from "antd";
 import { useState, useEffect } from "react";
 import { getSpecialties } from "../api/specialties";
@@ -8,7 +7,6 @@ import useRWD from "../hooks/useRWD";
 import DepartmentTable from "../components/DepartmentTable";
 
 const { Content } = Layout;
-
 
 const dropdownItems = [
   {
@@ -25,21 +23,29 @@ const dropdownItems = [
 ];
 
 const AdminDepartmentPage = () => {
-const [isLoading, setIsLoading] = useState(false)
-const [departments, setDepartments] = useState([])
-const navigate = useNavigate()
-const isDesktop = useRWD()
+  const [isLoading, setIsLoading] = useState(false);
+  const [departments, setDepartments] = useState([]);
+  const navigate = useNavigate();
+  const isDesktop = useRWD();
 
-const handleLogout = () => {
-  localStorage.removeItem("adminData");
-  window.location.reload();
-};
+  const handleLogout = () => {
+    localStorage.removeItem("userData");
+    window.location.reload();
+  };
 
   useEffect(() => {
-    const userData = localStorage.getItem("userData");
-    if (!userData) {
+    const userData = JSON.parse(localStorage.getItem("userData"));
+    if (userData) {
+      if (userData?.idNumber) {
+        navigate("/departments");
+        return;
+      }
+      navigate("/admin/departments");
+    } else {
       navigate("/login");
+      return;
     }
+
     const getDepartmentsData = async () => {
       try {
         setIsLoading(true);
@@ -50,11 +56,9 @@ const handleLogout = () => {
         console.error(error);
       }
     };
-    getDepartmentsData()
-    
+    getDepartmentsData();
   }, []);
 
-  
   return (
     <Content className="bg-gray-100 p-6">
       {isDesktop && (
@@ -81,13 +85,16 @@ const handleLogout = () => {
           </button>
         </Dropdown>
       )}
-     {departments.map((d, index) => (
-      <DepartmentTable key={index} category={d.category} specialties={d.specialties} />
-     ))}
-     {isLoading && <Table loading={isLoading} />}
+      {departments.map((d, index) => (
+        <DepartmentTable
+          key={index}
+          category={d.category}
+          specialties={d.specialties}
+        />
+      ))}
+      {isLoading && <Table loading={isLoading} />}
     </Content>
   );
-
 };
 
 export default AdminDepartmentPage;

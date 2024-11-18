@@ -4,6 +4,10 @@ import { useNavigate } from "react-router-dom";
 
 const MainPage = () => {
   const navigate = useNavigate();
+  const handleLogout = () => {
+    localStorage.removeItem("userData");
+    window.location.reload();
+  };
   const handleClick = (route) => {
     switch (route) {
       case "departments":
@@ -17,6 +21,9 @@ const MainPage = () => {
         break;
       case "login":
         navigate("/login");
+        break;
+      case "logout":
+        handleLogout();
         break;
       default:
         break;

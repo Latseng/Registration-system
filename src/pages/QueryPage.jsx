@@ -14,12 +14,16 @@ import { useDispatch } from "react-redux";
 import { resetNewAppointment } from "../store/appointmentSlice";
 import { GrStatusGood } from "react-icons/gr";
 import LoginButton from "../components/LoginButton";
+import { useNavigate } from "react-router-dom";
+import { ExclamationCircleFilled } from "@ant-design/icons";
 
 const { Content } = Layout;
+const { confirm } = Modal;
 
 const QueryPage = () => {
   const [form] = Form.useForm();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [appointments, setAppointments] = useState([]);
   const [messageApi, contextHolder] = message.useMessage();
   const [isVerified, setIsVerified] = useState(false);
@@ -34,18 +38,36 @@ const QueryPage = () => {
   const newAppointment = useSelector(
     (state) => state.appointment.newAppointment
   );
-  const user = useSelector((state) => state.auth.user)
 
   const getAppointmentsDataAsync = async (data) => {
     try {
       const patientAppointments = await getAppointmentsBypatient(data);
+      if (patientAppointments.data.message?.includes("登入")) {
+        setIsLoading(false);
+        confirm({
+          title: "須先登入",
+          icon: <ExclamationCircleFilled />,
+          content: "您已有帳號，需要先登入才能使用本功能",
+          okText: "前往登入",
+          okType: "primary",
+          cancelText: "取消",
+          onOk() {
+            navigate("/login");
+          },
+          onCancel() {
+            console.log("Cancel");
+          },
+        });
+        return;
+      }
+
       if (
         patientAppointments.data.message ===
         "No appointments found for this patient."
       ) {
         setIsLoading(false);
         setAppointments([]);
-        setIsPageLoading(false)
+        setIsPageLoading(false);
         return;
       }
 
@@ -73,30 +95,31 @@ const QueryPage = () => {
   };
 
   useEffect(() => {
-    if(user) {
-      setIsVerified(true)
-      setIsPageLoading(true)
+    const user = JSON.parse(localStorage.getItem("userData"));
+    if (user) {
+      setIsVerified(true);
+      setIsPageLoading(true);
       const queryPayload = {
-        idNumber: user.idNumber,
-        birthDate: user.birthDate,
         recaptchaResponse: "test_recaptcha",
-        authToken: localStorage.getItem("authToken")
+        authToken: user.userToken,
       };
       getAppointmentsDataAsync(queryPayload);
-      return
+      return;
     }
+
     if (newAppointment) {
       setIsVerified(true);
       setIsPageLoading(true);
       getAppointmentsDataAsync(newAppointment.requestData);
       setIsAppointmentSuccess(true);
     }
+
     return () => {
       dispatch(resetNewAppointment());
     };
-  }, [dispatch, newAppointment, user]);
+  }, [dispatch, newAppointment]);
 
-  const handleFinish = (values) => {
+  const handleFinish = async (values) => {
     setIsLoading(true);
     const birthDate = new Date(
       Date.UTC(values.year, values.month - 1, values.day)

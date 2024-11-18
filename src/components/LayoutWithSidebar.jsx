@@ -11,7 +11,7 @@ import { FaCircleUser } from "react-icons/fa6";
 
 const { Header, Sider } = Layout;
 
-const handleLogout = () => {
+const handleLogout = () => {  
   localStorage.removeItem("userData");
   window.location.reload();
 };

@@ -28,12 +28,13 @@ const ScheduleTable = () => {
   const dates = generateDates();
   const [currentWeek, setCurrentWeek] = useState(0);
   const [schedules, setSchedules] = useState([]);
-  const [departmentDoctorData, setDepartmentDoctorData] = useState([])
-  const [scheduledDoctor, setScheduledDoctor] = useState([])
-  const [selectedDoctor, setSelectedDoctor] = useState({})
+  const [departmentDoctorData, setDepartmentDoctorData] = useState([]);
+  const [scheduledDoctor, setScheduledDoctor] = useState([]);
+  const [selectedDoctor, setSelectedDoctor] = useState({});
   const [isDataUpdated, setIsDataUpdated] = useState(false);
-  const [isScheduleEditModalOpen, setIsScheduleEditModalOpen] = useState(false)
-  const [isSelectedDoctorModalOpen, setIsSelectedDoctorModalOpen] = useState(false)
+  const [isScheduleEditModalOpen, setIsScheduleEditModalOpen] = useState(false);
+  const [isSelectedDoctorModalOpen, setIsSelectedDoctorModalOpen] =
+    useState(false);
   const [scheduleData, setScheduleData] = useState({
     doctorId: null,
     scheduleSlot: "",
@@ -41,42 +42,42 @@ const ScheduleTable = () => {
     maxAppointments: 0,
     status: "",
   });
-  const location = useLocation()
+  const location = useLocation();
   const { specialty } = location.state;
   const weekDates = dates.slice(currentWeek * 7, (currentWeek + 1) * 7);
   const [form] = Form.useForm();
 
-useEffect(() => {
-  const getDoctorDataByDepartment = async () => {
-    try {
-      const doctorData = await searchDoctors(specialty);
-      setDepartmentDoctorData(
-        doctorData.map((d) => ({
-          id: d.id,
-          name: d.name,
-          specialty: d.specialty,
-        }))
-      );
-    } catch (error) {
-      console.error(error);
+  useEffect(() => {
+    const getDoctorDataByDepartment = async () => {
+      try {
+        const doctorData = await searchDoctors(specialty);
+        setDepartmentDoctorData(
+          doctorData.map((d) => ({
+            id: d.id,
+            name: d.name,
+            specialty: d.specialty,
+          }))
+        );
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    const getSchedulesAsync = async () => {
+      try {
+        setScheduleLoading(true);
+        const scheduleData = await getSchedules(specialty);
+        setSchedules(scheduleData);
+        setScheduleLoading(false);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    if (isDataUpdated) {
+      getSchedulesAsync();
     }
-  };
-  const getSchedulesAsync = async () => {
-    try {
-      setScheduleLoading(true);
-      const scheduleData = await getSchedules(specialty);
-      setSchedules(scheduleData);
-      setScheduleLoading(false);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-  if (isDataUpdated) {
     getSchedulesAsync();
-  }
-  getSchedulesAsync();
-  getDoctorDataByDepartment();
-}, [isDataUpdated]); 
+    getDoctorDataByDepartment();
+  }, [isDataUpdated]);
 
   const columns = [
     {
@@ -101,7 +102,7 @@ useEffect(() => {
                   justify="center"
                   className="my-2 border border-gray-200"
                 >
-                  <Button onClick={() => handleEdit(item)}>
+                  <Button type="text" onClick={() => handleEdit(item)}>
                     {item.doctorName}
                   </Button>
                   <Button
@@ -166,34 +167,37 @@ useEffect(() => {
 
   const handleEdit = (value) => {
     console.log(value);
-    setSelectedDoctor(value)
-    setIsSelectedDoctorModalOpen(true)
-  }
-  
+    setSelectedDoctor(value);
+    setIsSelectedDoctorModalOpen(true);
+  };
+
   const handleAddSchedule = (value1, value2, value3) => {
     //避免同一時段的醫師門診重複
-    if(value3) {
+    if (value3) {
       setScheduledDoctor(
         value3?.map((i) => ({ doctorId: i.doctorId, doctorName: i.doctorName }))
       );
     }
-    let scheduleSlot = ""
+    let scheduleSlot = "";
     if (value1.includes("上午")) {
-      scheduleSlot = dayjs(`2024-${value2}`, "YYYY-M/D ").format("dddd") + "_Morning";
+      scheduleSlot =
+        dayjs(`2024-${value2}`, "YYYY-M/D ").format("dddd") + "_Morning";
     } else {
-       scheduleSlot = dayjs(`2024-${value2}`, "YYYY-M/D ").format("dddd") +
-        "_Afternoon";
+      scheduleSlot =
+        dayjs(`2024-${value2}`, "YYYY-M/D ").format("dddd") + "_Afternoon";
     }
-     const date = dayjs(dayjs(`2024-${value2}`, "YYYY-M/D").format("YYYY-MM-DD")).toISOString()
-      setScheduleData({
-        ...scheduleData,
-        scheduleSlot: scheduleSlot,
-        date: date,
-        status: "AVAILABLE",
-      });
-    setIsScheduleEditModalOpen(true)
-  }
-  
+    const date = dayjs(
+      dayjs(`2024-${value2}`, "YYYY-M/D").format("YYYY-MM-DD")
+    ).toISOString();
+    setScheduleData({
+      ...scheduleData,
+      scheduleSlot: scheduleSlot,
+      date: date,
+      status: "AVAILABLE",
+    });
+    setIsScheduleEditModalOpen(true);
+  };
+
   const handleAddScheduleSubmit = async () => {
     await createSchedule(
       scheduleData,
@@ -204,52 +208,52 @@ useEffect(() => {
       scheduleSlot: "",
       date: "",
       maxAppointments: 0,
-      status: "", 
+      status: "",
     });
     form.resetFields();
     setIsDataUpdated(!isDataUpdated);
-    setIsScheduleEditModalOpen(false)
+    setIsScheduleEditModalOpen(false);
   };
 
   const handleScheduleDelete = async (id, adminToken) => {
     await deleteSchedule(id, adminToken);
-    setIsDataUpdated(!isDataUpdated)
+    setIsDataUpdated(!isDataUpdated);
   };
 
   const openDeleteConfirmModal = (text) => {
-  confirm({
-    title: "資料刪除確認？",
-    icon: <ExclamationCircleFilled />,
-    content: "你確定要刪除這筆門診資料？",
-    okText: "確定",
-    okType: "danger",
-    cancelText: "取消",
-    onOk() {
-      handleScheduleDelete(
-        text.doctorScheduleId,
-        JSON.parse(localStorage.getItem("userData")).adminToken
-      ); 
-    },
-  });
-};
+    confirm({
+      title: "資料刪除確認？",
+      icon: <ExclamationCircleFilled />,
+      content: "你確定要刪除這筆門診資料？",
+      okText: "確定",
+      okType: "danger",
+      cancelText: "取消",
+      onOk() {
+        handleScheduleDelete(
+          text.doctorScheduleId,
+          JSON.parse(localStorage.getItem("userData")).adminToken
+        );
+      },
+    });
+  };
 
-   const handleNextWeek = () => {
-     setCurrentWeek((prev) => (prev < 1 ? prev + 1 : prev));
-   };
+  const handleNextWeek = () => {
+    setCurrentWeek((prev) => (prev < 1 ? prev + 1 : prev));
+  };
 
-   const handlePreviousWeek = () => {
-     setCurrentWeek((prev) => (prev > 0 ? prev - 1 : prev));
-   };
-   const handleDoctorChange = (value) => {
-    setScheduleData({...scheduleData, doctorId: value})
+  const handlePreviousWeek = () => {
+    setCurrentWeek((prev) => (prev > 0 ? prev - 1 : prev));
+  };
+  const handleDoctorChange = (value) => {
+    setScheduleData({ ...scheduleData, doctorId: value });
     //  setSelectedDoctor(value);
-   };
-   const handleMaxAppointmentsChange = (value) => {
-    setScheduleData({ ...scheduleData, maxAppointments: value});
-   }
-   
-   const handleScheduleEditModalClose = () => {
-    setIsScheduleEditModalOpen(false)
+  };
+  const handleMaxAppointmentsChange = (value) => {
+    setScheduleData({ ...scheduleData, maxAppointments: value });
+  };
+
+  const handleScheduleEditModalClose = () => {
+    setIsScheduleEditModalOpen(false);
     setScheduledDoctor([]);
     setScheduleData({
       doctorId: null,
@@ -259,8 +263,8 @@ useEffect(() => {
       status: "",
     });
     form.resetFields();
-   }
-   
+  };
+
   return (
     <>
       <div className="flex justify-between my-4">
@@ -271,7 +275,7 @@ useEffect(() => {
           下一週
         </Button>
       </div>
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto bg-white">
         <Table
           bordered
           loading={isScheduleLoading}
