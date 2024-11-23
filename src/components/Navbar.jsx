@@ -4,6 +4,7 @@ import { IoMenu } from "react-icons/io5";
 import { FaSuitcaseMedical } from "react-icons/fa6";
 import { FaCircleUser } from "react-icons/fa6";
 import PropTypes from "prop-types";
+import { logoutReqest } from "../api/auth";
 
 const { Header } = Layout;
 
@@ -85,9 +86,13 @@ const Navbar = ({ handleClick }) => {
           key: "2",
         },
       ];
-      const handleLogout = () => {
-        localStorage.removeItem("userData");
-        window.location.reload();
+     
+      const handleLogout = async () => {
+        const res = await logoutReqest();
+        if (res.status === "success") {
+          window.location.reload();
+          localStorage.removeItem("userData");
+        }
       };
 
       const dropdownItems = [

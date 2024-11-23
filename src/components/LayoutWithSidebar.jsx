@@ -8,12 +8,15 @@ import Logo from "./Logo";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { FaCircleUser } from "react-icons/fa6";
+import { logoutReqest } from "../api/auth";
 
 const { Header, Sider } = Layout;
 
-const handleLogout = () => {  
-  localStorage.removeItem("userData");
-  window.location.reload();
+const handleLogout = async () => {  
+  const res = await logoutReqest()
+  if (res.status === "success") {
+    localStorage.removeItem("userData");
+  }
 };
 
 const dropdownItems = [
@@ -190,6 +193,15 @@ const isAdminLogin = localStorage.getItem("userData")
                 <Dropdown
                   menu={{
                     items: dropdownItems,
+                    onClick: (items) => {
+                      switch (items.key) {
+                        case "1":
+                          handleLogout();
+                          break;
+                        default:
+                          break;
+                      }
+                    },
                   }}
                   trigger={["click"]}
                 >

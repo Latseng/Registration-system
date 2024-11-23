@@ -96,14 +96,40 @@ const QueryPage = () => {
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("userData"));
-    if (user) {
+    if (user?.email) {
       setIsVerified(true);
       setIsPageLoading(true);
-      const queryPayload = {
-        recaptchaResponse: "test_recaptcha",
-        authToken: user.userToken,
-      };
-      getAppointmentsDataAsync(queryPayload);
+   (async () => {
+    try {
+  const response = await fetch(`https://registration-system-2gho.onrender.com/api/appointments/by-patient`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+        'x-api-key': '0rEx0X54ow3S6M7yp8hYS4PkOhRC2irQ'
+    },
+    body: JSON.stringify({
+      recaptchaResponse: 'test_recaptcha', // 你的請求數據
+    }),
+    credentials: 'include', // 確保攜帶和接收跨域 Cookie
+  });
+
+  if (!response.ok) {
+    // 如果伺服器返回非 2xx 的狀態碼
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const data = await response.json(); // 解析 JSON 格式的回應
+  console.log(data);
+} catch (error) {
+  console.error('Error:', error.message);
+}
+   })();
+     
+      // const queryPayload = {
+      //   recaptchaResponse: "test_recaptcha",
+      //   email: user.email,
+      // };
+      // getAppointmentsDataAsync(queryPayload);
       return;
     }
 

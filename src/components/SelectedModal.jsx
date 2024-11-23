@@ -2,7 +2,6 @@ import { Modal, Avatar, Card, Form, Flex, Button, Input, message } from "antd";
 import DatePicker from "./DatePicker";
 import ReCAPTCHA from "react-google-recaptcha";
 import PropTypes from "prop-types";
-import { useSelector } from "react-redux";
 import { useState } from "react";
 import { createAppointment } from "../api/appointments";
 import { useNavigate } from "react-router-dom";
@@ -25,7 +24,7 @@ const SelectedModal = ({
 }) => {
   const [form] = Form.useForm();
   const [isAppointmentLoading, setIsAppointmentLoading] = useState(false);
-  const user = useSelector((state) => state.auth.user);
+  const user = localStorage.getItem("userData");
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -33,12 +32,13 @@ const SelectedModal = ({
     console.log("Captcha value:", value);
   };
 
+  //使用者登入後的掛號
   const handleAppointmentLogin = async () => {
     setIsAppointmentLoading(true);
     const requestData = {
-      authToken: localStorage.getItem("authToken"),
       recaptchaResponse: "test_recaptcha",
       doctorScheduleId: selectedAppointment.id,
+      isLogin: true,
     };
 
     const newAppointment = await createAppointment(requestData);

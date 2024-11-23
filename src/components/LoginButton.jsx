@@ -1,12 +1,15 @@
-/* eslint-disable no-unused-vars */
 import useRWD from "../hooks/useRWD";
 import { FaCircleUser } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 import { Dropdown } from "antd";
+import { logoutReqest } from "../api/auth";
 
-const handleLogout = () => {
-  localStorage.removeItem("userData");
-  window.location.reload();
+const handleLogout = async () => {
+  const res = await logoutReqest();
+  if (res.status === "success") {
+    window.location.reload();
+    localStorage.removeItem("userData");
+  }
 };
 
 const dropdownItems = [
@@ -53,7 +56,7 @@ const LoginButton = () => {
             trigger={["click"]}
           >
             <button
-              className="absolute right-8 top-4 text-mainColor rounded-full hover:text-mainColorLight"
+              className="absolute right-8 top-4 text-mainColor rounded-full hover:text-mainColor"
               onClick={(e) => e.preventDefault()}
             >
               <FaCircleUser size={28} />
@@ -61,7 +64,7 @@ const LoginButton = () => {
           </Dropdown>
       ) : (
         <button
-          className="absolute right-8 top-4 hover:text-mainColorLight"
+          className="absolute right-8 top-4 hover:text-mainColor"
           onClick={handleClickLogin}
         >
           登入

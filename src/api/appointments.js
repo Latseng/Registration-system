@@ -17,8 +17,12 @@ try {
 }
 
 export const getAppointmentsBypatient = async (payload) => {
+  console.log(payload)
    const { idNumber, birthDate, recaptchaResponse } = payload;
-  if (payload.authToken) {
+   console.log(recaptchaResponse);
+   
+   //使用者已登入
+  if (payload.email) {
     try {
       const res = await axios.post(
         `${baseURL}/appointments/by-patient`,
@@ -26,9 +30,7 @@ export const getAppointmentsBypatient = async (payload) => {
           recaptchaResponse,
         },
         {
-          headers: {
-            authorization: "Bearer " + payload.authToken,
-          },
+          withCredentials: true,
         }
       );
       return res.data;
@@ -52,9 +54,11 @@ export const getAppointmentsBypatient = async (payload) => {
 };
 
 export const createAppointment = async (payload) => {
-  if(payload.authToken) {
-    const { authToken, recaptchaResponse, doctorScheduleId } =
+  if(payload.isLogin) {
+    const { recaptchaResponse, doctorScheduleId } =
       payload;
+      console.log(payload);
+      
     try {
       const res = await axios.post(
         `${baseURL}/appointments`,
@@ -63,9 +67,7 @@ export const createAppointment = async (payload) => {
           doctorScheduleId,
         },
         {
-          headers: {
-            authorization: "Bearer " + authToken,
-          },
+          withCredentials: true,
         }
       );
       return res.data;

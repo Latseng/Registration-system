@@ -1,7 +1,7 @@
 import { FaSuitcaseMedical } from "react-icons/fa6";
 import { Form, Input, Button } from "antd";
 import { useNavigate, Link } from "react-router-dom";
-import { loginReqest, adminLoginReqest } from "../api/auth";
+import { loginReqest, adminLoginReqest, thirdPartyLoginReqest } from "../api/auth";
 import { useState, useEffect } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 
@@ -13,21 +13,16 @@ const LoginPage = () => {
 
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("userData"));
-    
     if(userData) {
       if (userData?.account) {
       navigate("/admin/departments");
     } else {
       navigate("/departments");
-    }}
+    }
+  }
     
 
-    // const script = document.createElement("script");
-    // script.src = "https://accounts.google.com/gsi/client";
-    // script.async = true;
-    // script.defer = true;
-    // document.body.appendChild(script);
-    // const div = document.createElement("div");
+   
     // const GOOGLE_CLIENT_ID = "460460481898-kobsunq0hat7a85ml2ejrqhcqjceqtnc.apps.googleusercontent.com"
     // const BASE_URL = "https://registration-system-2gho.onrender.com/"
     // div.id = "g_id_onload";
@@ -41,19 +36,46 @@ const LoginPage = () => {
     //   document.body.removeChild(script);
     //   document.body.removeChild(div);
     // };
+
+    // 檢查是否有 Google API
+    if (window.google) {
+      window.google.accounts.id.initialize({
+        client_id: "460460481898-kobsunq0hat7a85ml2ejrqhcqjceqtnc.apps.googleusercontent.com",
+        callback: handleCredentialResponse, // 登入成功後的回呼函數
+      });
+
+ // 渲染 One Tap 按鈕（可選）
+      window.google.accounts.id.renderButton(
+        document.getElementById("googleSignInButton"), // 替換為你的按鈕容器
+        { theme: "outline", size: "large" }
+      );
+
+      // 啟用 One Tap 登入
+      window.google.accounts.id.prompt();
+    }
   }, []);
+
+  const handleCredentialResponse = async (response) => {
+    console.log("Google Credential Response", response);
+    try {
+      // 發送 Google 登入憑證到後端
+      const { data } = await thirdPartyLoginReqest();
+      // 假設後端回傳 JWT 和用戶資料
+      console.log("後端回應資料:", data);
+
+    } catch (error) {
+      console.error("登入失敗:", error);
+    }
+    
+  };
 
   const handlePatientLogin = async (value) => {
     const data = await loginReqest(value);
-    if (data.success) {
+    if (data.status === "success") {
       const patientData = {
-        id: data.user.id,
-        name: data.user.name,
-        idNumber: data.user.idNumber,
-        medicalId: data.user.medicalId,
-        birthDate: data.user.birthDate,
-        contactInfo: data.user.contactInfo,
-        userToken: data.token,
+        id: data.data.user.id,
+        name: data.data.user.name,
+        email: data.data.user.email,
       };
       localStorage.setItem("userData", JSON.stringify(patientData));
       // dispatch(loginState(patientData));
@@ -76,20 +98,21 @@ const LoginPage = () => {
     }
   }
 
-  const handleSuccess = (response) => {
-    console.log("登入成功:", response);
-    const token = response.credential;
-    console.log(token);
+  // const handleSuccess = (response) => {
+  //   console.log("登入成功:", response);
+  //   const token = response.credential;
+  //   console.log(token);
     
     
-  };
+  // };
 
-  const handleError = () => {
-    console.error("登入失敗");
-  };
+  // const handleError = () => {
+  //   console.error("登入失敗");
+  // };
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
+      <div id="googleSignInButton"></div>
       {isAdminLoginForm ? (
         <Form
           form={form}
@@ -109,9 +132,7 @@ const LoginPage = () => {
           <Form.Item
             label="帳號"
             name="account"
-            rules={[
-              { required: true, message: "請輸入帳號" },
-            ]}
+            rules={[{ required: true, message: "請輸入帳號" }]}
           >
             <Input />
           </Form.Item>
@@ -131,6 +152,7 @@ const LoginPage = () => {
               登入
             </Button>
           </Form.Item>
+
           <Button
             className=" mx-auto"
             onClick={() => setIsAdminLoginForm(false)}
@@ -183,7 +205,7 @@ const LoginPage = () => {
             >
               登入
             </Button>
-            <GoogleLogin onSuccess={handleSuccess} onError={handleError} />
+            {/* <GoogleLogin onSuccess={handleSuccess} onError={handleError} /> */}
           </Form.Item>
 
           <p className="mb-4">
@@ -196,7 +218,6 @@ const LoginPage = () => {
             </Link>
             體驗更多便捷功能！
           </p>
-
           <Button
             className=" mx-auto"
             onClick={() => setIsAdminLoginForm(true)}
