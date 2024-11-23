@@ -17,10 +17,7 @@ try {
 }
 
 export const getAppointmentsBypatient = async (payload) => {
-  console.log(payload)
    const { idNumber, birthDate, recaptchaResponse } = payload;
-   console.log(recaptchaResponse);
-   
    //使用者已登入
   if (payload.email) {
     try {

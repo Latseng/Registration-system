@@ -12,7 +12,10 @@ export const loginReqest = async ({ idNumber, password }) => {
     const { data } = await axios.post(`${patientAuthURL}/sign-in`, {
       idNumber,
       password,
-    });
+    },
+  {
+    withCredentials: true
+  });
     const { token } = data.data;
     if (token) {
       return { success: true, ...data.data };
@@ -36,11 +39,16 @@ export const thirdPartyLoginReqest = async () => {
 
 export const adminLoginReqest = async ({ account, password }) => {
   try {
-    const { data } = await axios.post(`${adminAuthURL}/sign-in`, {
-      account,
-      password,
-      withCredentials: true,
-    });
+    const { data } = await axios.post(
+      `${adminAuthURL}/sign-in`,
+      {
+        account,
+        password,
+      },
+      {
+        withCredentials: true,
+      }
+    );
     const { token } = data.data;
     if (token) {
       return { success: true, ...data.data };
@@ -53,9 +61,10 @@ export const adminLoginReqest = async ({ account, password }) => {
 
 export const logoutReqest = async () => {
   try {
-    const { data } = await axios.post(`${baseURL}/sign-out`);
+    const { data } = await axios.post(`${baseURL}/sign-out`, {
+      withCredentials: true,
+    });
     console.log(data);
-    
     return data;
   } catch (error) {
     console.error("[Logout Failed]:", error);

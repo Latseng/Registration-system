@@ -49,7 +49,6 @@ const QueryPage = () => {
           icon: <ExclamationCircleFilled />,
           content: "您已有帳號，需要先登入才能使用本功能",
           okText: "前往登入",
-          okType: "primary",
           cancelText: "取消",
           onOk() {
             navigate("/login");
@@ -99,37 +98,11 @@ const QueryPage = () => {
     if (user?.email) {
       setIsVerified(true);
       setIsPageLoading(true);
-   (async () => {
-    try {
-  const response = await fetch(`https://registration-system-2gho.onrender.com/api/appointments/by-patient`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-        'x-api-key': '0rEx0X54ow3S6M7yp8hYS4PkOhRC2irQ'
-    },
-    body: JSON.stringify({
-      recaptchaResponse: 'test_recaptcha', // 你的請求數據
-    }),
-    credentials: 'include', // 確保攜帶和接收跨域 Cookie
-  });
-
-  if (!response.ok) {
-    // 如果伺服器返回非 2xx 的狀態碼
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-
-  const data = await response.json(); // 解析 JSON 格式的回應
-  console.log(data);
-} catch (error) {
-  console.error('Error:', error.message);
-}
-   })();
-     
-      // const queryPayload = {
-      //   recaptchaResponse: "test_recaptcha",
-      //   email: user.email,
-      // };
-      // getAppointmentsDataAsync(queryPayload);
+      const queryPayload = {
+        recaptchaResponse: "test_recaptcha",
+        email: user.email,
+      };
+      getAppointmentsDataAsync(queryPayload);
       return;
     }
 
@@ -321,63 +294,70 @@ const QueryPage = () => {
                 )}
                 {appointments.map((a) => (
                   <List.Item key={a.appointmentId}>
-                    <p>{a.date + a.scheduleSlot}</p>
-                    <p>{a.doctorSpecialty}</p>
-                    <p>醫師：{a.doctorName}</p>
-                    <p>看診號碼：{a.consultationNumber}</p>
-
-                    {a.status === "CONFIRMED" ? (
-                      <>
-                        <Button
-                          loading={isLoading}
-                          onClick={() => handleClick(a.appointmentId, "cancel")}
-                        >
-                          {isLoading ? "" : "取消掛號"}
-                        </Button>
-                        <Modal
-                          title="取消掛號確認"
-                          open={confirmModal.cancelModal}
-                          onOk={() => handleAppointment("cancel", a)}
-                          onCancel={() =>
-                            setConfirmModal({
-                              ...confirmModal,
-                              cancelModal: false,
-                            })
-                          }
-                        >
-                          <p>您確定要取消掛號？若取消，再次看診需要重新掛號</p>
-                        </Modal>
-                      </>
-                    ) : (
-                      <>
-                        <Button
-                          onClick={() => handleClick(a.appointmentId, "again")}
-                        >
-                          重新掛號
-                        </Button>
-                        <Modal
-                          title="重新掛號確認"
-                          open={confirmModal.againModal}
-                          onOk={() => handleAppointment("again", a)}
-                          onCancel={() =>
-                            setConfirmModal({
-                              ...confirmModal,
-                              againModal: false,
-                            })
-                          }
-                        >
-                          <p>將重新為您掛號同一診次</p>
-                          <p>{a.date + a.scheduleSlot}</p>
-                          <p>{a.doctorSpecialty}</p>
-                          <p>醫師：{a.doctorName}</p>
-                        </Modal>
-                      </>
-                    )}
-                    <Button
-                      onClick={() => handleClick(a.appointmentId, "delete")}
-                    >
-                      刪除掛號
-                    </Button>
+                    <div className="w-full flex flex-wrap justify-between items-center">
+                      <p className="m-4">{a.date + a.scheduleSlot}</p>
+                      <p className="m-4">{a.doctorSpecialty}</p>
+                      <p className="m-4">醫師：{a.doctorName}</p>
+                      <p className="m-4">看診號碼：{a.consultationNumber}</p>
+                      {a.status === "CONFIRMED" ? (
+                        <>
+                          <Button
+                            loading={isLoading}
+                            onClick={() =>
+                              handleClick(a.appointmentId, "cancel")
+                            }
+                          >
+                            {isLoading ? "" : "取消掛號"}
+                          </Button>
+                          <Modal
+                            title="取消掛號確認"
+                            open={confirmModal.cancelModal}
+                            onOk={() => handleAppointment("cancel", a)}
+                            onCancel={() =>
+                              setConfirmModal({
+                                ...confirmModal,
+                                cancelModal: false,
+                              })
+                            }
+                          >
+                            <p>
+                              您確定要取消掛號？若取消，再次看診需要重新掛號
+                            </p>
+                          </Modal>
+                        </>
+                      ) : (
+                        <>
+                          <Button
+                            onClick={() =>
+                              handleClick(a.appointmentId, "again")
+                            }
+                          >
+                            重新掛號
+                          </Button>
+                          <Modal
+                            title="重新掛號確認"
+                            open={confirmModal.againModal}
+                            onOk={() => handleAppointment("again", a)}
+                            onCancel={() =>
+                              setConfirmModal({
+                                ...confirmModal,
+                                againModal: false,
+                              })
+                            }
+                          >
+                            <p>將重新為您掛號同一診次</p>
+                            <p>{a.date + a.scheduleSlot}</p>
+                            <p>{a.doctorSpecialty}</p>
+                            <p>醫師：{a.doctorName}</p>
+                          </Modal>
+                        </>
+                      )}
+                      <Button
+                        onClick={() => handleClick(a.appointmentId, "delete")}
+                      >
+                        刪除掛號
+                      </Button>
+                    </div>
                   </List.Item>
                 ))}
               </List>
