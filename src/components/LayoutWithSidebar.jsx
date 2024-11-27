@@ -1,44 +1,20 @@
 import { Outlet } from "react-router-dom";
-import { Layout, Divider, ConfigProvider, Menu, Drawer, Dropdown } from "antd";
+import { Layout, Divider, ConfigProvider, Menu, Drawer } from "antd";
 import { FaSuitcaseMedical } from "react-icons/fa6";
 import { IoMenu } from "react-icons/io5";
 import { useNavigate, useLocation } from "react-router-dom";
 import useRWD from "../hooks/useRWD";
 import Logo from "./Logo";
 import { useState } from "react";
-import { useSelector } from "react-redux";
-import { FaCircleUser } from "react-icons/fa6";
-import { logoutReqest } from "../api/auth";
+import LoginButton from "../components/LoginButton";
 
 const { Header, Sider } = Layout;
-
-const handleLogout = async () => {  
-  const res = await logoutReqest()
-  if (res.status === "success") {
-    localStorage.removeItem("userData");
-  }
-};
-
-const dropdownItems = [
-  {
-    label: <a>個人資訊</a>,
-    key: "0",
-  },
-  {
-    type: "divider",
-  },
-  {
-    label: <button onClick={handleLogout}>登出</button>,
-    key: "1",
-  },
-];
 
 const LayoutWithSidebar = () => {
   const location = useLocation();
   const [openMenu, setOpenMenu] = useState(false);
   const navigate = useNavigate();
   const isDesktop = useRWD();
-  const user = useSelector((state) => state.auth.user);
 
   const generalSidebarProps = {
     items: [
@@ -125,7 +101,7 @@ const LayoutWithSidebar = () => {
       switch (location.pathname) {
         case "/admin/doctors":
           return "2";
-        case "admin/appointments":
+        case "/admin/appointments":
           return "3";
         default:
           return "1";
@@ -140,8 +116,6 @@ const LayoutWithSidebar = () => {
   const handleClickLogo = () => {
     navigate("/*");
   };
-
-const isAdminLogin = localStorage.getItem("userData")
 
   return (
     <Layout className="min-h-screen">
@@ -183,41 +157,12 @@ const isAdminLogin = localStorage.getItem("userData")
         </Sider>
       ) : (
         <>
-          <Header className="flex justify-between bg-mainColor items-center px-6 relative">
+          <Header className="flex justify-between bg-mainColor px-6 relative">
             <button className="text-white" onClick={() => setOpenMenu(true)}>
               <IoMenu className="size-6" />
             </button>
             <Logo onClick={handleClickLogo} />
-            {user || isAdminLogin ? (
-              <>
-                <Dropdown
-                  menu={{
-                    items: dropdownItems,
-                    onClick: (items) => {
-                      switch (items.key) {
-                        case "1":
-                          handleLogout();
-                          break;
-                        default:
-                          break;
-                      }
-                    },
-                  }}
-                  trigger={["click"]}
-                >
-                  <button
-                    className="text-white rounded-full hover:text-mainColorLight"
-                    onClick={(e) => e.preventDefault()}
-                  >
-                    <FaCircleUser size={28} />
-                  </button>
-                </Dropdown>
-              </>
-            ) : (
-              <button className="text-white" onClick={() => navigate("/login")}>
-                登入
-              </button>
-            )}
+            <LoginButton />
           </Header>
           <Drawer
             open={openMenu}

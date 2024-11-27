@@ -1,118 +1,103 @@
 import { FaSuitcaseMedical } from "react-icons/fa6";
 import { Form, Input, Button } from "antd";
 import { useNavigate, Link } from "react-router-dom";
-import { loginReqest, adminLoginReqest, thirdPartyLoginReqest } from "../api/auth";
+import { login, adminLogin, thirdPartyLogin } from "../api/auth";
 import { useState, useEffect } from "react";
-import { GoogleLogin } from "@react-oauth/google";
+import { useDispatch } from "react-redux";
+import { setLogin } from "../store/authSlice";
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
-  // const dispatch = useDispatch();
-  const [isAdminLoginForm, setIsAdminLoginForm] = useState(false)
+  const dispatch = useDispatch();
+  const [isAdminLoginForm, setIsAdminLoginForm] = useState(false);
 
   useEffect(() => {
-    const userData = JSON.parse(localStorage.getItem("userData"));
-    if(userData) {
-      if (userData?.account) {
-      navigate("/admin/departments");
-    } else {
-      navigate("/departments");
-    }
-  }
     
-
-   
-    // const GOOGLE_CLIENT_ID = "460460481898-kobsunq0hat7a85ml2ejrqhcqjceqtnc.apps.googleusercontent.com"
-    // const BASE_URL = "https://registration-system-2gho.onrender.com/"
-    // div.id = "g_id_onload";
-    // div.setAttribute("data-client_id", GOOGLE_CLIENT_ID);
-    // div.setAttribute(
-    //   "data-login_uri",
-    //   `${BASE_URL}/api/patients/auth/google/callback`
-    // );
-    // document.body.appendChild(div);
-    // return () => {
-    //   document.body.removeChild(script);
-    //   document.body.removeChild(div);
-    // };
-
-    // 檢查是否有 Google API
-    if (window.google) {
-      window.google.accounts.id.initialize({
-        client_id: "460460481898-kobsunq0hat7a85ml2ejrqhcqjceqtnc.apps.googleusercontent.com",
-        callback: handleCredentialResponse, // 登入成功後的回呼函數
-      });
-
- // 渲染 One Tap 按鈕（可選）
-      window.google.accounts.id.renderButton(
-        document.getElementById("googleSignInButton"), // 替換為你的按鈕容器
-        { theme: "outline", size: "large" }
-      );
-
-      // 啟用 One Tap 登入
-      window.google.accounts.id.prompt();
-    }
   }, []);
 
-  const handleCredentialResponse = async (response) => {
-    console.log("Google Credential Response", response);
-    try {
-      // 發送 Google 登入憑證到後端
-      const { data } = await thirdPartyLoginReqest();
-      // 假設後端回傳 JWT 和用戶資料
-      console.log("後端回應資料:", data);
+  // const GOOGLE_CLIENT_ID = "460460481898-kobsunq0hat7a85ml2ejrqhcqjceqtnc.apps.googleusercontent.com"
+  // const BASE_URL = "https://registration-system-2gho.onrender.com/"
+  // div.id = "g_id_onload";
+  // div.setAttribute("data-client_id", GOOGLE_CLIENT_ID);
+  // div.setAttribute(
+  //   "data-login_uri",
+  //   `${BASE_URL}/api/patients/auth/google/callback`
+  // );
+  // document.body.appendChild(div);
+  // return () => {
+  //   document.body.removeChild(script);
+  //   document.body.removeChild(div);
+  // };
 
-    } catch (error) {
-      console.error("登入失敗:", error);
-    }
-    
-  };
+  // 檢查是否有 Google API
+  // if (window.google) {
+  //   window.google.accounts.id.initialize({
+  //     client_id: "460460481898-kobsunq0hat7a85ml2ejrqhcqjceqtnc.apps.googleusercontent.com",
+  //     callback: handleCredentialResponse, // 登入成功後的回呼函數
+  //   });
+
+  // 渲染 One Tap 按鈕（可選）
+  //     window.google.accounts.id.renderButton(
+  //       document.getElementById("googleSignInButton"), // 替換為你的按鈕容器
+  //       { theme: "outline", size: "large" }
+  //     );
+
+  //     // 啟用 One Tap 登入
+  //     window.google.accounts.id.prompt();
+  //   }
+  // }, []);
+
+  // const handleCredentialResponse = async (response) => {
+  //   console.log("Google Credential Response:", response);
+  //   try {
+  //     const res = await fetch(
+  //       "https://registration-system-2gho.onrender.com/api/patients/login/google",
+  //       {
+  //         method: "GET",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify({ credential: response.credential }), // 將獲得的憑證發送到後端
+  //       }
+  //     );
+  //     const data = await res.json();
+  //     console.log("Login Success:", data);
+  //     // 在此處處理登入成功後的邏輯，例如保存 token 或跳轉頁面
+  //   } catch (error) {
+  //     console.error("Login Failed:", error);
+  //   }
+  // };
 
   const handlePatientLogin = async (value) => {
-    const data = await loginReqest(value);
-    if (data.status === "success") {
-      const patientData = {
-        id: data.data.user.id,
-        name: data.data.user.name,
-        email: data.data.user.email,
-      };
-      localStorage.setItem("userData", JSON.stringify(patientData));
-      // dispatch(loginState(patientData));
-      navigate("/departments");
-    }
+    const data = await login(value);
+    console.log(data);
+
+    // if (data.status === "success") {
+    //   const patientData = {
+    //     id: data.data.user.id,
+    //     name: data.data.user.name,
+    //     email: data.data.user.email,
+    //   };
+    //   localStorage.setItem("userData", JSON.stringify(patientData));
+    //   // dispatch(loginState(patientData));
+    //   navigate("/departments");
+    // }
   };
 
   const handleAdminLogin = async (value) => {
-    const data = await adminLoginReqest(value)
-    if(data.success) {
-      const adminData = {
-        id: data.user.id,
-        name: data.user.name,
-        account: data.user.account,
-        role: data.user.role,
-        adminToken: data.token
-      };
-      localStorage.setItem("userData", JSON.stringify(adminData));
-      navigate("/admin/departments");
-    }
-  }
+    const data = await adminLogin(value);
+    dispatch(setLogin({ user: data.data.user, role: data.data.user.role }));
+    navigate("/admin/departments");
+  };
 
-  // const handleSuccess = (response) => {
-  //   console.log("登入成功:", response);
-  //   const token = response.credential;
-  //   console.log(token);
-    
-    
-  // };
-
-  // const handleError = () => {
-  //   console.error("登入失敗");
-  // };
+  const handleThirdPartyLogin = async (value) => {
+    await thirdPartyLogin();
+  };
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
-      <div id="googleSignInButton"></div>
+      {/* <div id="googleSignInButton"></div> */}
       {isAdminLoginForm ? (
         <Form
           form={form}
@@ -205,7 +190,9 @@ const LoginPage = () => {
             >
               登入
             </Button>
-            {/* <GoogleLogin onSuccess={handleSuccess} onError={handleError} /> */}
+            <Button onClick={() => handleThirdPartyLogin("google")}>
+              Google登入
+            </Button>
           </Form.Item>
 
           <p className="mb-4">

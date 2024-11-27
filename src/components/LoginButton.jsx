@@ -1,16 +1,10 @@
-import useRWD from "../hooks/useRWD";
 import { FaCircleUser } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 import { Dropdown } from "antd";
 import { logoutReqest } from "../api/auth";
-
-const handleLogout = async () => {
-  const res = await logoutReqest();
-  if (res.status === "success") {
-    window.location.reload();
-    localStorage.removeItem("userData");
-  }
-};
+import { useDispatch, useSelector } from "react-redux";
+import { setLogout } from "../store/authSlice";
+import useRWD from "../hooks/useRWD";
 
 const dropdownItems = [
   {
@@ -27,41 +21,48 @@ const dropdownItems = [
 ];
 
 const LoginButton = () => {
-  const isDesktop = useRWD();
-  const user = localStorage.getItem("userData");
   const navigate = useNavigate();
-
+  const dispatch = useDispatch();
+  const isDesktop = useRWD()
+  const {isAuthenticated} = useSelector(state => state.auth)
   const handleClickLogin = () => {
     navigate("/login");
   };
 
-  if (!isDesktop) return null;
+  const handleLogout = async () => {
+    const res = await logoutReqest();
+    if (res.status === "success") {
+      dispatch(setLogout());
+    }
+  };
 
   return (
     <>
-      {user ? (
-          <Dropdown
-            menu={{
-              items: dropdownItems,
-              onClick: (items) => {
-                switch (items.key){
-                  case "1": 
-                  handleLogout()
-                    break;
-                    default:
-                      break;
-                }
-              },
-            }}
-            trigger={["click"]}
+      {isAuthenticated ? (
+        <Dropdown
+          menu={{
+            items: dropdownItems,
+            onClick: (items) => {
+              switch (items.key) {
+                case "1":
+                  handleLogout();
+                  break;
+                default:
+                  break;
+              }
+            },
+          }}
+          trigger={["click"]}
+        >
+          <button
+            className={` ${
+              isDesktop ? "text-mainColor absolute right-8 top-4" : "text-white"
+            } rounded-full hover:text-mainColorLight`}
+            onClick={(e) => e.preventDefault()}
           >
-            <button
-              className="absolute right-8 top-4 text-mainColor rounded-full hover:text-mainColor"
-              onClick={(e) => e.preventDefault()}
-            >
-              <FaCircleUser size={28} />
-            </button>
-          </Dropdown>
+            <FaCircleUser size={28} />
+          </button>
+        </Dropdown>
       ) : (
         <button
           className="absolute right-8 top-4 hover:text-mainColor"

@@ -8,7 +8,6 @@ import {
   Input,
   Space,
   message,
-  Dropdown,
 } from "antd";
 import { useState, useEffect } from "react";
 import { FaEdit } from "react-icons/fa";
@@ -24,25 +23,10 @@ import {
   ExclamationCircleFilled,
 } from "@ant-design/icons";
 import { v4 as uuidv4 } from "uuid";
-import { FaCircleUser } from "react-icons/fa6";
 import useRWD from "../hooks/useRWD";
-import { useNavigate } from "react-router-dom";
+import LoginButton from "../components/LoginButton";
 
 const { Content } = Layout;
-
-const dropdownItems = [
-  {
-    label: <a>個人資訊</a>,
-    key: "0",
-  },
-  {
-    type: "divider",
-  },
-  {
-    label: <button>登出</button>,
-    key: "1",
-  },
-];
 
 const AdminDoctorPage = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -67,7 +51,6 @@ const AdminDoctorPage = () => {
   const [deleteDoctorId, setDeleteDoctorId] = useState(null);
   const [messageApi, contextHolder] = message.useMessage();
   const isDesktop = useRWD();
-  const navigate = useNavigate();
   const [form] = Form.useForm();
 
   const columns = [
@@ -213,17 +196,6 @@ const AdminDoctorPage = () => {
   };
 
   useEffect(() => {
-    const userData = JSON.parse(localStorage.getItem("userData"));
-    if (userData) {
-      if (userData?.idNumber) {
-        navigate("/departments");
-        return;
-      }
-      navigate("/admin/departments");
-    } else {
-      navigate("/login");
-      return;
-    }
     getDoctorsData();
   }, []);
 
@@ -258,11 +230,6 @@ const AdminDoctorPage = () => {
     });
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("authToken");
-    window.location.reload();
-  };
-
   return (
     <Content className="bg-gray-100 p-6 relative">
       {contextHolder}
@@ -270,30 +237,7 @@ const AdminDoctorPage = () => {
       <Button onClick={() => handleClick("add")} className="my-4">
         新增醫師
       </Button>
-      {isDesktop && (
-        <Dropdown
-          menu={{
-            items: dropdownItems,
-            onClick: (items) => {
-              switch (items.key) {
-                case "1":
-                  handleLogout();
-                  break;
-                default:
-                  break;
-              }
-            },
-          }}
-          trigger={["click"]}
-        >
-          <button
-            className="absolute right-8 top-4 text-mainColor rounded-full hover:text-mainColorLight"
-            onClick={(e) => e.preventDefault()}
-          >
-            <FaCircleUser size={28} />
-          </button>
-        </Dropdown>
-      )}
+      {isDesktop && <LoginButton />}
       <Table loading={isLoading} columns={columns} dataSource={data} />
       <Modal
         title="醫師資料編輯"

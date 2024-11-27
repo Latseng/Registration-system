@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { ConfigProvider } from "antd";
 import { MainPage, LoginPage, DepartmentPage, RecordsPage, ClinicSchedulePage, QueryPage, DoctorsPage, AdminDepartmentPage, AdminDoctorPage, AdminAppointmentPage, AdminSchedulePage, RegisterPage  } from "./pages";
 import LayoutWithSidebar from "./components/LayoutWithSidebar";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 
 function App() {
@@ -15,8 +16,9 @@ function App() {
     >
       <BrowserRouter>
         <Routes>
-          <Route path="*" element={<MainPage />} />    
-            <Route path="login" element={<LoginPage />} />
+          {/* 一般使用者頁面 */}
+          <Route path="*" element={<MainPage />} />
+          <Route path="login" element={<LoginPage />} />
           <Route path="register" element={<RegisterPage />} />
           <Route element={<LayoutWithSidebar />}>
             <Route path="departments" element={<DepartmentPage />} />
@@ -26,17 +28,23 @@ function App() {
             />
             <Route path="query" element={<QueryPage />} />
             <Route path="doctors" element={<DoctorsPage />} />
-            <Route path="admin/departments" element={<AdminDepartmentPage />} />
-            <Route path="admin/doctors" element={<AdminDoctorPage />} />
-            <Route
-              path="admin/appointments"
-              element={<AdminAppointmentPage />}
-            />
-            <Route
-              path="admin/schedules/:department"
-              element={<AdminSchedulePage />}
-            />
             <Route path="records" element={<RecordsPage />} />
+            {/* 管理者頁面 */}
+            <Route element={<ProtectedRoute requiredRole="admin" />}>
+              <Route
+                path="admin/departments"
+                element={<AdminDepartmentPage />}
+              />
+              <Route path="admin/doctors" element={<AdminDoctorPage />} />
+              <Route
+                path="admin/appointments"
+                element={<AdminAppointmentPage />}
+              />
+              <Route
+                path="admin/schedules/:department"
+                element={<AdminSchedulePage />}
+              />
+            </Route>
           </Route>
         </Routes>
       </BrowserRouter>

@@ -6,19 +6,18 @@ const baseURL = "https://registration-system-2gho.onrender.com/api";
 axios.defaults.headers.common["x-api-key"] = APIKey;
 
 export const getAppointments = async () => {
-try {
-  const res = await axios.get(`${baseURL}/appointments`);
-  console.log(res);
-  
-} catch (error) {
-  console.error("[Get Appointments failed]: ", error);
-  return error.response;
-}
-}
+  try {
+    const res = await axios.get(`${baseURL}/appointments`);
+    console.log(res);
+  } catch (error) {
+    console.error("[Get Appointments failed]: ", error);
+    return error.response;
+  }
+};
 
 export const getAppointmentsBypatient = async (payload) => {
-   const { idNumber, birthDate, recaptchaResponse } = payload;
-   //使用者已登入
+  const { idNumber, birthDate, recaptchaResponse } = payload;
+  //使用者已登入
   if (payload.email) {
     try {
       const res = await axios.post(
@@ -36,7 +35,7 @@ export const getAppointmentsBypatient = async (payload) => {
       return error.response;
     }
   }
-  
+
   try {
     const res = await axios.post(`${baseURL}/appointments/by-patient`, {
       idNumber,
@@ -51,11 +50,9 @@ export const getAppointmentsBypatient = async (payload) => {
 };
 
 export const createAppointment = async (payload) => {
-  if(payload.isLogin) {
-    const { recaptchaResponse, doctorScheduleId } =
-      payload;
-      console.log(payload);
-      
+  if (payload.isLogin) {
+    const { recaptchaResponse, doctorScheduleId } = payload;
+
     try {
       const res = await axios.post(
         `${baseURL}/appointments`,
@@ -128,7 +125,9 @@ export const cancelAppointment = async (id) => {
 
 export const deleteAppointment = async (id) => {
   try {
-    const res = await axios.delete(`${baseURL}/appointments/${id}`);
+    const res = await axios.delete(`${baseURL}/appointments/${id}`, {
+      withCredentials: true,
+    });
     return res.data;
   } catch (error) {
     console.error("[Delete Appointment failed]:", error);
