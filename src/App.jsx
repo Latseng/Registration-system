@@ -1,6 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { ConfigProvider } from "antd";
-import { MainPage, LoginPage, DepartmentPage, RecordsPage, ClinicSchedulePage, QueryPage, DoctorsPage, AdminDepartmentPage, AdminDoctorPage, AdminAppointmentPage, AdminSchedulePage, RegisterPage  } from "./pages";
+import { MainPage, LoginPage, DepartmentPage, ClinicSchedulePage, QueryPage, DoctorsPage, AdminDepartmentPage, AdminDoctorPage, AdminAppointmentPage, AdminSchedulePage, RegisterPage  } from "./pages";
 import LayoutWithSidebar from "./components/LayoutWithSidebar";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -28,7 +28,6 @@ function App() {
             />
             <Route path="query" element={<QueryPage />} />
             <Route path="doctors" element={<DoctorsPage />} />
-            <Route path="records" element={<RecordsPage />} />
             {/* 管理者頁面 */}
             <Route element={<ProtectedRoute requiredRole="admin" />}>
               <Route

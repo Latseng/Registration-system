@@ -23,8 +23,8 @@ const dropdownItems = [
 const LoginButton = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const isDesktop = useRWD()
-  const {isAuthenticated} = useSelector(state => state.auth)
+  const isDesktop = useRWD();
+  const { isAuthenticated } = useSelector((state) => state.auth);
   const handleClickLogin = () => {
     navigate("/login");
   };

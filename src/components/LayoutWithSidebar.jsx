@@ -28,10 +28,6 @@ const LayoutWithSidebar = () => {
       },
       {
         key: "3",
-        label: "看診紀錄",
-      },
-      {
-        key: "4",
         label: "醫師專長查詢",
       },
     ],
@@ -44,9 +40,6 @@ const LayoutWithSidebar = () => {
           navigate("/query");
           break;
         case "3":
-          navigate("/records");
-          break;
-        case "4":
           navigate("/doctors");
           break;
         default:
@@ -57,10 +50,8 @@ const LayoutWithSidebar = () => {
       switch (location.pathname) {
         case "/query":
           return "2";
-        case "/records":
-          return "3";
         case "/doctors":
-          return "4";
+          return "3";
         default:
           return "1";
       }

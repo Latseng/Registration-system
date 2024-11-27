@@ -1,7 +1,6 @@
 import MainPage from "./MainPage";
 import LoginPage from "./LoginPage";
 import DepartmentPage from "./DepartmentPage";
-import RecordsPage from "./RecordsPage";
 import ClinicSchedulePage from "./ClinicSchedulePage"
 import QueryPage from "./QueryPage";
 import DoctorsPage from "./DoctorsPage";
@@ -12,4 +11,4 @@ import AdminSchedulePage from "./AdminSchedulePage";
 import RegisterPage from "./RegisterPage";
 
 
-export { MainPage, LoginPage, DepartmentPage, RecordsPage, ClinicSchedulePage, QueryPage, DoctorsPage, AdminDepartmentPage, AdminDoctorPage, AdminAppointmentPage, AdminSchedulePage, RegisterPage };
+export { MainPage, LoginPage, DepartmentPage, ClinicSchedulePage, QueryPage, DoctorsPage, AdminDepartmentPage, AdminDoctorPage, AdminAppointmentPage, AdminSchedulePage, RegisterPage };

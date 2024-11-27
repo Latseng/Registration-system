@@ -8,6 +8,7 @@ import SelectedModal from "../components/SelectedModal";
 import { useDispatch } from "react-redux";
 import { setNewAppointment } from "../store/appointmentSlice";
 import LoginButton from "../components/LoginButton";
+import useRWD from "../hooks/useRWD";
 
 const { Content } = Layout;
 const { Search } = Input;
@@ -28,6 +29,7 @@ const DoctorsPage = () => {
     const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
   const dispatch = useDispatch();
+  const isDesktop = useRWD()
 
   useEffect(() => {
     const getDoctorsData = async () => {
@@ -179,7 +181,7 @@ const DoctorsPage = () => {
   return (
     <>
       {contextHolder}
-     <LoginButton />
+      {isDesktop && <LoginButton />}
       <Content className="bg-gray-100 p-6">
         <h1 className="text-2xl mb-6">醫師專長查詢</h1>
         <Search
@@ -218,18 +220,18 @@ const DoctorsPage = () => {
             </List.Item>
           )}
         />
-          <SelectedModal
-            selectedDoctor={selectedDoctor}
-            isModalOpen={isModalOpen}
-            handleCancel={handleCancel}
-            handleAppointment={handleAppointment}
-            selectedAppointment={selectedAppointment}
-            handleSubmit={handleSubmit}
-            isFirstCreateAppointment={isFirstCreateAppointment}
-            onChange={onChange}
-            isModalLoading={isModalLoading}
-            isSubmitLoading={isSubmitLoading}
-          />
+        <SelectedModal
+          selectedDoctor={selectedDoctor}
+          isModalOpen={isModalOpen}
+          handleCancel={handleCancel}
+          handleAppointment={handleAppointment}
+          selectedAppointment={selectedAppointment}
+          handleSubmit={handleSubmit}
+          isFirstCreateAppointment={isFirstCreateAppointment}
+          onChange={onChange}
+          isModalLoading={isModalLoading}
+          isSubmitLoading={isSubmitLoading}
+        />
       </Content>
     </>
   );

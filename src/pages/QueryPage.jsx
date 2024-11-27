@@ -4,18 +4,17 @@ import {
   getAppointmentsBypatient,
   cancelAppointment,
   createAppointment,
-  deleteAppointment,
 } from "../api/appointments";
 import { FaRegUser } from "react-icons/fa";
 import DatePicker from "../components/DatePicker";
 import dayjs from "dayjs";
-import { useSelector } from "react-redux";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { resetNewAppointment } from "../store/appointmentSlice";
 import { GrStatusGood } from "react-icons/gr";
 import LoginButton from "../components/LoginButton";
 import { useNavigate } from "react-router-dom";
 import { ExclamationCircleFilled } from "@ant-design/icons";
+import useRWD from "../hooks/useRWD";
 
 const { Content } = Layout;
 const { confirm } = Modal;
@@ -26,7 +25,6 @@ const QueryPage = () => {
   const navigate = useNavigate();
   const [appointments, setAppointments] = useState([]);
   const [messageApi, contextHolder] = message.useMessage();
-  const [isVerified, setIsVerified] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [confirmModal, setConfirmModal] = useState({
     cancelModal: false,
@@ -38,7 +36,8 @@ const QueryPage = () => {
   const newAppointment = useSelector(
     (state) => state.appointment.newAppointment
   );
-
+  const {isAuthenticated, role} = useSelector(state => state.auth)
+const isDesktop = useRWD()
   const getAppointmentsDataAsync = async (data) => {
     try {
       const patientAppointments = await getAppointmentsBypatient(data);
@@ -54,7 +53,6 @@ const QueryPage = () => {
             navigate("/login");
           },
           onCancel() {
-            console.log("Cancel");
           },
         });
         return;
@@ -85,7 +83,6 @@ const QueryPage = () => {
 
       setRequestData(data);
       setAppointments(organizedAppointments);
-      setIsVerified(true);
       setIsLoading(false);
       setIsPageLoading(false);
     } catch (error) {
@@ -94,20 +91,18 @@ const QueryPage = () => {
   };
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("userData"));
-    if (user?.email) {
-      setIsVerified(true);
+    // 如果病患已登入
+    if (isAuthenticated && role === "patient") {
       setIsPageLoading(true);
       const queryPayload = {
         recaptchaResponse: "test_recaptcha",
-        email: user.email,
+        isLogin: true
       };
       getAppointmentsDataAsync(queryPayload);
       return;
     }
 
     if (newAppointment) {
-      setIsVerified(true);
       setIsPageLoading(true);
       getAppointmentsDataAsync(newAppointment.requestData);
       setIsAppointmentSuccess(true);
@@ -215,20 +210,13 @@ const QueryPage = () => {
     });
   };
 
-  const handleClick = async (id, act) => {
-    if (act === "delete") {
-      await deleteAppointment(id);
-      const newAppointments = appointments.filter(
-        (a) => a.appointmentId !== id
-      );
-      setAppointments(newAppointments);
-      return;
-    }
-
+  const handleClick = async (act) => {
     if (act === "cancel") {
+      // 取消掛號確認
       setConfirmModal({ ...confirmModal, cancelModal: true });
       return;
     }
+    // 重新掛號確認
     setConfirmModal({ ...confirmModal, againModal: true });
   };
 
@@ -274,9 +262,9 @@ const QueryPage = () => {
   return (
     <>
       {contextHolder}
-      <LoginButton />
+      {isDesktop && <LoginButton />}
       <Content className="bg-gray-100 p-4">
-        {isVerified ? (
+        {isAuthenticated ? (
           isPageLoading ? (
             <List loading={isPageLoading}></List>
           ) : appointments ? (
@@ -304,7 +292,7 @@ const QueryPage = () => {
                           <Button
                             loading={isLoading}
                             onClick={() =>
-                              handleClick(a.appointmentId, "cancel")
+                              handleClick("cancel")
                             }
                           >
                             {isLoading ? "" : "取消掛號"}
@@ -329,7 +317,7 @@ const QueryPage = () => {
                         <>
                           <Button
                             onClick={() =>
-                              handleClick(a.appointmentId, "again")
+                              handleClick("again")
                             }
                           >
                             重新掛號
@@ -352,11 +340,6 @@ const QueryPage = () => {
                           </Modal>
                         </>
                       )}
-                      <Button
-                        onClick={() => handleClick(a.appointmentId, "delete")}
-                      >
-                        刪除掛號
-                      </Button>
                     </div>
                   </List.Item>
                 ))}

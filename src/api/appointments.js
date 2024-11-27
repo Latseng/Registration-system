@@ -18,7 +18,7 @@ export const getAppointments = async () => {
 export const getAppointmentsBypatient = async (payload) => {
   const { idNumber, birthDate, recaptchaResponse } = payload;
   //使用者已登入
-  if (payload.email) {
+  if (payload.isLogin) {
     try {
       const res = await axios.post(
         `${baseURL}/appointments/by-patient`,
@@ -50,6 +50,7 @@ export const getAppointmentsBypatient = async (payload) => {
 };
 
 export const createAppointment = async (payload) => {
+  // 如果使用者已登入
   if (payload.isLogin) {
     const { recaptchaResponse, doctorScheduleId } = payload;
 

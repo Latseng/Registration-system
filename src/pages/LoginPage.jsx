@@ -3,7 +3,7 @@ import { Form, Input, Button } from "antd";
 import { useNavigate, Link } from "react-router-dom";
 import { login, adminLogin, thirdPartyLogin } from "../api/auth";
 import { useState, useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setLogin } from "../store/authSlice";
 
 const LoginPage = () => {
@@ -11,10 +11,18 @@ const LoginPage = () => {
   const [form] = Form.useForm();
   const dispatch = useDispatch();
   const [isAdminLoginForm, setIsAdminLoginForm] = useState(false);
-
+  const { isAuthenticated, role } = useSelector((state) => state.auth);
+ 
   useEffect(() => {
-    
-  }, []);
+    // 如果已登入
+    if (isAuthenticated) {
+      // 如果有管理者權限，導向使用者功能頁面
+      if (role === "admin") {
+        return navigate("/admin/departments");
+      }
+      return navigate("/departments");
+    }
+  }, [isAuthenticated, navigate, role]);
 
   // const GOOGLE_CLIENT_ID = "460460481898-kobsunq0hat7a85ml2ejrqhcqjceqtnc.apps.googleusercontent.com"
   // const BASE_URL = "https://registration-system-2gho.onrender.com/"
@@ -71,18 +79,8 @@ const LoginPage = () => {
 
   const handlePatientLogin = async (value) => {
     const data = await login(value);
-    console.log(data);
-
-    // if (data.status === "success") {
-    //   const patientData = {
-    //     id: data.data.user.id,
-    //     name: data.data.user.name,
-    //     email: data.data.user.email,
-    //   };
-    //   localStorage.setItem("userData", JSON.stringify(patientData));
-    //   // dispatch(loginState(patientData));
-    //   navigate("/departments");
-    // }
+    dispatch(setLogin({ user: data.data.user, role: "patient" }))
+    navigate("/departments");
   };
 
   const handleAdminLogin = async (value) => {
@@ -119,7 +117,7 @@ const LoginPage = () => {
             name="account"
             rules={[{ required: true, message: "請輸入帳號" }]}
           >
-            <Input />
+            <Input autocomplete="true" />
           </Form.Item>
           <Form.Item
             label="密碼"

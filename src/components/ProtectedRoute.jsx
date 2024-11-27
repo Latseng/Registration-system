@@ -4,19 +4,14 @@ import { Outlet } from "react-router-dom";
 
 const ProtectedRoute = ({ requiredRole }) => {
   const { isAuthenticated, role } = useSelector((state) => state.auth);
-console.log(isAuthenticated);
-
-  // 如果未登入或權限不足，跳轉到登入頁或提示頁
+  // 如果未登入，導向登入頁
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
   }
-
+  // 沒有管理者權限，導向使用者功能頁面
   if (requiredRole && role !== requiredRole) {
-    console.log("使用者權限錯誤");
-    
-    // return <Navigate to="/not-authorized" />;
+    return <Navigate to="/departments" />;
   }
-
   // 通過驗證，渲染子元件
   return <Outlet />
 };

@@ -5,13 +5,16 @@ import { FaSuitcaseMedical } from "react-icons/fa6";
 import { FaCircleUser } from "react-icons/fa6";
 import PropTypes from "prop-types";
 import { logoutReqest } from "../api/auth";
+import { useDispatch, useSelector } from "react-redux";
+import { setLogout } from "../store/authSlice";
 
 const { Header } = Layout;
 
 const Navbar = ({ handleClick }) => {
   const isDesktop = useRWD();
-  const userData = localStorage.getItem("userData");
-  const items = userData
+  const { isAuthenticated } = useSelector((state) => state.auth);
+  const dispatch = useDispatch()
+  const items = isAuthenticated
     ? [
         {
           label: <a className="text-mainColorLight">使用者資訊</a>,
@@ -86,28 +89,27 @@ const Navbar = ({ handleClick }) => {
           key: "2",
         },
       ];
-     
-      const handleLogout = async () => {
-        const res = await logoutReqest();
-        if (res.status === "success") {
-          window.location.reload();
-          localStorage.removeItem("userData");
-        }
-      };
 
-      const dropdownItems = [
-        {
-          label: <a>使用者資訊</a>,
-          key: "0",
-        },
-        {
-          type: "divider",
-        },
-        {
-          label: <button>登出</button>,
-          key: "1",
-        },
-      ];
+ const handleLogout = async () => {
+   const res = await logoutReqest();
+   if (res.status === "success") {
+     dispatch(setLogout());
+   }
+ };
+
+  const dropdownItems = [
+    {
+      label: <a>使用者資訊</a>,
+      key: "0",
+    },
+    {
+      type: "divider",
+    },
+    {
+      label: <button>登出</button>,
+      key: "1",
+    },
+  ];
   return (
     <Header className="w-screen flex justify-center md:grid md:grid-cols-12 md:gap-1 md:grid-rows-1  bg-mainColor px-8">
       <div className="flex items-center mx-auto text-white text-2xl col-start-6 col-end-9 md:col-start-1 md:col-end-3 row-span-1">
@@ -132,30 +134,30 @@ const Navbar = ({ handleClick }) => {
           >
             醫師專長查詢
           </Button>
-          {userData ? (
+          {isAuthenticated ? (
             <Dropdown
-            menu={{
-              items: dropdownItems,
-              onClick: (items) => {
-                switch (items.key){
-                  case "1": 
-                  handleLogout()
-                    break;
+              menu={{
+                items: dropdownItems,
+                onClick: (items) => {
+                  switch (items.key) {
+                    case "1":
+                      handleLogout();
+                      break;
                     default:
                       break;
-                }
-              },
-            }}
-            trigger={["click"]}
-          >
-            <Button
-            type="primary"
-              className="my-auto md:col-start-12 md:col-end-13 md:row-span-1"
-              onClick={(e) => e.preventDefault()}
+                  }
+                },
+              }}
+              trigger={["click"]}
             >
-              <FaCircleUser size={28} />
-            </Button>
-          </Dropdown>
+              <Button
+                type="primary"
+                className="my-auto md:col-start-12 md:col-end-13 md:row-span-1"
+                onClick={(e) => e.preventDefault()}
+              >
+                <FaCircleUser size={28} />
+              </Button>
+            </Dropdown>
           ) : (
             <Button
               className="my-auto md:col-start-12 md:col-end-13 md:row-span-1"

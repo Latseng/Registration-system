@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getSpecialties } from "../api/specialties";
 import LoginButton from "../components/LoginButton";
+import useRWD from "../hooks/useRWD";
 
 const { Content } = Layout;
 const { Search } = Input;
@@ -13,6 +14,7 @@ const gridStyle = {
 
 const DepartmentPage = () => {
   const navigate = useNavigate();
+  const isDesktop = useRWD()
   const [departments, setDepartments] = useState([]);
   const [searchValue, setSearchValue] = useState("");
   const [isPageLoading, setIsPageLoading] = useState(true);
@@ -72,37 +74,37 @@ const DepartmentPage = () => {
   };
 
   return (
-      <Content className="bg-gray-100 p-6">
-        <LoginButton />
-        <h1 className="text-2xl mb-4">門診科別</h1>
-        {contextHolder}
-        <div className="flex mb-4">
-          <Search
-            placeholder="搜尋科別"
-            onSearch={handleSearch}
-            onChange={(event) => handleChange(event)}
-            allowClear
-            style={{
-              width: 200,
-            }}
-          />
-        </div>
-        {isPageLoading && <Card loading={isPageLoading}></Card>}
-        {departments.map((s) => (
-          <Card className="my-4" key={s.category} title={s.category}>
-            {s.specialties.map((s) => (
-              <Card.Grid
-                onClick={() => handleClickSpecialties(s)}
-                className="flex justify-center text-base cursor-pointer hover:text-mainColorLight"
-                key={s}
-                style={gridStyle}
-              >
-                {s}
-              </Card.Grid>
-            ))}
-          </Card>
-        ))}
-      </Content>
+    <Content className="bg-gray-100 p-6">
+      {isDesktop && <LoginButton />}
+      <h1 className="text-2xl mb-4">門診科別</h1>
+      {contextHolder}
+      <div className="flex mb-4">
+        <Search
+          placeholder="搜尋科別"
+          onSearch={handleSearch}
+          onChange={(event) => handleChange(event)}
+          allowClear
+          style={{
+            width: 200,
+          }}
+        />
+      </div>
+      {isPageLoading && <Card loading={isPageLoading}></Card>}
+      {departments.map((s) => (
+        <Card className="my-4" key={s.category} title={s.category}>
+          {s.specialties.map((s) => (
+            <Card.Grid
+              onClick={() => handleClickSpecialties(s)}
+              className="flex justify-center text-base cursor-pointer hover:text-mainColorLight"
+              key={s}
+              style={gridStyle}
+            >
+              {s}
+            </Card.Grid>
+          ))}
+        </Card>
+      ))}
+    </Content>
   );
 };
 
