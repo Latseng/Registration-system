@@ -24,59 +24,6 @@ const LoginPage = () => {
     }
   }, [isAuthenticated, navigate, role]);
 
-  // const GOOGLE_CLIENT_ID = "460460481898-kobsunq0hat7a85ml2ejrqhcqjceqtnc.apps.googleusercontent.com"
-  // const BASE_URL = "https://registration-system-2gho.onrender.com/"
-  // div.id = "g_id_onload";
-  // div.setAttribute("data-client_id", GOOGLE_CLIENT_ID);
-  // div.setAttribute(
-  //   "data-login_uri",
-  //   `${BASE_URL}/api/patients/auth/google/callback`
-  // );
-  // document.body.appendChild(div);
-  // return () => {
-  //   document.body.removeChild(script);
-  //   document.body.removeChild(div);
-  // };
-
-  // 檢查是否有 Google API
-  // if (window.google) {
-  //   window.google.accounts.id.initialize({
-  //     client_id: "460460481898-kobsunq0hat7a85ml2ejrqhcqjceqtnc.apps.googleusercontent.com",
-  //     callback: handleCredentialResponse, // 登入成功後的回呼函數
-  //   });
-
-  // 渲染 One Tap 按鈕（可選）
-  //     window.google.accounts.id.renderButton(
-  //       document.getElementById("googleSignInButton"), // 替換為你的按鈕容器
-  //       { theme: "outline", size: "large" }
-  //     );
-
-  //     // 啟用 One Tap 登入
-  //     window.google.accounts.id.prompt();
-  //   }
-  // }, []);
-
-  // const handleCredentialResponse = async (response) => {
-  //   console.log("Google Credential Response:", response);
-  //   try {
-  //     const res = await fetch(
-  //       "https://registration-system-2gho.onrender.com/api/patients/login/google",
-  //       {
-  //         method: "GET",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: JSON.stringify({ credential: response.credential }), // 將獲得的憑證發送到後端
-  //       }
-  //     );
-  //     const data = await res.json();
-  //     console.log("Login Success:", data);
-  //     // 在此處處理登入成功後的邏輯，例如保存 token 或跳轉頁面
-  //   } catch (error) {
-  //     console.error("Login Failed:", error);
-  //   }
-  // };
-
   const handlePatientLogin = async (value) => {
     const data = await login(value);
     dispatch(setLogin({ user: data.data.user, role: "patient" }))
@@ -89,20 +36,18 @@ const LoginPage = () => {
     navigate("/admin/departments");
   };
 
-  const handleThirdPartyLogin = async (value) => {
+  const handleThirdPartyLogin = async () => {
     await thirdPartyLogin();
   };
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
-      {/* <div id="googleSignInButton"></div> */}
       {isAdminLoginForm ? (
         <Form
           form={form}
           name="basic"
           initialValues={{ remember: true }}
           onFinish={handleAdminLogin}
-          autoComplete="off"
           className="bg-white mb-8 p-16 flex flex-col md:w-1/3 rounded-2xl text-center"
         >
           <button
@@ -117,7 +62,7 @@ const LoginPage = () => {
             name="account"
             rules={[{ required: true, message: "請輸入帳號" }]}
           >
-            <Input autocomplete="true" />
+            <Input autoComplete="true" />
           </Form.Item>
           <Form.Item
             label="密碼"
@@ -149,7 +94,6 @@ const LoginPage = () => {
           name="basic"
           initialValues={{ remember: true }}
           onFinish={handlePatientLogin}
-          autoComplete="off"
           className="bg-white mb-8 p-12 flex flex-col md:w-1/3 rounded-2xl text-center"
         >
           <button
@@ -170,7 +114,7 @@ const LoginPage = () => {
               },
             ]}
           >
-            <Input />
+            <Input autoComplete="true" />
           </Form.Item>
           <Form.Item
             className="md:ml-10"

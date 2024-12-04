@@ -5,6 +5,7 @@ import PropTypes from "prop-types";
 import { useState } from "react";
 import { createAppointment } from "../api/appointments";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const gridStyle = {
   width: "25%",
@@ -24,7 +25,8 @@ const SelectedModal = ({
 }) => {
   const [form] = Form.useForm();
   const [isAppointmentLoading, setIsAppointmentLoading] = useState(false);
-  const user = localStorage.getItem("userData");
+  const {isAuthenticated, role} = useSelector(state => state.auth)
+  const isPatientLogin = isAuthenticated && role === "patient"
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -102,7 +104,7 @@ const SelectedModal = ({
         </div>
       )}
       {selectedAppointment &&
-        (user ? (
+        (isPatientLogin ? (
           <div className="text-center">
             <h1 className="text-xl font-bold">掛號資訊</h1>
             <div className="my-4 text-base">

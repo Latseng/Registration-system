@@ -11,16 +11,16 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
+    <div className="p-8 flex flex-col items-center justify-center bg-gray-100">
       <button
         onClick={() => navigate("/*")}
-        className="my-8 flex text-mainColor text-6xl"
+        className="flex text-mainColor text-6xl"
       >
         <FaSuitcaseMedical className="mr-2" />
         <h1>MA</h1>
       </button>
       <Form
-        className="bg-white mb-8 p-12 flex flex-col md:w-1/2 rounded-2xl text-center"
+        className="bg-white my-8 p-12 flex flex-col md:w-1/2 rounded-2xl text-center"
         form={form}
         onFinish={onFinish}
         layout="vertical"

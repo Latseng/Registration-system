@@ -53,7 +53,11 @@ export const adminLogin = async ({ account, password }) => {
 
 export const logoutReqest = async () => {
   try {
-    const { data } = await axios.post(`${baseURL}/sign-out`, {
+    const { data } = await axios.post(`${baseURL}/sign-out`,
+    {
+
+    }, 
+    {
       withCredentials: true,
     });
     return data;

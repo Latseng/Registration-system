@@ -65,7 +65,7 @@ const LoginButton = () => {
         </Dropdown>
       ) : (
         <button
-          className="absolute right-8 top-4 hover:text-mainColor"
+          className={isDesktop ? "absolute right-8 top-4 hover:text-mainColor" : "text-white"}
           onClick={handleClickLogin}
         >
           登入

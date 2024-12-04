@@ -12,7 +12,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { resetNewAppointment } from "../store/appointmentSlice";
 import { GrStatusGood } from "react-icons/gr";
 import LoginButton from "../components/LoginButton";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { ExclamationCircleFilled } from "@ant-design/icons";
 import useRWD from "../hooks/useRWD";
 
@@ -36,11 +36,34 @@ const QueryPage = () => {
   const newAppointment = useSelector(
     (state) => state.appointment.newAppointment
   );
-  const {isAuthenticated, role} = useSelector(state => state.auth)
-const isDesktop = useRWD()
+  const { isAuthenticated, role } = useSelector((state) => state.auth);
+
+  const isDesktop = useRWD();
+
   const getAppointmentsDataAsync = async (data) => {
     try {
       const patientAppointments = await getAppointmentsBypatient(data);
+      
+      if (patientAppointments.status === "success") {
+        const weekDay = ["日", "一", "二", "三", "四", "五", "六"];
+        const organizedAppointments = patientAppointments.data.map((p) => {
+          const formattedDate =
+            dayjs(p.date).format("M/D") +
+            "（" +
+            weekDay[dayjs(p.date).day()] +
+            "）";
+          const formattedSlot = p.scheduleSlot.includes("Morning")
+            ? "上午診"
+            : "下午診";
+          return { ...p, date: formattedDate, scheduleSlot: formattedSlot };
+        });
+
+        setRequestData(data);
+        setAppointments(organizedAppointments);
+
+        setIsLoading(false);
+        setIsPageLoading(false);
+      }
       if (patientAppointments.data.message?.includes("登入")) {
         setIsLoading(false);
         confirm({
@@ -52,8 +75,7 @@ const isDesktop = useRWD()
           onOk() {
             navigate("/login");
           },
-          onCancel() {
-          },
+          onCancel() {},
         });
         return;
       }
@@ -67,41 +89,26 @@ const isDesktop = useRWD()
         setIsPageLoading(false);
         return;
       }
-
-      const weekDay = ["日", "一", "二", "三", "四", "五", "六"];
-      const organizedAppointments = patientAppointments.data.map((p) => {
-        const formattedDate =
-          dayjs(p.date).format("M/D") +
-          "（" +
-          weekDay[dayjs(p.date).day()] +
-          "）";
-        const formattedSlot = p.scheduleSlot.includes("Morning")
-          ? "上午診"
-          : "下午診";
-        return { ...p, date: formattedDate, scheduleSlot: formattedSlot };
-      });
-
-      setRequestData(data);
-      setAppointments(organizedAppointments);
-      setIsLoading(false);
-      setIsPageLoading(false);
     } catch (error) {
       console.error(error);
     }
   };
 
   useEffect(() => {
-    // 如果病患已登入
-    if (isAuthenticated && role === "patient") {
+    //頁面載入後，先檢查是否為登入狀態
+    const queryString = window.location.search; //第三方登入狀態判斷
+    if (
+      (isAuthenticated && role === "patient") ||
+      queryString.includes("true")
+    ) {
       setIsPageLoading(true);
       const queryPayload = {
         recaptchaResponse: "test_recaptcha",
-        isLogin: true
+        isLogin: true,
       };
       getAppointmentsDataAsync(queryPayload);
-      return;
     }
-
+    
     if (newAppointment) {
       setIsPageLoading(true);
       getAppointmentsDataAsync(newAppointment.requestData);
@@ -111,7 +118,7 @@ const isDesktop = useRWD()
     return () => {
       dispatch(resetNewAppointment());
     };
-  }, [dispatch, newAppointment]);
+  }, [dispatch, newAppointment, isAuthenticated, role]);
 
   const handleFinish = async (values) => {
     setIsLoading(true);
@@ -264,10 +271,10 @@ const isDesktop = useRWD()
       {contextHolder}
       {isDesktop && <LoginButton />}
       <Content className="bg-gray-100 p-4">
-        {isAuthenticated ? (
-          isPageLoading ? (
-            <List loading={isPageLoading}></List>
-          ) : appointments ? (
+        {isPageLoading ? (
+          <List loading={isPageLoading}></List>
+        ) : isAuthenticated ? (
+          appointments ? (
             <>
               <h1 className="text-2xl mb-6">您的看診時段</h1>
               <List bordered className="bg-white px-8 py-4">
@@ -291,9 +298,7 @@ const isDesktop = useRWD()
                         <>
                           <Button
                             loading={isLoading}
-                            onClick={() =>
-                              handleClick("cancel")
-                            }
+                            onClick={() => handleClick("cancel")}
                           >
                             {isLoading ? "" : "取消掛號"}
                           </Button>
@@ -315,11 +320,7 @@ const isDesktop = useRWD()
                         </>
                       ) : (
                         <>
-                          <Button
-                            onClick={() =>
-                              handleClick("again")
-                            }
-                          >
+                          <Button onClick={() => handleClick("again")}>
                             重新掛號
                           </Button>
                           <Modal
@@ -383,15 +384,19 @@ const isDesktop = useRWD()
               <Button
                 block
                 loading={isLoading}
+                className="mb-4"
                 type="primary"
                 htmlType="submit"
               >
                 查詢
               </Button>
               或
-              <Button size="large" type="link">
-                註冊
-              </Button>
+              <Link
+                to="/register"
+                className="text-base mx-2 font-medium hover:text-mainColorLight"
+              >
+                立即註冊
+              </Link>
               以方便您利用本系統
             </Form.Item>
           </Form>
