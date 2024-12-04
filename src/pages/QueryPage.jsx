@@ -15,9 +15,11 @@ import LoginButton from "../components/LoginButton";
 import { useNavigate, Link } from "react-router-dom";
 import { ExclamationCircleFilled } from "@ant-design/icons";
 import useRWD from "../hooks/useRWD";
+import { setLogin } from "../store/authSlice";
 
 const { Content } = Layout;
 const { confirm } = Modal;
+const queryString = window.location.search; //第三方登入狀態判斷
 
 const QueryPage = () => {
   const [form] = Form.useForm();
@@ -36,6 +38,10 @@ const QueryPage = () => {
   const newAppointment = useSelector(
     (state) => state.appointment.newAppointment
   );
+  //如果是第三方登入的話，存入狀態資料
+if(queryString.includes("true")){
+  dispatch(setLogin({user:"google account" , role: "patient"}))
+}
   const { isAuthenticated, role } = useSelector((state) => state.auth);
 
   const isDesktop = useRWD();
@@ -96,10 +102,9 @@ const QueryPage = () => {
 
   useEffect(() => {
     //頁面載入後，先檢查是否為登入狀態
-    const queryString = window.location.search; //第三方登入狀態判斷
+    
     if (
-      (isAuthenticated && role === "patient") ||
-      queryString.includes("true")
+      (isAuthenticated && role === "patient")
     ) {
       setIsPageLoading(true);
       const queryPayload = {
