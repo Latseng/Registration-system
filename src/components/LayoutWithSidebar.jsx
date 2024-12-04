@@ -68,10 +68,6 @@ const LayoutWithSidebar = () => {
         key: "2",
         label: "醫師管理",
       },
-      {
-        key: "3",
-        label: "掛號管理",
-      },
     ],
     onClickPage: (e) => {
       switch (e.key) {
@@ -81,9 +77,6 @@ const LayoutWithSidebar = () => {
         case "2":
           navigate("/admin/doctors");
           break;
-        case "3":
-          navigate("/admin/appointments");
-          break;
         default:
           break;
       }
@@ -92,8 +85,6 @@ const LayoutWithSidebar = () => {
       switch (location.pathname) {
         case "/admin/doctors":
           return "2";
-        case "/admin/appointments":
-          return "3";
         default:
           return "1";
       }

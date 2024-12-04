@@ -21,10 +21,12 @@ import {
   MinusCircleOutlined,
   PlusOutlined,
   ExclamationCircleFilled,
+  ScheduleOutlined
 } from "@ant-design/icons";
 import { v4 as uuidv4 } from "uuid";
 import useRWD from "../hooks/useRWD";
 import LoginButton from "../components/LoginButton";
+import { useNavigate } from "react-router-dom";
 
 const { Content } = Layout;
 
@@ -52,6 +54,7 @@ const AdminDoctorPage = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const isDesktop = useRWD();
   const [form] = Form.useForm();
+  const navigate = useNavigate()
 
   const columns = [
     {
@@ -61,6 +64,19 @@ const AdminDoctorPage = () => {
     {
       title: "科別",
       dataIndex: "department",
+    },
+    {
+      title: "門診",
+      dataIndex: "schedules",
+      render: (_, record) => (
+        <Button
+          className="text-center"
+          type="text"
+          onClick={() => handleClickSchedules(record)}
+        >
+          <ScheduleOutlined className="text-2xl -translate-y-0.5" />
+        </Button>
+      ),
     },
     {
       render: (_, record) => (
@@ -75,6 +91,15 @@ const AdminDoctorPage = () => {
       ),
     },
   ];
+
+  const handleClickSchedules = (record) => {
+    navigate(`/admin/schedules/${record.id}`, {
+      state: {
+        doctorId: record.id,
+        doctorName: record.name
+      },
+    });
+  };
 
   const handleEditDoctorInfo = async (id) => {
     setIsDoctorModalOpen(true);

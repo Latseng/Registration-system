@@ -8,7 +8,12 @@ axios.defaults.headers.common["x-api-key"] = APIKey;
 export const getSchedules = async (specialty) => {
   try {
     const res = await axios.get(
-      `${baseURL}/doctor-schedules/schedules-by-specialty/${specialty}`
+      `${baseURL}/doctor-schedules/schedules-by-specialty/${specialty}`, 
+      {
+      headers: {
+        withCredentials: true,
+      },
+    }
     );
     return res.data.data
   } catch (error) {
@@ -16,7 +21,23 @@ export const getSchedules = async (specialty) => {
   }
 };
 
-export const createSchedule = async (payload, adminToken) => {
+export const getSchedulesByDoctor = async (id) => {
+  try {
+    const res = await axios.get(
+      `${baseURL}/doctor-schedules/schedules-by-doctor/${id}`,
+      {
+        headers: {
+          withCredentials: true,
+        },
+      }
+    );
+    return res.data.data;
+  } catch (error) {
+    console.error("[Get schedules failed]: ", error);
+  }
+};
+
+export const createSchedule = async (payload) => {
   const {doctorId, scheduleSlot, date, maxAppointments, status} = payload
   try {
     const res = await axios.post(
@@ -29,9 +50,7 @@ export const createSchedule = async (payload, adminToken) => {
         status,
       },
       {
-        headers: {
-          authorization: "Bearer " + adminToken,
-        },
+        withCredentials: true,
       }
     );
     return res.data.data;
@@ -40,16 +59,14 @@ export const createSchedule = async (payload, adminToken) => {
   }
 };
 
-export const deleteSchedule = async (id, adminToken) => {
+export const deleteSchedule = async (id) => {
   try {
-    const res = await axios.delete(
-      `${baseURL}/doctor-schedules/${id}`,
-      {
-        headers: {
-          authorization: "Bearer " + adminToken,
-        },
-      }
-    );
+    const res = await axios.delete(`${baseURL}/doctor-schedules/${id}`, 
+    {
+      headers: {
+        withCredentials: true,
+      },
+    });
     return res.data.data;
   } catch (error) {
     console.error("[Get schedules failed]: ", error);

@@ -6,9 +6,21 @@ import QueryPage from "./QueryPage";
 import DoctorsPage from "./DoctorsPage";
 import AdminDepartmentPage from "./AdminDepartmentPage";
 import AdminDoctorPage from "./AdminDoctorPage";
-import AdminAppointmentPage from "./AdminAppointmentPage";
+import AdminDoctorSchedulesPage from "./AdminDoctorSchedulesPage";
 import AdminSchedulePage from "./AdminSchedulePage";
 import RegisterPage from "./RegisterPage";
 
 
-export { MainPage, LoginPage, DepartmentPage, ClinicSchedulePage, QueryPage, DoctorsPage, AdminDepartmentPage, AdminDoctorPage, AdminAppointmentPage, AdminSchedulePage, RegisterPage };
+export {
+  MainPage,
+  LoginPage,
+  DepartmentPage,
+  ClinicSchedulePage,
+  QueryPage,
+  DoctorsPage,
+  AdminDepartmentPage,
+  AdminDoctorPage,
+  AdminDoctorSchedulesPage,
+  AdminSchedulePage,
+  RegisterPage,
+};

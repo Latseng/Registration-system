@@ -1,6 +1,18 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { ConfigProvider } from "antd";
-import { MainPage, LoginPage, DepartmentPage, ClinicSchedulePage, QueryPage, DoctorsPage, AdminDepartmentPage, AdminDoctorPage, AdminAppointmentPage, AdminSchedulePage, RegisterPage  } from "./pages";
+import {
+  MainPage,
+  LoginPage,
+  DepartmentPage,
+  ClinicSchedulePage,
+  QueryPage,
+  DoctorsPage,
+  AdminDepartmentPage,
+  AdminDoctorPage,
+  AdminDoctorSchedulesPage,
+  AdminSchedulePage,
+  RegisterPage,
+} from "./pages";
 import LayoutWithSidebar from "./components/LayoutWithSidebar";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -36,8 +48,8 @@ function App() {
               />
               <Route path="admin/doctors" element={<AdminDoctorPage />} />
               <Route
-                path="admin/appointments"
-                element={<AdminAppointmentPage />}
+                path="admin/schedules/:doctorId"
+                element={<AdminDoctorSchedulesPage />}
               />
               <Route
                 path="admin/schedules/:department"
