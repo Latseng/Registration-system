@@ -39,8 +39,8 @@ const QueryPage = () => {
     (state) => state.appointment.newAppointment
   );
   //如果是第三方登入的話，存入狀態資料
-if(queryString.includes("true")){
-  dispatch(setLogin({user:"google account" , role: "patient"}))
+if(queryString.includes("true")) {
+  dispatch(setLogin({user: {account: "google account"} , role: "patient"}))
 }
   const { isAuthenticated, role } = useSelector((state) => state.auth);
 

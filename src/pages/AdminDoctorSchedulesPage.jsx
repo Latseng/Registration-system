@@ -5,14 +5,6 @@ import { getSchedulesByDoctor } from "../api/schedules";
 
 const { Content } = Layout;
 
-const data = [
-  "Racing car sprays burning fuel into crowd.",
-  "Japanese princess to wed commoner.",
-  "Australian walks 100km after outback crash.",
-  "Man charged over missing wedding girl.",
-  "Los Angeles battles huge wildfires.",
-];
-
 const AdminDoctorSchedulesPage = () => {
   const location = useLocation()
   const { doctorId, doctorName } = location.state;
@@ -30,11 +22,8 @@ const AdminDoctorSchedulesPage = () => {
      getSchedulesDataAsync();
     
   },[])
- 
-console.log(schedules);
 
-
-  const renderData = schedules.map(item => {
+  const ListData = schedules.map(item => {
     const date = new Date(item.date);
     const options = { month: "numeric", day: "numeric" };
     const formattedDate = date.toLocaleString("zh-TW", options);
@@ -57,7 +46,7 @@ console.log(schedules);
         size="large"
         className="flex justify-center bg-white"
         bordered
-        dataSource={renderData}
+        dataSource={ListData}
         renderItem={(item) => (
           <List.Item>
             <Button onClick={() => console.log(item)

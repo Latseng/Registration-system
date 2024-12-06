@@ -1,0 +1,35 @@
+{
+  "type": "object",
+  "properties": {
+    "status": { "type": "string", "enum": ["success", "error"] },
+    "data": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "doctorScheduleId": { "type": "integer" },
+          "date": { "type": "string" },
+          "scheduleSlot": { "type": "string" },
+          "specialty": { "type": "string" },
+          "doctorId": { "type": "integer" },
+          "doctorName": { "type": "string" },
+          "bookedAppointments": { "type": "integer" },
+          "maxAppointments": { "type": "integer" },
+          "status": { "type": "string", "enum": ["AVAILABLE", "FULL"] } 
+        },
+        "required": [
+          "doctorScheduleId",
+          "date",
+          "scheduleSlot",
+          "specialty",
+          "doctorId",
+          "doctorName",
+          "bookedAppointments",
+          "maxAppointments",
+          "status"
+        ]
+      }
+    }
+  },
+  "required": ["status", "data"]
+}

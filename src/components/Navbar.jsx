@@ -46,7 +46,6 @@ const Navbar = ({ handleClick }) => {
           label: (
             <a
               className="text-mainColorLight"
-              onClick={() => handleClick("logout")}
             >
               登出
             </a>
@@ -172,6 +171,15 @@ const Navbar = ({ handleClick }) => {
         <Dropdown
           menu={{
             items,
+            onClick: (items) => {
+              switch (items.key) {
+                case "3":
+                  handleLogout();
+                  break;
+                default:
+                  break;
+              }
+            },
           }}
           trigger={["click"]}
         >

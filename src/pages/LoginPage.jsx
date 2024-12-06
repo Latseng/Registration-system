@@ -5,6 +5,7 @@ import { login, adminLogin, thirdPartyLogin } from "../api/auth";
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setLogin } from "../store/authSlice";
+import { FcGoogle } from "react-icons/fc";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -133,6 +134,7 @@ const LoginPage = () => {
               登入
             </Button>
             <Button onClick={() => handleThirdPartyLogin("google")}>
+              <FcGoogle size={20} />
               Google登入
             </Button>
           </Form.Item>
