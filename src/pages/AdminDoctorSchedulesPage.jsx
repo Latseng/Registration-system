@@ -10,12 +10,15 @@ const AdminDoctorSchedulesPage = () => {
   const navigate = useNavigate()
   const { doctorId, doctorName } = location.state;
   const [schedules, setSchedules] = useState([])
+  const [isListLoading, setIsListLoading] = useState(false)
   
   useEffect(() => {
+    setIsListLoading(true)
     const getSchedulesDataAsync = async () => {
       try {
         const data = await getSchedulesByDoctor(doctorId);
         setSchedules(data);
+        setIsListLoading(false)
       } catch(error) {
         console.error(error);
       }
@@ -47,6 +50,7 @@ const AdminDoctorSchedulesPage = () => {
         size="large"
         className="flex justify-center bg-white"
         bordered
+        loading={isListLoading}
         dataSource={ListData}
         renderItem={(item) => (
           <List.Item>
