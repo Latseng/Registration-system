@@ -1,0 +1,55 @@
+{
+  "type": "object",
+  "properties": {
+    "status": { "type": "string", "enum": ["success", "error"] },
+    "data": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "doctorId": { "type": "integer" },
+        "scheduleSlot": { "type": "string" },
+        "date": { "type": "string" },
+        "maxAppointments": { "type": "integer" },
+        "status": { "type": "string", "enum": ["AVAILABLE", "FULL"] },
+        "appointments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "integer" },
+              "patientId": { "type": "integer" },
+              "doctorScheduleId": { "type": "integer" },
+              "consultationNumber": { "type": "integer" },
+              "status": { "type": "string", "enum": ["CONFIRMED", "CANCELED"] },
+              "patient": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" }
+                },
+                "required": ["name"]
+              }
+            },
+            "required": [
+              "id",
+              "patientId",
+              "doctorScheduleId",
+              "consultationNumber",
+              "status",
+              "patient"
+            ]
+          }
+        }
+      },
+      "required": [
+        "id",
+        "doctorId",
+        "scheduleSlot",
+        "date",
+        "maxAppointments",
+        "status",
+        "appointments"
+      ]
+    }
+  },
+  "required": ["status", "data"]
+}

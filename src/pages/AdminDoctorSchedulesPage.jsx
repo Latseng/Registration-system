@@ -1,12 +1,13 @@
 import { Layout, Breadcrumb, Button, List } from "antd";
 import { useEffect, useState } from "react";
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 import { getSchedulesByDoctor } from "../api/schedules";
 
 const { Content } = Layout;
 
 const AdminDoctorSchedulesPage = () => {
   const location = useLocation()
+  const navigate = useNavigate()
   const { doctorId, doctorName } = location.state;
   const [schedules, setSchedules] = useState([])
   
@@ -49,8 +50,21 @@ const AdminDoctorSchedulesPage = () => {
         dataSource={ListData}
         renderItem={(item) => (
           <List.Item>
-            <Button onClick={() => console.log(item)
-            }>
+            <Button
+              onClick={() =>
+                navigate(
+                  `/admin/doctors/schedules/appointments/${item.doctorScheduleId}`,
+                  {
+                    state: {
+                      appointment: `${item.date}${item.scheduleSlot}`,
+                      doctorScheduleId: item.doctorScheduleId,
+                      doctorId: doctorId,
+                      doctorName: doctorName
+                    },
+                  }
+                )
+              }
+            >
               <span className="mx-2">{item.date}</span>
               <span className="mx-2">{item.scheduleSlot}</span>
             </Button>

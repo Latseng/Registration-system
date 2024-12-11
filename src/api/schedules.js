@@ -1,6 +1,7 @@
 import axios from "axios";
 import Ajv from "ajv";
 import schedulesByDoctorDataSchema from "./schema/getSchedulesByDoctor.json"
+import appointmentsByDoctorScheduleIdDataSchema from "./schema/getAppointmentsByDoctorScheduleId.json"
 
 const APIKey = "0rEx0X54ow3S6M7yp8hYS4PkOhRC2irQ";
 const baseURL = "https://registration-system-2gho.onrender.com/api";
@@ -58,6 +59,19 @@ export const getSchedulesByDoctor = async (id) => {
     console.error("[Get schedules failed]: ", error);
   }
 };
+
+export const getAppointmentsByDoctorScheduleId = async (id) => {
+  try {
+const res = await axios.get(`${baseURL}/doctor-schedules/${id}`);
+const isDataValid = validateData(res.data, appointmentsByDoctorScheduleIdDataSchema);
+if (isDataValid) {
+  return res.data.data;
+}
+
+  } catch(error) {
+    console.error(error);
+  }
+}
 
 export const createSchedule = async (payload) => {
   const {doctorId, scheduleSlot, date, maxAppointments, status} = payload

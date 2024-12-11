@@ -2,7 +2,7 @@ import { Outlet } from "react-router-dom";
 import { Layout, Divider, ConfigProvider, Menu, Drawer } from "antd";
 import { FaSuitcaseMedical } from "react-icons/fa6";
 import { IoMenu } from "react-icons/io5";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, matchPath } from "react-router-dom";
 import useRWD from "../hooks/useRWD";
 import Logo from "./Logo";
 import { useState } from "react";
@@ -82,12 +82,13 @@ const LayoutWithSidebar = () => {
       }
     },
     currentPage: () => {
-      switch (location.pathname) {
-        case "/admin/doctors":
-          return "2";
-        default:
-          return "1";
+      //使用matchPath，讓子路由也能套用高亮樣式
+      if (matchPath("/admin/doctors/*", location.pathname)) {
+        return "2";
       }
+
+      // 其他路由
+      return "1";
     },
   };
 

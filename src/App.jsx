@@ -12,6 +12,7 @@ import {
   AdminDoctorSchedulesPage,
   AdminSchedulePage,
   RegisterPage,
+  AdminDoctorAppointmentsPage
 } from "./pages";
 import LayoutWithSidebar from "./components/LayoutWithSidebar";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -48,8 +49,12 @@ function App() {
               />
               <Route path="admin/doctors" element={<AdminDoctorPage />} />
               <Route
-                path="admin/schedules/:doctorId"
+                path="admin/doctors/schedules/:doctorId"
                 element={<AdminDoctorSchedulesPage />}
+              />
+              <Route
+                path="admin/doctors/schedules/appointments/:doctorScheduleId"
+                element={<AdminDoctorAppointmentsPage />}
               />
               <Route
                 path="admin/schedules/:department"

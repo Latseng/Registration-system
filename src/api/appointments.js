@@ -114,10 +114,33 @@ export const createFirstAppointment = async (payload) => {
 
 export const cancelAppointment = async (id) => {
   try {
-    const res = await axios.put(`${baseURL}/appointments/${id}`, {
-      status: "CANCELED",
-    });
+    const res = await axios.put(
+      `${baseURL}/appointments/${id}`,
+      {
+        status: "CANCELED",
+      },
+      {
+        withCredentials: true,
+      }
+    );
+    return res;
+  } catch (error) {
+    console.error("[Cancel Appointment failed]: ", error);
+  }
+};
 
+// 重新掛號：管理者權限
+export const reCreateAppointment = async (id) => {
+  try {
+    const res = await axios.put(
+      `${baseURL}/appointments/${id}`,
+      {
+        status: "CONFIRMED",
+      },
+      {
+        withCredentials: true,
+      }
+    );
     return res;
   } catch (error) {
     console.error("[Cancel Appointment failed]: ", error);

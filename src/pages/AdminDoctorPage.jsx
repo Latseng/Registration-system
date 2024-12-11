@@ -93,7 +93,7 @@ const AdminDoctorPage = () => {
   ];
 
   const handleClickSchedules = (record) => {
-    navigate(`/admin/schedules/${record.id}`, {
+    navigate(`/admin/doctors/schedules/${record.id}`, {
       state: {
         doctorId: record.id,
         doctorName: record.name
