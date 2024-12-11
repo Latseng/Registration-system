@@ -30,6 +30,7 @@ const LoginButton = () => {
   };
 
   const handleLogout = async () => {
+    navigate("/departments");
     const res = await logoutReqest();
     if (res.status === "success") {
       dispatch(setLogout());

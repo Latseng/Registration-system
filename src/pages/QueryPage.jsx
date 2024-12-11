@@ -19,7 +19,6 @@ import { setLogin } from "../store/authSlice";
 
 const { Content } = Layout;
 const { confirm } = Modal;
-const queryString = window.location.search; //第三方登入狀態判斷
 
 const QueryPage = () => {
   const [form] = Form.useForm();
@@ -40,68 +39,68 @@ const QueryPage = () => {
   );
 
   const { isAuthenticated, role } = useSelector((state) => state.auth);
-
   const isDesktop = useRWD();
 
   const getAppointmentsDataAsync = useCallback(
     async (data) => {
-    try {
-      const patientAppointments = await getAppointmentsBypatient(data);
-      
-      if (patientAppointments.status === "success") {
-        const weekDay = ["日", "一", "二", "三", "四", "五", "六"];
-        const organizedAppointments = patientAppointments.data.map((p) => {
-          const formattedDate =
-            dayjs(p.date).format("M/D") +
-            "（" +
-            weekDay[dayjs(p.date).day()] +
-            "）";
-          const formattedSlot = p.scheduleSlot.includes("Morning")
-            ? "上午診"
-            : "下午診";
-          return { ...p, date: formattedDate, scheduleSlot: formattedSlot };
-        });
+      try {
+        const patientAppointments = await getAppointmentsBypatient(data);
 
-        setRequestData(data);
-        setAppointments(organizedAppointments);
+        if (patientAppointments.status === "success") {
+          const weekDay = ["日", "一", "二", "三", "四", "五", "六"];
+          const organizedAppointments = patientAppointments.data.map((p) => {
+            const formattedDate =
+              dayjs(p.date).format("M/D") +
+              "（" +
+              weekDay[dayjs(p.date).day()] +
+              "）";
+            const formattedSlot = p.scheduleSlot.includes("Morning")
+              ? "上午診"
+              : "下午診";
+            return { ...p, date: formattedDate, scheduleSlot: formattedSlot };
+          });
 
-        setIsLoading(false);
-        setIsPageLoading(false);
-      }
-      if (patientAppointments.data.message?.includes("登入")) {
-        setIsLoading(false);
-        confirm({
-          title: "須先登入",
-          icon: <ExclamationCircleFilled />,
-          content: "您已有帳號，需要先登入才能使用本功能",
-          okText: "前往登入",
-          cancelText: "取消",
-          onOk() {
-            navigate("/login");
-          },
-          onCancel() {},
-        });
-        return;
-      }
+          setRequestData(data);
+          setAppointments(organizedAppointments);
 
-      if (
-        patientAppointments.data.message ===
-        "No appointments found for this patient."
-      ) {
-        setIsLoading(false);
-        setAppointments([]);
-        setIsPageLoading(false);
-        return;
+          setIsLoading(false);
+          setIsPageLoading(false);
+        }
+        if (patientAppointments.data.message?.includes("登入")) {
+          setIsLoading(false);
+          confirm({
+            title: "須先登入",
+            icon: <ExclamationCircleFilled />,
+            content: "您已有帳號，需要先登入才能使用本功能",
+            okText: "前往登入",
+            cancelText: "取消",
+            onOk() {
+              navigate("/login");
+            },
+            onCancel() {},
+          });
+          return;
+        }
+
+        if (
+          patientAppointments.data.message ===
+          "No appointments found for this patient."
+        ) {
+          setIsLoading(false);
+          setAppointments([]);
+          setIsPageLoading(false);
+          return;
+        }
+      } catch (error) {
+        console.error(error);
       }
-    } catch (error) {
-      console.error(error);
-    }
-  },
-  [navigate]
-  )
+    },
+    [navigate]
+  );
 
   useEffect(() => {
     //如果第三方登入驗證成功的話，存入登入狀態資料
+    const queryString = window.location.search; //第三方登入狀態判斷
     if (queryString.includes("true")) {
       dispatch(
         setLogin({ user: { account: "google account" }, role: "patient" })
@@ -127,7 +126,13 @@ const QueryPage = () => {
     return () => {
       dispatch(resetNewAppointment());
     };
-  }, [dispatch, getAppointmentsDataAsync, isAuthenticated, newAppointment, role]);
+  }, [
+    dispatch,
+    getAppointmentsDataAsync,
+    isAuthenticated,
+    newAppointment,
+    role,
+  ]);
 
   const handleFinish = async (values) => {
     setIsLoading(true);
