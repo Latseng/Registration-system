@@ -1,5 +1,5 @@
 import { Layout, Form, Input, Button, Modal, List, message } from "antd";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   getAppointmentsBypatient,
   cancelAppointment,
@@ -38,15 +38,13 @@ const QueryPage = () => {
   const newAppointment = useSelector(
     (state) => state.appointment.newAppointment
   );
-  //如果是第三方登入的話，存入狀態資料
-if(queryString.includes("true")) {
-  dispatch(setLogin({user: {account: "google account"} , role: "patient"}))
-}
+
   const { isAuthenticated, role } = useSelector((state) => state.auth);
 
   const isDesktop = useRWD();
 
-  const getAppointmentsDataAsync = async (data) => {
+  const getAppointmentsDataAsync = useCallback(
+    async (data) => {
     try {
       const patientAppointments = await getAppointmentsBypatient(data);
       
@@ -98,14 +96,20 @@ if(queryString.includes("true")) {
     } catch (error) {
       console.error(error);
     }
-  };
+  },
+  [navigate]
+  )
 
   useEffect(() => {
-    //頁面載入後，先檢查是否為登入狀態
-    
-    if (
-      (isAuthenticated && role === "patient")
-    ) {
+    //如果第三方登入驗證成功的話，存入登入狀態資料
+    if (queryString.includes("true")) {
+      dispatch(
+        setLogin({ user: { account: "google account" }, role: "patient" })
+      );
+    }
+
+    //檢查使用者是否為登入狀態
+    if (isAuthenticated && role === "patient") {
       setIsPageLoading(true);
       const queryPayload = {
         recaptchaResponse: "test_recaptcha",
@@ -113,7 +117,7 @@ if(queryString.includes("true")) {
       };
       getAppointmentsDataAsync(queryPayload);
     }
-    
+    //如果是初診狀態，則做初診病患資料的相關處理
     if (newAppointment) {
       setIsPageLoading(true);
       getAppointmentsDataAsync(newAppointment.requestData);
@@ -123,7 +127,7 @@ if(queryString.includes("true")) {
     return () => {
       dispatch(resetNewAppointment());
     };
-  }, [dispatch, newAppointment, isAuthenticated, role]);
+  }, [dispatch, getAppointmentsDataAsync, isAuthenticated, newAppointment, role]);
 
   const handleFinish = async (values) => {
     setIsLoading(true);
