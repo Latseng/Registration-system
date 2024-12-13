@@ -25,7 +25,9 @@ const SelectedModal = ({
 }) => {
   const [form] = Form.useForm();
   const [isAppointmentLoading, setIsAppointmentLoading] = useState(false);
-  const {isAuthenticated, role} = useSelector(state => state.auth)
+  const { isAuthenticated, role, CSRF_token } = useSelector(
+    (state) => state.auth
+  );
   const isPatientLogin = isAuthenticated && role === "patient"
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
@@ -40,7 +42,8 @@ const SelectedModal = ({
     const requestData = {
       recaptchaResponse: "test_recaptcha",
       doctorScheduleId: selectedAppointment.id,
-      isLogin: true,
+      isAuthenticated,
+      CSRF_token,
     };
 
     const newAppointment = await createAppointment(requestData);

@@ -1,4 +1,4 @@
-import { Layout, Form, Input, Button, Modal, List, message } from "antd";
+import { Layout, Form, Input, Button, Modal, List, Table, message } from "antd";
 import { useState, useEffect, useCallback } from "react";
 import {
   getAppointmentsBypatient,
@@ -38,8 +38,60 @@ const QueryPage = () => {
     (state) => state.appointment.newAppointment
   );
 
-  const { isAuthenticated, role } = useSelector((state) => state.auth);
+  const { isAuthenticated, role, CSRF_token } = useSelector(
+    (state) => state.auth
+  );
+  const [selectedAppointment, setSelectedAppointment] = useState({})
   const isDesktop = useRWD();
+
+  const columns = [
+    {
+      title: "日期",
+      dataIndex: "date",
+      key: "date",
+    },
+    {
+      title: "時段",
+      dataIndex: "scheduleSlot",
+      key: "scheduleSlot",
+    },
+    {
+      title: "科別",
+      dataIndex: "specialty",
+      key: "specialty",
+    },
+    {
+      title: "醫師",
+      key: "doctorName",
+      dataIndex: "doctorName",
+    },
+    {
+      title: "候診號碼",
+      key: "consultationNumber",
+      dataIndex: "consultationNumber",
+    },
+    {
+      render: (_, record) =>
+        record.status === "CONFIRMED" ? (
+          <Button danger onClick={() => handleClick("cancel", record)}>
+            取消掛號
+          </Button>
+        ) : (
+          <Button onClick={() => handleClick("again", record)}>重新掛號</Button>
+        ),
+    },
+  ];
+const tableData = appointments.map((item) => ({
+  key: item.appointmentId,
+  appointmentId: item.appointmentId,
+  doctorScheduleId: item.doctorScheduleId,
+  date: item.date,
+  scheduleSlot: item.scheduleSlot,
+  specialty: item.doctorSpecialty,
+  doctorName: item.doctorName,
+  consultationNumber: item.consultationNumber,
+  status: item.status,
+}));
 
   const getAppointmentsDataAsync = useCallback(
     async (data) => {
@@ -112,7 +164,8 @@ const QueryPage = () => {
       setIsPageLoading(true);
       const queryPayload = {
         recaptchaResponse: "test_recaptcha",
-        isLogin: true,
+        isAuthenticated,
+        CSRF_token,
       };
       getAppointmentsDataAsync(queryPayload);
     }
@@ -132,6 +185,7 @@ const QueryPage = () => {
     isAuthenticated,
     newAppointment,
     role,
+    CSRF_token,
   ]);
 
   const handleFinish = async (values) => {
@@ -231,7 +285,8 @@ const QueryPage = () => {
     });
   };
 
-  const handleClick = async (act) => {
+  const handleClick = async (act, appointment) => {
+    setSelectedAppointment(appointment)
     if (act === "cancel") {
       // 取消掛號確認
       setConfirmModal({ ...confirmModal, cancelModal: true });
@@ -241,44 +296,74 @@ const QueryPage = () => {
     setConfirmModal({ ...confirmModal, againModal: true });
   };
 
-  const handleAppointment = async (value, data) => {
+  const handleAppointment = async (value) => {
+    //取消掛號
     if (value === "cancel") {
       setConfirmModal({
         ...confirmModal,
         cancelModal: false,
       });
+      setSelectedAppointment({})
       setIsAppointmentSuccess(false);
-      setIsLoading(true);
-      await cancelAppointment(data.appointmentId);
+     setIsPageLoading(true);
+      await cancelAppointment(selectedAppointment.appointmentId, CSRF_token);
       setAppointments(
         appointments.map((a) => {
-          a.appointmentId === data.appointmentId;
+          a.appointmentId === selectedAppointment.appointmentId;
           return { ...a, status: "CANCELED" };
         })
       );
-      setIsLoading(false);
+     setIsPageLoading(false);
       messageApi.open({
         type: "warning",
         content: "掛號已取消",
       });
-
       return;
     }
+    //重新掛號
     setConfirmModal({
       ...confirmModal,
       againModal: false,
     });
+    setSelectedAppointment({});
     setIsPageLoading(true);
-    await createAppointment({
+    const result = await createAppointment({
       ...requestData,
-      doctorScheduleId: data.doctorScheduleId,
+      doctorScheduleId: selectedAppointment.doctorScheduleId,
+      CSRF_token,
     });
+    //重複掛號
+    if (result === "You have already booked this time slot.") {
+      setIsPageLoading(false);
+      messageApi.open({
+        type: "warning",
+        content: "重複掛號",
+      });
+      return
+    }
+  
     await getAppointmentsDataAsync(requestData);
     messageApi.open({
       type: "success",
       content: "掛號成功",
     });
   };
+
+  const handleCloseConfirmModal = (act) => {
+    if(act === "cancel") {
+      setConfirmModal({
+        ...confirmModal,
+        cancelModal: false,
+      });
+      setSelectedAppointment({});
+    } else {
+      setConfirmModal({
+        ...confirmModal,
+        againModal: false,
+      });
+      setSelectedAppointment({});
+    }
+  }
 
   return (
     <>
@@ -290,75 +375,14 @@ const QueryPage = () => {
         ) : isAuthenticated ? (
           appointments ? (
             <>
-              <h1 className="text-2xl mb-6">您的看診時段</h1>
-              <List bordered className="bg-white px-8 py-4">
-                {isAppointmentSuccess && (
-                  <div className="flex items-center justify-center text-lg">
-                    <GrStatusGood className="text-green-500" />
-                    <span>掛號成功</span>
-                  </div>
-                )}
-                {appointments.length === 0 && (
-                  <List.Item>沒有掛號紀錄</List.Item>
-                )}
-                {appointments.map((a) => (
-                  <List.Item key={a.appointmentId}>
-                    <div className="w-full flex flex-wrap justify-between items-center">
-                      <p className="m-4">{a.date + a.scheduleSlot}</p>
-                      <p className="m-4">{a.doctorSpecialty}</p>
-                      <p className="m-4">醫師：{a.doctorName}</p>
-                      <p className="m-4">看診號碼：{a.consultationNumber}</p>
-                      {a.status === "CONFIRMED" ? (
-                        <>
-                          <Button
-                            loading={isLoading}
-                            onClick={() => handleClick("cancel")}
-                          >
-                            {isLoading ? "" : "取消掛號"}
-                          </Button>
-                          <Modal
-                            title="取消掛號確認"
-                            open={confirmModal.cancelModal}
-                            onOk={() => handleAppointment("cancel", a)}
-                            onCancel={() =>
-                              setConfirmModal({
-                                ...confirmModal,
-                                cancelModal: false,
-                              })
-                            }
-                          >
-                            <p>
-                              您確定要取消掛號？若取消，再次看診需要重新掛號
-                            </p>
-                          </Modal>
-                        </>
-                      ) : (
-                        <>
-                          <Button onClick={() => handleClick("again")}>
-                            重新掛號
-                          </Button>
-                          <Modal
-                            title="重新掛號確認"
-                            open={confirmModal.againModal}
-                            onOk={() => handleAppointment("again", a)}
-                            onCancel={() =>
-                              setConfirmModal({
-                                ...confirmModal,
-                                againModal: false,
-                              })
-                            }
-                          >
-                            <p>將重新為您掛號同一診次</p>
-                            <p>{a.date + a.scheduleSlot}</p>
-                            <p>{a.doctorSpecialty}</p>
-                            <p>醫師：{a.doctorName}</p>
-                          </Modal>
-                        </>
-                      )}
-                    </div>
-                  </List.Item>
-                ))}
-              </List>
+              <h1 className="text-2xl mb-6">您的掛號紀錄</h1>
+              {isAppointmentSuccess && (
+                <div className="flex items-center justify-center text-lg">
+                  <GrStatusGood className="text-green-500" />
+                  <span>掛號成功</span>
+                </div>
+              )}
+              <Table columns={columns} dataSource={tableData} />
             </>
           ) : (
             <h1 className="text-2xl mb-6">您目前沒有看診掛號</h1>
@@ -415,6 +439,33 @@ const QueryPage = () => {
             </Form.Item>
           </Form>
         )}
+        <Modal
+          title="取消掛號確認"
+          open={confirmModal.cancelModal}
+          onOk={() => handleAppointment("cancel")}
+          onCancel={() => handleCloseConfirmModal("cancel")}
+        >
+          <div className="ml-8 mt-4">
+            <p>您確定要取消掛號？</p>
+            <p>{selectedAppointment.date + selectedAppointment.scheduleSlot}</p>
+            <p>{selectedAppointment.doctorSpecialty}</p>
+            <p>醫師：{selectedAppointment.doctorName}</p>
+            <p>若取消，再次看診須重新掛號</p>
+          </div>
+        </Modal>
+        <Modal
+          title="重新掛號確認"
+          open={confirmModal.againModal}
+          onOk={() => handleAppointment("again")}
+          onCancel={() => handleCloseConfirmModal("again")}
+        >
+          <div className="ml-8 mt-4">
+            <p>將重新為您掛號同一診次</p>
+            <p>{selectedAppointment.date + selectedAppointment.scheduleSlot}</p>
+            <p>{selectedAppointment.doctorSpecialty}</p>
+            <p>醫師：{selectedAppointment.doctorName}</p>
+          </div>
+        </Modal>
       </Content>
     </>
   );

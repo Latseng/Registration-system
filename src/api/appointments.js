@@ -3,6 +3,7 @@ import axios from "axios";
 const baseURL = "https://registration-system-2gho.onrender.com/api";
 
 axios.defaults.headers.common["x-api-key"] = import.meta.env.VITE_API_KEY;
+axios.defaults.withCredentials = true;
 
 export const getAppointments = async () => {
   try {
@@ -15,18 +16,22 @@ export const getAppointments = async () => {
 };
 
 export const getAppointmentsBypatient = async (payload) => {
-  const { idNumber, birthDate, recaptchaResponse } = payload;
+  const {
+    idNumber,
+    birthDate,
+    recaptchaResponse,
+    CSRF_token,
+    isAuthenticated,
+  } = payload;
   //使用者已登入
-  if (payload.isLogin) {
+  if (isAuthenticated) {
     try {
       const res = await axios.post(
         `${baseURL}/appointments/by-patient`,
         {
           recaptchaResponse,
         },
-        {
-          withCredentials: true,
-        }
+        { headers: { "X-CSRF-Token": CSRF_token } }
       );
       return res.data;
     } catch (error) {
@@ -49,10 +54,10 @@ export const getAppointmentsBypatient = async (payload) => {
 };
 
 export const createAppointment = async (payload) => {
+  const { recaptchaResponse, doctorScheduleId,idNumber, birthDate, CSRF_token,
+    isAuthenticated, } = payload
   // 如果使用者已登入
-  if (payload.isLogin) {
-    const { recaptchaResponse, doctorScheduleId } = payload;
-
+  if (isAuthenticated) {
     try {
       const res = await axios.post(
         `${baseURL}/appointments`,
@@ -61,7 +66,7 @@ export const createAppointment = async (payload) => {
           doctorScheduleId,
         },
         {
-          withCredentials: true,
+          headers: { "X-CSRF-Token": CSRF_token },
         }
       );
       return res.data;
@@ -70,7 +75,6 @@ export const createAppointment = async (payload) => {
       return error.response.data.message;
     }
   }
-  const { idNumber, birthDate, recaptchaResponse, doctorScheduleId } = payload;
   try {
     const res = await axios.post(`${baseURL}/appointments`, {
       idNumber,
@@ -111,15 +115,18 @@ export const createFirstAppointment = async (payload) => {
   }
 };
 
-export const cancelAppointment = async (id) => {
+export const cancelAppointment = async (
+  id,
+  CSRF_token
+) => {
   try {
-    const res = await axios.put(
+    const res = await axios.patch(
       `${baseURL}/appointments/${id}`,
       {
         status: "CANCELED",
       },
       {
-        withCredentials: true,
+        headers: { "X-CSRF-Token": CSRF_token },
       }
     );
     return res;
@@ -129,15 +136,30 @@ export const cancelAppointment = async (id) => {
 };
 
 // 重新掛號：管理者權限
+export const modifyAppointment = async (id, CSRF_token) => {
+  try {
+    const res = await axios.put(
+      `${baseURL}/appointments/${id}`,
+      {
+        status: "CANCELED",
+      },
+      {
+        headers: { "X-CSRF-Token": CSRF_token },
+      }
+    );
+    return res;
+  } catch (error) {
+    console.error("[Cancel Appointment failed]: ", error);
+  }
+};
+
+// 取消掛號：管理者權限
 export const reCreateAppointment = async (id) => {
   try {
     const res = await axios.put(
       `${baseURL}/appointments/${id}`,
       {
         status: "CONFIRMED",
-      },
-      {
-        withCredentials: true,
       }
     );
     return res;
@@ -148,9 +170,7 @@ export const reCreateAppointment = async (id) => {
 
 export const deleteAppointment = async (id) => {
   try {
-    const res = await axios.delete(`${baseURL}/appointments/${id}`, {
-      withCredentials: true,
-    });
+    const res = await axios.delete(`${baseURL}/appointments/${id}`);
     return res.data;
   } catch (error) {
     console.error("[Delete Appointment failed]:", error);
