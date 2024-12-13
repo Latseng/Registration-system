@@ -1,7 +1,7 @@
 import { FaSuitcaseMedical } from "react-icons/fa6";
-import { Form, Input, Button } from "antd";
+import { Form, Input, Button, message } from "antd";
 import { useNavigate, Link } from "react-router-dom";
-import { login, adminLogin, thirdPartyLogin } from "../api/auth";
+import { login, adminLogin, thirdPartyLogin, CSRF_request } from "../api/auth";
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setLogin } from "../store/authSlice";
@@ -13,6 +13,14 @@ const LoginPage = () => {
   const dispatch = useDispatch();
   const [isAdminLoginForm, setIsAdminLoginForm] = useState(false);
   const { isAuthenticated, role } = useSelector((state) => state.auth);
+  const [messageApi, contextHolder] = message.useMessage();
+
+  const error = () => {
+    messageApi.open({
+      type: "error",
+      content: "帳號或密碼錯誤",
+    });
+  };
  
   useEffect(() => {
     // 如果已登入
@@ -26,8 +34,25 @@ const LoginPage = () => {
   }, [isAuthenticated, navigate, role]);
 
   const handlePatientLogin = async (value) => {
+    messageApi.open({
+      type: "loading",
+      content: "登入中",
+      duration: 0,
+    });
     const data = await login(value);
-    dispatch(setLogin({ user: data.data.user, role: "patient" }))
+    if(data === "帳號或密碼錯誤") {
+      error()
+    }
+    messageApi.destroy()
+    const CSRF_token = await CSRF_request()
+    console.log(CSRF_token.data.csrfToken);
+    dispatch(
+      setLogin({
+        user: data.data.user,
+        role: "patient",
+        CSRF_token: CSRF_token.data.csrfToken,
+      })
+    );
     navigate("/departments");
   };
 
@@ -43,6 +68,7 @@ const LoginPage = () => {
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
+      {contextHolder}
       {isAdminLoginForm ? (
         <Form
           form={form}

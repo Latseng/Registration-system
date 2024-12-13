@@ -6,6 +6,7 @@ const patientAuthURL = baseURL + "/patients";
 const adminAuthURL = baseURL + "/admins";
 
 axios.defaults.headers.common["x-api-key"] = APIKey;
+axios.defaults.withCredentials = true;
 
 export const login = async ({ idNumber, password }) => {
   try {
@@ -14,14 +15,12 @@ export const login = async ({ idNumber, password }) => {
       {
         idNumber,
         password,
-      },
-      {
-        withCredentials: true,
       }
     );
     return data;
   } catch (error) {
     console.error("[Login Failed]:", error);
+    return error.response.data.message
   }
 };
 
@@ -50,6 +49,17 @@ export const adminLogin = async ({ account, password }) => {
     console.error("[Login Failed]:", error);
   }
 };
+
+export const CSRF_request = async () => {
+  try {
+    const res = await axios.get(`${baseURL}/csrf-token`);
+    return res.data
+    
+  } catch (error) {
+    console.error("請求失敗", error);
+    
+  }
+}
 
 export const logoutReqest = async () => {
   try {

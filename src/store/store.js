@@ -1,8 +1,8 @@
 import { configureStore, combineReducers } from "@reduxjs/toolkit";
 import appointmentReducer from "./appointmentSlice";
-import authReducer from "./authSlice"
-import { persistStore, persistReducer } from 'redux-persist';
-import storage from 'redux-persist/lib/storage'; 
+import authReducer from "./authSlice";
+import { persistStore, persistReducer } from "redux-persist";
+import storage from "redux-persist/lib/storage";
 
 // Redux Persist 配置
 const persistConfig = {
@@ -12,8 +12,8 @@ const persistConfig = {
 };
 
 const rootReducer = combineReducers({
-  appointment: appointmentReducer, 
-  auth: authReducer, 
+  appointment: appointmentReducer,
+  auth: authReducer,
 });
 
 // 包裝 Reducer
