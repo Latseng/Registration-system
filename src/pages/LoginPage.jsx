@@ -42,6 +42,7 @@ const LoginPage = () => {
     const data = await login(value);
     if(data === "帳號或密碼錯誤") {
       error()
+      return;
     }
     messageApi.destroy()
     const CSRF_token = await CSRF_request()
@@ -56,8 +57,25 @@ const LoginPage = () => {
   };
 
   const handleAdminLogin = async (value) => {
+    messageApi.open({
+      type: "loading",
+      content: "登入中",
+      duration: 0,
+    });
     const data = await adminLogin(value);
-    dispatch(setLogin({ user: data.data.user, role: data.data.user.role }));
+    if (data === "帳號或密碼錯誤") {
+      error();
+      return
+    }
+    messageApi.destroy();
+    const CSRF_token = await CSRF_request();
+    dispatch(
+      setLogin({
+        user: data.data.user,
+        role: data.data.user.role,
+        CSRF_token: CSRF_token.data.csrfToken,
+      })
+    );
     navigate("/admin/departments");
   };
 

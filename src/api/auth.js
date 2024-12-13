@@ -46,6 +46,7 @@ export const adminLogin = async ({ account, password }) => {
     return data;
   } catch (error) {
     console.error("[Login Failed]:", error);
+     return error.response.data.message;
   }
 };
 
