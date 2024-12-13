@@ -1,11 +1,10 @@
 import axios from "axios";
 import { baseURL } from "./config";
 
-const APIKey = "0rEx0X54ow3S6M7yp8hYS4PkOhRC2irQ";
 const patientAuthURL = baseURL + "/patients";
 const adminAuthURL = baseURL + "/admins";
 
-axios.defaults.headers.common["x-api-key"] = APIKey;
+axios.defaults.headers.common["x-api-key"] = import.meta.env.VITE_API_KEY
 axios.defaults.withCredentials = true;
 
 export const login = async ({ idNumber, password }) => {
@@ -63,13 +62,7 @@ export const CSRF_request = async () => {
 
 export const logoutReqest = async () => {
   try {
-    const { data } = await axios.post(`${baseURL}/sign-out`,
-    {
-
-    }, 
-    {
-      withCredentials: true,
-    });
+    const { data } = await axios.post(`${baseURL}/sign-out`);
     return data;
   } catch (error) {
     console.error("[Logout Failed]:", error);

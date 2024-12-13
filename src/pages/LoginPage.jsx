@@ -45,7 +45,6 @@ const LoginPage = () => {
     }
     messageApi.destroy()
     const CSRF_token = await CSRF_request()
-    console.log(CSRF_token.data.csrfToken);
     dispatch(
       setLogin({
         user: data.data.user,
