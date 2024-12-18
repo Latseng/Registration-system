@@ -7,6 +7,22 @@ const adminAuthURL = baseURL + "/admins";
 axios.defaults.headers.common["x-api-key"] = import.meta.env.VITE_API_KEY
 axios.defaults.withCredentials = true;
 
+export const register = async (payload) => {
+  try {
+   const res = await axios.post(`${patientAuthURL}`, {
+     idNumber: payload.idNumber,
+     birthDate: payload.birthDate,
+     name: payload.name,
+     email: payload.email || null,
+     password: payload.password,
+   });
+    return res.data
+  } catch (error) {
+    console.error("[Register Failed]:", error);
+    return error.response.data.message;
+  }
+};
+
 export const login = async ({ idNumber, password }) => {
   try {
     const { data } = await axios.post(

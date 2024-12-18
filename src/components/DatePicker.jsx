@@ -24,14 +24,13 @@ const DatePicker = () => {
   // 當年份變化時
   const handleYearChange = (value) => {
     setYear(value);
-    setMonth(null); // 清空月份
-    setDay(null); // 清空日期
+    // setDay(null); // 清空日期
   };
 
   // 當月份變化時
   const handleMonthChange = (value) => {
     setMonth(value);
-    setDay(null); // 清空日期
+    // setDay(null); // 清空日期
   };
 
   return (

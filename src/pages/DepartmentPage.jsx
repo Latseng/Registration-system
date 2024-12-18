@@ -1,5 +1,5 @@
 import { Layout, Input, Card, message } from "antd";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getSpecialties } from "../api/specialties";
 import LoginButton from "../components/LoginButton";
@@ -19,6 +19,7 @@ const DepartmentPage = () => {
   const [searchValue, setSearchValue] = useState("");
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [messageApi, contextHolder] = message.useMessage();
+  const location = useLocation();
 
   const warning = (value) => {
     messageApi.open({
@@ -38,10 +39,16 @@ const DepartmentPage = () => {
   };
 
   useEffect(() => {
-    if (!searchValue) {
-      getSpecialtiesAsnc();
+    if (location?.state?.register === "success") {
+      messageApi.open({
+        type: "success",
+        content: "註冊成功",
+      });
     }
-  }, [searchValue]);
+      if (!searchValue) {
+        getSpecialtiesAsnc();
+      }
+  }, [location?.state?.register, messageApi, searchValue]);
   
 
   const handleClickSpecialties = (specialty) => {
