@@ -8,6 +8,7 @@ import {
 import { FaRegUser } from "react-icons/fa";
 import DatePicker from "../components/DatePicker";
 import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
 import { useDispatch, useSelector } from "react-redux";
 import { resetNewAppointment } from "../store/appointmentSlice";
 import { GrStatusGood } from "react-icons/gr";
@@ -19,6 +20,7 @@ import { setLogin } from "../store/authSlice";
 
 const { Content } = Layout;
 const { confirm } = Modal;
+dayjs.extend(customParseFormat);
 
 const QueryPage = () => {
   const [form] = Form.useForm();
@@ -71,8 +73,13 @@ const QueryPage = () => {
       dataIndex: "consultationNumber",
     },
     {
+      title: "掛號狀態",
+      key: "status",
+      dataIndex: "status",
+    },
+    {
       render: (_, record) =>
-        record.status === "CONFIRMED" ? (
+        record.status === "已掛號" ? (
           <Button danger onClick={() => handleClick("cancel", record)}>
             取消掛號
           </Button>
@@ -90,8 +97,28 @@ const tableData = appointments.map((item) => ({
   specialty: item.doctorSpecialty,
   doctorName: item.doctorName,
   consultationNumber: item.consultationNumber,
-  status: item.status,
-}));
+  status: item.status === "CANCELED" ? "已取消" : "已掛號",
+})).sort((a, b) => {
+  // 1. 根據狀態排序
+  if (a.status === "已掛號" && b.status !== "已掛號") {
+    return -1; // a 排在前
+  }
+  if (a.status !== "已掛號" && b.status === "已掛號") {
+    return 1; // b 排在前
+  }
+
+  // 2. 狀態相同，根據日期排序
+  const dateA = new Date(dayjs(a.date, "M/D").toDate());
+  const dateB = new Date(dayjs(b.date, "M/D").toDate());
+
+  if (a.status === "已掛號") {
+    // 候診中：日期越近越前
+    return dateA - dateB;
+  } else {
+    // 非候診中：日期越晚越前
+    return dateB - dateA;
+  }
+});
 
   const getAppointmentsDataAsync = useCallback(
     async (data) => {
@@ -382,7 +409,9 @@ const tableData = appointments.map((item) => ({
                   <span>掛號成功</span>
                 </div>
               )}
-              <Table columns={columns} dataSource={tableData} />
+              <div className="overflow-x-auto">
+                <Table columns={columns} dataSource={tableData} />
+              </div>
             </>
           ) : (
             <h1 className="text-2xl mb-6">您目前沒有看診掛號</h1>
