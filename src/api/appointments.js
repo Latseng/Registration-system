@@ -135,7 +135,7 @@ export const cancelAppointment = async (
   }
 };
 
-// 重新掛號：管理者權限
+// 取消掛號：管理者權限
 export const modifyAppointment = async (id, CSRF_token) => {
   try {
     const res = await axios.put(
@@ -153,13 +153,16 @@ export const modifyAppointment = async (id, CSRF_token) => {
   }
 };
 
-// 取消掛號：管理者權限
-export const reCreateAppointment = async (id) => {
+// 重新掛號：管理者權限
+export const reCreateAppointment = async (id, CSRF_token) => {
   try {
     const res = await axios.put(
       `${baseURL}/appointments/${id}`,
       {
         status: "CONFIRMED",
+      },
+      {
+        headers: { "X-CSRF-Token": CSRF_token },
       }
     );
     return res;
@@ -168,10 +171,12 @@ export const reCreateAppointment = async (id) => {
   }
 };
 
-export const deleteAppointment = async (id) => {
+export const deleteAppointment = async (id, CSRF_token) => {
   try {
-    const res = await axios.delete(`${baseURL}/appointments/${id}`);
-    return res.data;
+    const res = await axios.delete(`${baseURL}/appointments/${id}`, {
+      headers: { "X-CSRF-Token": CSRF_token },
+    });
+    return res;
   } catch (error) {
     console.error("[Delete Appointment failed]:", error);
   }

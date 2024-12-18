@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import { ExclamationCircleFilled } from "@ant-design/icons";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import { getAppointmentsByDoctorScheduleId } from "../api/schedules";
-import { cancelAppointment, reCreateAppointment } from "../api/appointments";
+import { cancelAppointment, reCreateAppointment, deleteAppointment } from "../api/appointments";
+import { useSelector } from "react-redux";
 
 const { Content } = Layout;
 
@@ -18,6 +19,9 @@ const AdminDoctorAppointmentsPage = () => {
     action: "",
   });
   const [confirmLoading, setConfirmLoading] = useState(false);
+   const { CSRF_token } = useSelector(
+     (state) => state.auth
+   );
 
   useEffect(() => {
     setIsTableLoading(true);
@@ -105,14 +109,17 @@ const AdminDoctorAppointmentsPage = () => {
     appointmentId: item.id,
     name: item.patient.name,
     consultationNumber: item.consultationNumber,
-    status: item.status === "CONFIRMED" ? "候診" : "已取消",
+    status: item.status === "CONFIRMED" ? "已掛號" : "已取消",
   }));
 
   //確認Modal資料送出
   const handleOk = async () => {
     setConfirmLoading(true);
     if (confirmModal.action === "cancel") {
-      const result = await cancelAppointment(confirmModal.appointmentId);
+      const result = await cancelAppointment(
+        confirmModal.appointmentId,
+        CSRF_token
+      );
       if (result.data.status === "success") {
         setConfirmModal({
           appointmentId: null,
@@ -130,9 +137,29 @@ const AdminDoctorAppointmentsPage = () => {
       }
       setConfirmLoading(false);
     } else if (confirmModal.action === "delete") {
-      console.log("刪除掛號", confirmModal.appointmentId);
+      const result = await deleteAppointment(
+        confirmModal.appointmentId,
+        CSRF_token
+      );
+      if (result.data.status === "success") {
+        setConfirmModal({
+          appointmentId: null,
+          isOpen: false,
+          action: "",
+        });
+        setAppointments(
+          appointments.filter((item) => (
+            item.id !== confirmModal.appointmentId
+          ))
+        );
+      }
+      setConfirmLoading(false);
+
     } else {
-      const result = await reCreateAppointment(confirmModal.appointmentId);
+      const result = await reCreateAppointment(
+        confirmModal.appointmentId,
+        CSRF_token
+      );
       if (result.data.status === "success") {
         setConfirmModal({
           appointmentId: null,
