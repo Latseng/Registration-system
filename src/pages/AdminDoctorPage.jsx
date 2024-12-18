@@ -16,6 +16,7 @@ import {
   getDoctorById,
   patchDoctorById,
   deleteDoctorById,
+  createDoctor,
 } from "../api/doctors";
 import {
   MinusCircleOutlined,
@@ -27,6 +28,7 @@ import { v4 as uuidv4 } from "uuid";
 import useRWD from "../hooks/useRWD";
 import LoginButton from "../components/LoginButton";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const { Content } = Layout;
 
@@ -42,11 +44,6 @@ const AdminDoctorPage = () => {
     specialty: "",
     description: [],
   });
-  const [newDoctorInfo, setNewDoctorInfo] = useState({
-    name: "",
-    specialty: "",
-    description: [{ id: uuidv4(), value: "" }],
-  });
   const [isDoctorModalLoading, setIsDoctorModalLoading] = useState(false);
   const [isSubmitLoading, setIsSubmitLoading] = useState(false);
   const [doctors, setDoctors] = useState([]);
@@ -55,6 +52,9 @@ const AdminDoctorPage = () => {
   const isDesktop = useRWD();
   const [form] = Form.useForm();
   const navigate = useNavigate()
+ const { CSRF_token } = useSelector(
+   (state) => state.auth
+ );
 
   const columns = [
     {
@@ -167,7 +167,7 @@ const AdminDoctorPage = () => {
         doctorInfo.description.map((item) => item.value)
       ),
     };
-    const result = await patchDoctorById(doctorInfo.id, updatedData);
+    const result = await patchDoctorById(doctorInfo.id, updatedData, CSRF_token);
     if (result === "success") {
       await getDoctorsData();
       setIsDoctorModalOpen(false);
@@ -185,12 +185,12 @@ const AdminDoctorPage = () => {
   };
 
   const handleDelete = async () => {
-    console.log(deleteDoctorId);
-
-    const result = await deleteDoctorById(deleteDoctorId);
+     setIsDoctorModalLoading(true);
+    const result = await deleteDoctorById(deleteDoctorId, CSRF_token);
     if (result === "success") {
       await getDoctorsData();
       setIsDeleteConfirmModalOpen(false);
+      setIsDoctorModalLoading(false);
       messageApi.open({
         type: "success",
         content: "資料刪除成功",
@@ -231,28 +231,19 @@ const AdminDoctorPage = () => {
     department: d.specialty,
   }));
 
-  const handleCreateDoctorData = (values) => {
-    console.log(values);
-  };
-  const addNewDoctorDescriptionField = () => {
-    setNewDoctorInfo((prev) => ({
-      ...prev,
-      description: [...prev.description, { id: uuidv4(), value: "" }],
-    }));
-  };
-
-  const handleNewDoctorDescriptionChange = (index, value) => {
-    setNewDoctorInfo((prev) => {
-      const newDescription = [...prev.description];
-      newDescription[index].value = value;
-      return { ...prev, description: newDescription };
-    });
-  };
-  const removeNewDoctorDescriptionField = (index) => {
-    setNewDoctorInfo((prev) => {
-      const newDescription = prev.description.filter((_, idx) => idx !== index);
-      return { ...prev, description: newDescription };
-    });
+  const handleCreateDoctorData = async (values) => {
+    setIsDoctorModalLoading(true)
+    const data = await createDoctor(values, CSRF_token);
+    if (data.status === "success") {
+       await getDoctorsData();
+      setIsAddNewDoctorModalOpen(false);
+      messageApi.open({
+        type: "success",
+        content: "資料更新成功",
+      });
+      setIsDoctorModalLoading(false);
+      return
+    }
   };
 
   return (
@@ -334,6 +325,7 @@ const AdminDoctorPage = () => {
       <Modal
         title="刪除醫師資料"
         open={isDeleteConfirmModalOpen}
+        loading={isDoctorModalLoading}
         onOk={handleDelete}
         onCancel={() => setIsDeleteConfirmModalOpen(false)}
         okType="danger"
@@ -347,14 +339,10 @@ const AdminDoctorPage = () => {
       </Modal>
       <Modal
         title="建立醫師資料"
+        loading={isDoctorModalLoading}
         open={isAddNewDoctorModalOpen}
         onCancel={() => {
           setIsAddNewDoctorModalOpen(false);
-          setNewDoctorInfo({
-            name: "",
-            specialty: "",
-            description: [{ id: uuidv4(), value: "" }],
-          });
         }}
         footer={null}
       >
@@ -378,37 +366,69 @@ const AdminDoctorPage = () => {
           >
             <Input />
           </Form.Item>
-          <Form.Item label="專長">
-            {newDoctorInfo.description.map((item, index) => (
-              <Space
-                key={item.id}
-                style={{ display: "flex", marginBottom: 8 }}
-                align="baseline"
-              >
-                <Input
-                  placeholder="請輸入專長"
-                  defaultValue={item.value}
-                  onChange={(e) =>
-                    handleNewDoctorDescriptionChange(index, e.target.value)
+          <Form.List
+            name="description"
+            rules={[
+              {
+                validator: async (_, names) => {
+                  if (!names || names.length < 1) {
+                    return Promise.reject(new Error("至少加入一項專長"));
                   }
-                />
-                <Button
-                  type="text"
-                  danger
-                  onClick={() => removeNewDoctorDescriptionField(index)}
-                >
-                  <MinusCircleOutlined />
-                </Button>
-              </Space>
-            ))}
-            <Button
-              type="dashed"
-              onClick={addNewDoctorDescriptionField}
-              icon={<PlusOutlined />}
-            >
-              新增專長
-            </Button>
-          </Form.Item>
+                },
+              },
+            ]}
+          >
+            {(fields, { add, remove }, { errors }) => (
+              <>
+                {fields.map((field, index) => (
+                  <Form.Item
+                    label={index === 0 ? "專長" : ""}
+                    required={true}
+                    key={field.key}
+                  >
+                    <Form.Item
+                      {...field}
+                      validateTrigger={["onChange", "onBlur"]}
+                      rules={[
+                        {
+                          required: true,
+                          whitespace: true,
+                          message: "請輸入專長敘述",
+                        },
+                      ]}
+                      noStyle
+                    >
+                      <Input
+                        placeholder="請輸入專長"
+                        style={{
+                          width: "60%",
+                        }}
+                      />
+                    </Form.Item>
+                    {fields.length > 1 ? (
+                      <MinusCircleOutlined
+                        className="ml-2 text-red-500"
+                        onClick={() => remove(field.name)}
+                      />
+                    ) : null}
+                  </Form.Item>
+                ))}
+                <Form.Item>
+                  <Button
+                    type="dashed"
+                    onClick={() => add()}
+                    style={{
+                      width: "60%",
+                    }}
+                    icon={<PlusOutlined />}
+                  >
+                    新增專長
+                  </Button>
+                  <Form.ErrorList errors={errors} />
+                </Form.Item>
+              </>
+            )}
+          </Form.List>
           <Form.Item>
             <Button type="primary" htmlType="submit">
               提交

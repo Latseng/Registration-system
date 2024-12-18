@@ -1,5 +1,5 @@
 import { Layout, Button } from "antd";
-import doctorImage from "@/../public/undraw_doctor_kw5l.png";
+import doctorImage from "/undraw_doctor_kw5l.png";
 import PropTypes from "prop-types";
 
 const {Content} = Layout
