@@ -109,6 +109,7 @@ const Navbar = ({ handleClick }) => {
       key: "1",
     },
   ];
+  
   return (
     <Header className="w-screen flex justify-center md:grid md:grid-cols-12 md:gap-1 md:grid-rows-1  bg-mainColor px-8">
       <div className="flex items-center mx-auto text-white text-2xl col-start-6 col-end-9 md:col-start-1 md:col-end-3 row-span-1">

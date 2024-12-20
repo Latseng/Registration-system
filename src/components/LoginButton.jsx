@@ -24,7 +24,7 @@ const LoginButton = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isDesktop = useRWD();
-  const { isAuthenticated } = useSelector((state) => state.auth);
+  const { isAuthenticated, role } = useSelector((state) => state.auth);
   const handleClickLogin = () => {
     navigate("/login");
   };
@@ -39,7 +39,12 @@ const LoginButton = () => {
 
   return (
     <>
-      {isAuthenticated ? (
+      {isAuthenticated ? role ==="admin" ? (<button
+          className={isDesktop ? "absolute right-8 top-4 hover:text-mainColor" : "text-white"}
+          onClick={handleLogout}
+        >
+          登出
+        </button>) : (
         <Dropdown
           menu={{
             items: dropdownItems,

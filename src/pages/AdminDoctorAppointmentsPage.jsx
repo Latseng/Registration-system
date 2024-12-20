@@ -5,6 +5,8 @@ import { useLocation, Link, useNavigate } from "react-router-dom";
 import { getAppointmentsByDoctorScheduleId } from "../api/schedules";
 import { cancelAppointment, reCreateAppointment, deleteAppointment } from "../api/appointments";
 import { useSelector } from "react-redux";
+import useRWD from "../hooks/useRWD";
+import LoginButton from "../components/LoginButton";
 
 const { Content } = Layout;
 
@@ -22,7 +24,8 @@ const AdminDoctorAppointmentsPage = () => {
    const { CSRF_token } = useSelector(
      (state) => state.auth
    );
-
+   const navigate = useNavigate()
+   const isDesktop = useRWD()
   useEffect(() => {
     setIsTableLoading(true);
     const getAppointmentsDataAsync = async () => {
@@ -181,6 +184,7 @@ const AdminDoctorAppointmentsPage = () => {
 
   return (
     <Content className="bg-gray-100 p-6">
+      {isDesktop && <LoginButton />}
       <h1 className="text-2xl mb-8">{appointment}</h1>
       <div>
         <Table loading={isTableLoading} columns={columns} dataSource={data} />

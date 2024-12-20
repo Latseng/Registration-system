@@ -46,11 +46,13 @@ const LoginPage = () => {
     }
     messageApi.destroy()
     const CSRF_token = await CSRF_request()
+    const expiresIn = 3600; //設定登入時效為一小時 = 3600秒
     dispatch(
       setLogin({
         user: data.data.user,
         role: "patient",
         CSRF_token: CSRF_token.data.csrfToken,
+        expiresIn: expiresIn
       })
     );
     navigate("/departments");
@@ -69,11 +71,13 @@ const LoginPage = () => {
     }
     messageApi.destroy();
     const CSRF_token = await CSRF_request();
+    const expiresIn = 3600;
     dispatch(
       setLogin({
         user: data.data.user,
         role: data.data.user.role,
         CSRF_token: CSRF_token.data.csrfToken,
+        expiresIn: expiresIn,
       })
     );
     navigate("/admin/departments");
