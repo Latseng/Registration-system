@@ -68,6 +68,10 @@ const LayoutWithSidebar = () => {
         key: "2",
         label: "醫師管理",
       },
+      {
+        key: "3",
+        label: "病患管理",
+      },
     ],
     onClickPage: (e) => {
       switch (e.key) {
@@ -76,6 +80,9 @@ const LayoutWithSidebar = () => {
           break;
         case "2":
           navigate("/admin/doctors");
+          break;
+        case "3":
+          navigate("/admin/patients");
           break;
         default:
           break;
@@ -86,9 +93,15 @@ const LayoutWithSidebar = () => {
       if (matchPath("/admin/doctors/*", location.pathname)) {
         return "2";
       }
-
       // 其他路由
-      return "1";
+      switch (location.pathname) {
+        case "/admin/doctors":
+          return "2";
+        case "/admin/patients":
+          return "3";
+        default:
+          return "1";
+      }
     },
   };
 

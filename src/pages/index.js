@@ -10,6 +10,7 @@ import AdminDoctorSchedulesPage from "./AdminDoctorSchedulesPage";
 import AdminSchedulePage from "./AdminSchedulePage";
 import RegisterPage from "./RegisterPage";
 import AdminDoctorAppointmentsPage from "./AdminDoctorAppointmentsPage";
+import AdminPatientPage from "./AdminPatientPage";
 
 
 export {
@@ -24,5 +25,6 @@ export {
   AdminDoctorSchedulesPage,
   AdminSchedulePage,
   RegisterPage,
-  AdminDoctorAppointmentsPage
+  AdminDoctorAppointmentsPage,
+  AdminPatientPage
 };
