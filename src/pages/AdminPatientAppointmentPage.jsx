@@ -15,12 +15,12 @@ const AdminPatientPage = () => {
   useEffect(() => {
     const getPatientDataAsync = async () => {
       try {
-        const data = await getPatients()
-        setPatients(data.data)
-      } catch(error) {
+        const data = await getPatients();
+        setPatients(data.data);
+      } catch (error) {
         console.log(error);
       }
-    }
+    };
     getPatientDataAsync();
   }, []);
 
@@ -69,8 +69,8 @@ const AdminPatientPage = () => {
     key: item.id,
     id: item.id,
     name: item.name,
-    age: dayjs(item.birthDate).format('YYYY-MM-DD'),
-    contact: item.email
+    age: dayjs(item.birthDate).format("YYYY-MM-DD"),
+    contact: item.email,
   }));
 
   return (
@@ -81,6 +81,6 @@ const AdminPatientPage = () => {
       {isLoading && <Table className="mt-12" loading={isLoading} />}
     </Content>
   );
-}
+};
 
 export default AdminPatientPage;

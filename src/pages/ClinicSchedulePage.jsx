@@ -405,8 +405,7 @@ const ClinicSchedulePage = () => {
                     >
                       <p>{schedule.date}</p>
                       <p>{schedule.scheduleSlot}診</p>
-                      {console.log(d)
-                      }
+                      {console.log(d)}
                       <p>已掛號{schedule.bookedAppointments}人</p>
                     </Card.Grid>
                   ))}
@@ -422,10 +421,11 @@ const ClinicSchedulePage = () => {
         handleCancel={handleCancel}
         handleAppointment={handleAppointment}
         selectedAppointment={selectedAppointment}
-        handleSubmit={handleSubmit}
+        setIsSubmitLoading={setIsSubmitLoading}
         isFirstCreateAppointment={isFirstCreateAppointment}
         isModalLoading={isModalLoading}
         isSubmitLoading={isSubmitLoading}
+        setIsFirstCreateAppointment={setIsFirstCreateAppointment}
       />
     </>
   );

@@ -39,6 +39,7 @@ export const getAppointmentsBypatient = async (payload) => {
       return error.response;
     }
   }
+console.log(recaptchaResponse);
 
   try {
     const res = await axios.post(`${baseURL}/appointments/by-patient`, {
@@ -56,6 +57,8 @@ export const getAppointmentsBypatient = async (payload) => {
 export const createAppointment = async (payload) => {
   const { recaptchaResponse, doctorScheduleId,idNumber, birthDate, CSRF_token,
     isAuthenticated, } = payload
+    console.log(recaptchaResponse);
+    
   // 如果使用者已登入
   if (isAuthenticated) {
     try {

@@ -18,6 +18,7 @@ import { ExclamationCircleFilled } from "@ant-design/icons";
 import useRWD from "../hooks/useRWD";
 import { setLogin } from "../store/authSlice";
 import { CSRF_request } from "../api/auth";
+import ReCAPTCHA from "react-google-recaptcha";
 
 const { Content } = Layout;
 const { confirm } = Modal;
@@ -46,6 +47,7 @@ const QueryPage = () => {
   const [selectedAppointment, setSelectedAppointment] = useState({})
   const [isReadable, setIsReadable] = useState(false)
   const [idNumber, setIdNumber] = useState(null)
+  const [recaptcha, setRecaptcha] = useState(null);
   const isDesktop = useRWD();
 
   const columns = [
@@ -238,7 +240,7 @@ const tableData = appointments.map((item) => ({
     const requestData = {
       idNumber: values.idNumber,
       birthDate: birthDate,
-      recaptchaResponse: "test_recaptcha",
+      recaptchaResponse: recaptcha,
     };
     getAppointmentsDataAsync(requestData);
     setIsReadable(true)
@@ -412,6 +414,9 @@ const tableData = appointments.map((item) => ({
       setSelectedAppointment({});
     }
   }
+  const handlerecaptchaChange = (value) => {
+    setRecaptcha(value);
+  };
   
   return (
     <>
@@ -469,7 +474,11 @@ const tableData = appointments.map((item) => ({
             <Form.Item label="生日">
               <DatePicker form={form}></DatePicker>
             </Form.Item>
-
+            <ReCAPTCHA
+              className="my-4 ml-20"
+              sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
+              onChange={handlerecaptchaChange}
+            />
             <Form.Item>
               <Button
                 block

@@ -3,9 +3,11 @@ import DatePicker from "./DatePicker";
 import ReCAPTCHA from "react-google-recaptcha";
 import PropTypes from "prop-types";
 import { useState } from "react";
-import { createAppointment } from "../api/appointments";
+import { createAppointment, createFirstAppointment } from "../api/appointments";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
+import { setNewAppointment } from "../store/appointmentSlice";
 
 const gridStyle = {
   width: "25%",
@@ -18,29 +20,106 @@ const SelectedModal = ({
   handleCancel,
   handleAppointment,
   selectedAppointment,
-  handleSubmit,
   isFirstCreateAppointment,
   isModalLoading,
   isSubmitLoading,
+  setIsSubmitLoading,
+  setIsFirstCreateAppointment,
 }) => {
   const [form] = Form.useForm();
   const [isAppointmentLoading, setIsAppointmentLoading] = useState(false);
   const { isAuthenticated, role, CSRF_token } = useSelector(
     (state) => state.auth
   );
-  const isPatientLogin = isAuthenticated && role === "patient"
+  const isPatientLogin = isAuthenticated && role === "patient";
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
+  const [recaptcha, setRecaptcha] = useState(null);
 
-  const onChange = (value) => {
-    console.log("Captcha value:", value);
+  const dispatch = useDispatch();
+
+  const handlerecaptchaChange = (value) => {
+    setRecaptcha(value);
+  };
+
+  const handleSubmit = async (values) => {
+    setIsSubmitLoading(true);
+    const birthDate = new Date(
+      Date.UTC(values.year, values.month - 1, values.day)
+    ).toISOString();
+
+    let requestData = {
+      idNumber: values.idNumber,
+      birthDate: birthDate,
+      recaptchaResponse: recaptcha,
+      doctorScheduleId: selectedAppointment.id,
+    };
+
+    if (isFirstCreateAppointment) {
+      requestData = {
+        idNumber: values.idNumber,
+        birthDate: birthDate,
+        recaptchaResponse: recaptcha,
+        doctorScheduleId: selectedAppointment.id,
+        name: values.name,
+      };
+      const newFistAppointment = await createFirstAppointment(requestData);
+      setIsSubmitLoading(false);
+      form.resetFields();
+      //新建立掛號狀態
+      dispatch(
+        setNewAppointment({
+          ...newFistAppointment,
+          requestData: {
+            idNumber: requestData.idNumber,
+            birthDate: requestData.birthDate,
+            recaptchaResponse: requestData.recaptchaResponse,
+          },
+        })
+      );
+      navigate("/query");
+      return;
+    }
+
+    const newAppointment = await createAppointment(requestData);
+
+    if (newAppointment === "You have already booked this time slot.") {
+      messageApi.open({
+        type: "warning",
+        content: "重複掛號",
+      });
+      setIsSubmitLoading(false);
+      return;
+    }
+    if (typeof newAppointment === "string" && newAppointment.includes("初診")) {
+      setIsSubmitLoading(false);
+      setIsFirstCreateAppointment(true);
+      messageApi.open({
+        type: "warning",
+        content: "您為初次掛號，請填寫以下資料",
+      });
+      return;
+    }
+    form.resetFields();
+    //新建立掛號狀態
+    dispatch(
+      setNewAppointment({
+        ...newAppointment,
+        requestData: {
+          idNumber: requestData.idNumber,
+          birthDate: requestData.birthDate,
+          recaptchaResponse: requestData.recaptchaResponse,
+        },
+      })
+    );
+    navigate("/query");
   };
 
   //使用者登入後的掛號
   const handleAppointmentLogin = async () => {
     setIsAppointmentLoading(true);
     const requestData = {
-      recaptchaResponse: "test_recaptcha",
+      recaptchaResponse: recaptcha,
       doctorScheduleId: selectedAppointment.id,
       isAuthenticated,
       CSRF_token,
@@ -171,8 +250,8 @@ const SelectedModal = ({
 
             <ReCAPTCHA
               className="my-4 ml-20"
-              sitekey="Your client site key"
-              onChange={onChange}
+              sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
+              onChange={handlerecaptchaChange}
             />
             <Form.Item>
               <Flex gap="middle" justify="center">
