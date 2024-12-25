@@ -224,10 +224,22 @@ const ClinicSchedulePage = () => {
         recaptchaResponse: "test_recaptcha",
         doctorScheduleId: selectedAppointment.id,
         name: values.name,
-        contactInfo: values.number,
       };
       const newFistAppointment = await createFirstAppointment(requestData);
-      console.log(newFistAppointment);
+      setIsSubmitLoading(false);
+      form.resetFields();
+      //新建立掛號狀態
+      dispatch(
+        setNewAppointment({
+          ...newFistAppointment,
+          requestData: {
+            idNumber: requestData.idNumber,
+            birthDate: requestData.birthDate,
+            recaptchaResponse: requestData.recaptchaResponse,
+          },
+        })
+      );
+      navigate("/query");
       return;
     }
 
@@ -242,9 +254,16 @@ const ClinicSchedulePage = () => {
       return;
     }
     if (typeof newAppointment === "string" && newAppointment.includes("初診")) {
+      setIsSubmitLoading(false);
       setIsFirstCreateAppointment(true);
+      messageApi.open({
+        type: "warning",
+        content: "您為初次掛號，請填寫以下資料",
+      });
+      return;
     }
     form.resetFields();
+    //新建立掛號狀態
     dispatch(
       setNewAppointment({
         ...newAppointment,

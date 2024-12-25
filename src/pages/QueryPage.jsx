@@ -17,6 +17,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { ExclamationCircleFilled } from "@ant-design/icons";
 import useRWD from "../hooks/useRWD";
 import { setLogin } from "../store/authSlice";
+import { CSRF_request } from "../api/auth";
 
 const { Content } = Layout;
 const { confirm } = Modal;
@@ -36,14 +37,15 @@ const QueryPage = () => {
   const [requestData, setRequestData] = useState({});
   const [isPageLoading, setIsPageLoading] = useState(false);
   const [isAppointmentSuccess, setIsAppointmentSuccess] = useState(false);
-  const newAppointment = useSelector(
-    (state) => state.appointment.newAppointment
+  const { isNewDataCreated, newAppointment } = useSelector(
+    (state) => state.appointment
   );
-
   const { isAuthenticated, role, CSRF_token } = useSelector(
     (state) => state.auth
   );
   const [selectedAppointment, setSelectedAppointment] = useState({})
+  const [isReadable, setIsReadable] = useState(false)
+  const [idNumber, setIdNumber] = useState(null)
   const isDesktop = useRWD();
 
   const columns = [
@@ -123,8 +125,8 @@ const tableData = appointments.map((item) => ({
   const getAppointmentsDataAsync = useCallback(
     async (data) => {
       try {
+        setIsPageLoading(true)
         const patientAppointments = await getAppointmentsBypatient(data);
-
         if (patientAppointments.status === "success") {
           const weekDay = ["日", "一", "二", "三", "四", "五", "六"];
           const organizedAppointments = patientAppointments.data.map((p) => {
@@ -145,6 +147,7 @@ const tableData = appointments.map((item) => ({
           setIsLoading(false);
           setIsPageLoading(false);
         }
+        //持有帳號的使用者必須登入才能查看掛號
         if (patientAppointments.data.message?.includes("登入")) {
           setIsLoading(false);
           confirm({
@@ -160,7 +163,7 @@ const tableData = appointments.map((item) => ({
           });
           return;
         }
-
+        //使用者沒有掛號過
         if (
           patientAppointments.data.message ===
           "No appointments found for this patient."
@@ -170,6 +173,7 @@ const tableData = appointments.map((item) => ({
           setIsPageLoading(false);
           return;
         }
+         setIsPageLoading(false);
       } catch (error) {
         console.error(error);
       }
@@ -181,8 +185,23 @@ const tableData = appointments.map((item) => ({
     //如果第三方登入驗證成功的話，存入登入狀態資料
     const queryString = window.location.search; //第三方登入狀態判斷
     if (queryString.includes("true")) {
+      const requestCSRF_token = async () => {
+        try {
+          const token = await CSRF_request();
+          return token
+        } catch(error) {
+          console.error(error);  
+        }
+      }
+      const CSRF_token = requestCSRF_token()
+      const expiresIn = 3600; //設定登入時效為一小時 = 3600秒
       dispatch(
-        setLogin({ user: { account: "google account" }, role: "patient" })
+        setLogin({
+          user: { account: "google account" },
+          role: "patient",
+          CSRF_token: CSRF_token.data.csrfToken,
+          expiresIn: expiresIn,
+        })
       );
     }
 
@@ -195,37 +214,34 @@ const tableData = appointments.map((item) => ({
         CSRF_token,
       };
       getAppointmentsDataAsync(queryPayload);
+      setIsReadable(true)
     }
-    //如果是初診狀態，則做初診病患資料的相關處理
-    if (newAppointment) {
+    //新掛號建立後，病患可立即查看
+    if (isNewDataCreated) {
       setIsPageLoading(true);
       getAppointmentsDataAsync(newAppointment.requestData);
       setIsAppointmentSuccess(true);
+      setIsReadable(true)
     }
 
     return () => {
       dispatch(resetNewAppointment());
     };
-  }, [
-    dispatch,
-    getAppointmentsDataAsync,
-    isAuthenticated,
-    newAppointment,
-    role,
-    CSRF_token,
-  ]);
+  }, [dispatch, getAppointmentsDataAsync, isAuthenticated, newAppointment, role, CSRF_token, isNewDataCreated]);
 
   const handleFinish = async (values) => {
     setIsLoading(true);
     const birthDate = new Date(
       Date.UTC(values.year, values.month - 1, values.day)
     ).toISOString();
+    setIdNumber(values.idNumber);
     const requestData = {
       idNumber: values.idNumber,
       birthDate: birthDate,
       recaptchaResponse: "test_recaptcha",
     };
     getAppointmentsDataAsync(requestData);
+    setIsReadable(true)
   };
 
   const idNumberValidation = async (_, value) => {
@@ -333,7 +349,12 @@ const tableData = appointments.map((item) => ({
       setSelectedAppointment({})
       setIsAppointmentSuccess(false);
      setIsPageLoading(true);
-      await cancelAppointment(selectedAppointment.appointmentId, CSRF_token);
+      await cancelAppointment(
+        selectedAppointment.appointmentId,
+        CSRF_token,
+        isAuthenticated,
+        idNumber
+      );
       setAppointments(
         appointments.map((a) => {
           a.appointmentId === selectedAppointment.appointmentId;
@@ -391,7 +412,7 @@ const tableData = appointments.map((item) => ({
       setSelectedAppointment({});
     }
   }
-
+  
   return (
     <>
       {contextHolder}
@@ -399,8 +420,10 @@ const tableData = appointments.map((item) => ({
       <Content className="bg-gray-100 p-4">
         {isPageLoading ? (
           <List loading={isPageLoading}></List>
-        ) : isAuthenticated ? (
-          appointments ? (
+        ) : //使用者是否登入或者剛建立新掛號
+        isReadable ? (
+          //使用者是否有掛號資料
+          appointments.length > 0 ? (
             <>
               <h1 className="text-2xl mb-6">您的掛號紀錄</h1>
               {isAppointmentSuccess && (

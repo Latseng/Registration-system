@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   newAppointment: null,
+  isNewDataCreated: false
 };
 
 const appointmentSlice = createSlice({
@@ -9,9 +10,11 @@ const appointmentSlice = createSlice({
   initialState,
   reducers: {
     setNewAppointment: (state, action) => {
+      state.isNewDataCreated = true;
       state.newAppointment = action.payload;
     },
     resetNewAppointment: (state) => {
+      state.isNewDataCreated = false;
       state.newAppointment = null;
     },
   },

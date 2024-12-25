@@ -96,7 +96,6 @@ export const createFirstAppointment = async (payload) => {
     recaptchaResponse,
     doctorScheduleId,
     name,
-    contactInfo,
   } = payload;
   try {
     const res = await axios.post(`${baseURL}/appointments/first-visit`, {
@@ -105,34 +104,42 @@ export const createFirstAppointment = async (payload) => {
       recaptchaResponse,
       doctorScheduleId,
       name,
-      contactInfo,
     });
-    console.log(res.data);
-
     return res.data;
   } catch (error) {
     console.error("[Create Appointment failed]: ", error);
   }
 };
 
-export const cancelAppointment = async (
-  id,
-  CSRF_token
-) => {
-  try {
-    const res = await axios.patch(
-      `${baseURL}/appointments/${id}`,
-      {
-        status: "CANCELED",
-      },
-      {
-        headers: { "X-CSRF-Token": CSRF_token },
-      }
-    );
-    return res;
-  } catch (error) {
-    console.error("[Cancel Appointment failed]: ", error);
+export const cancelAppointment = async (id, CSRF_token, isAuthenticated, idNumber) => {
+  if (isAuthenticated) {
+    //登入後取消掛號
+    try {
+      const res = await axios.patch(
+        `${baseURL}/appointments/${id}`,
+        {
+          headers: { "X-CSRF-Token": CSRF_token },
+        }
+      );
+      return res;
+    } catch (error) {
+      console.error("[Cancel Appointment failed]: ", error);
+    }
+  } else {
+    //為登入取消掛號
+    try {
+      const res = await axios.patch(
+        `${baseURL}/appointments/${id}`,
+        {
+          idNumber: idNumber,
+        }
+      );
+      return res;
+    } catch (error) {
+      console.error("[Cancel Appointment failed]: ", error);
+    }
   }
+    
 };
 
 // 取消掛號：管理者權限

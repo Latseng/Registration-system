@@ -12,6 +12,7 @@ const AuthChecker = ({ children }) => {
       const timeLeft = expiresAt - now;
 
       if (timeLeft <= 0) {
+        //超過時效則登出
         dispatch(setLogout());
       } else {
         const timer = setTimeout(() => {

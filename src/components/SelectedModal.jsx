@@ -156,20 +156,15 @@ const SelectedModal = ({
             </Form.Item>
             {isFirstCreateAppointment && (
               <>
-                <h4>您為初次掛號，請填寫以下資料</h4>
+                <h4 className="m-4 text-center text-base text-red-500">
+                  您為初次掛號，請填寫以下資料
+                </h4>
                 <Form.Item
                   label="姓名"
                   name="name"
                   rules={[{ required: true, message: "請輸入姓名" }]}
                 >
                   <Input placeholder="請輸入姓名" />
-                </Form.Item>
-                <Form.Item
-                  label="聯絡電話"
-                  name="number"
-                  rules={[{ required: true, message: "請輸入聯絡電話" }]}
-                >
-                  <Input placeholder="請輸入聯絡電話" />
                 </Form.Item>
               </>
             )}
