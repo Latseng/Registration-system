@@ -3,7 +3,11 @@ import { useEffect, useState } from "react";
 import { ExclamationCircleFilled } from "@ant-design/icons";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import { getAppointmentsByDoctorScheduleId } from "../api/schedules";
-import { cancelAppointment, reCreateAppointment, deleteAppointment } from "../api/appointments";
+import {
+  modifyAppointment,
+  reCreateAppointment,
+  deleteAppointment,
+} from "../api/appointments";
 import { useSelector } from "react-redux";
 import useRWD from "../hooks/useRWD";
 import LoginButton from "../components/LoginButton";
@@ -119,7 +123,7 @@ const AdminDoctorAppointmentsPage = () => {
   const handleOk = async () => {
     setConfirmLoading(true);
     if (confirmModal.action === "cancel") {
-      const result = await cancelAppointment(
+      const result = await modifyAppointment(
         confirmModal.appointmentId,
         CSRF_token
       );

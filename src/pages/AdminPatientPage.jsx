@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import useRWD from "../hooks/useRWD";
 import LoginButton from "../components/LoginButton";
 import { getPatients } from "../api/patients";
+import { useSelector } from "react-redux";
 import dayjs from "dayjs";
 
 const { Content } = Layout;
@@ -11,17 +12,23 @@ const AdminPatientPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [patients, setPatients] = useState([]);
   const isDesktop = useRWD();
+  const { CSRF_token } = useSelector(
+    (state) => state.auth
+  );
 
   useEffect(() => {
+    setIsLoading(true)
     const getPatientDataAsync = async () => {
       try {
-        const data = await getPatients()
+        const data = await getPatients(CSRF_token);
         setPatients(data.data)
+        setIsLoading(false);
       } catch(error) {
         console.log(error);
       }
     }
     getPatientDataAsync();
+    
   }, []);
 
   const columns = [
@@ -77,8 +84,14 @@ const AdminPatientPage = () => {
     <Content className="bg-gray-100 p-6">
       <h1 className="text-2xl mb-4">病患管理</h1>
       {isDesktop && <LoginButton />}
-      <Table dataSource={dataSource} columns={columns} />
-      {isLoading && <Table className="mt-12" loading={isLoading} />}
+      <div className="overflow-x-auto bg-white">
+        <Table
+          loading={isLoading}
+          dataSource={dataSource}
+          tableLayout="auto"
+          columns={columns}
+        />
+      </div>
     </Content>
   );
 }

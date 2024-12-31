@@ -79,13 +79,15 @@ const AdminDoctorPage = () => {
       ),
     },
     {
+      title: "編輯資料",
+      dataIndex: "edit",
       render: (_, record) => (
         <Flex justify="space-around">
           <Button type="text" onClick={() => handleClick("edit", record.id)}>
             <FaEdit size={24} />
           </Button>
           <Button danger onClick={() => handleClick("delete", record.id)}>
-            X
+            刪除
           </Button>
         </Flex>
       ),
@@ -254,7 +256,9 @@ const AdminDoctorPage = () => {
         新增醫師
       </Button>
       {isDesktop && <LoginButton />}
-      <Table loading={isLoading} columns={columns} dataSource={data} />
+      <div className="overflow-x-auto bg-white">
+        <Table loading={isLoading} columns={columns} dataSource={data} />
+      </div>
       <Modal
         title="醫師資料編輯"
         open={isDoctorModalOpen}

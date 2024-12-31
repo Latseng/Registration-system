@@ -31,7 +31,7 @@ export const getAppointmentsBypatient = async (payload) => {
         {
           recaptchaResponse,
         },
-        { headers: { "X-CSRF-Token": CSRF_token } }
+        { headers: { "x-csrf-Token": CSRF_token } }
       );
       return res.data;
     } catch (error) {
@@ -39,8 +39,7 @@ export const getAppointmentsBypatient = async (payload) => {
       return error.response;
     }
   }
-console.log(recaptchaResponse);
-
+  //未註冊使用者
   try {
     const res = await axios.post(`${baseURL}/appointments/by-patient`, {
       idNumber,
@@ -55,10 +54,14 @@ console.log(recaptchaResponse);
 };
 
 export const createAppointment = async (payload) => {
-  const { recaptchaResponse, doctorScheduleId,idNumber, birthDate, CSRF_token,
-    isAuthenticated, } = payload
-    console.log(recaptchaResponse);
-    
+  const {
+    recaptchaResponse,
+    doctorScheduleId,
+    idNumber,
+    birthDate,
+    CSRF_token,
+    isAuthenticated,
+  } = payload;
   // 如果使用者已登入
   if (isAuthenticated) {
     try {
@@ -69,7 +72,7 @@ export const createAppointment = async (payload) => {
           doctorScheduleId,
         },
         {
-          headers: { "X-CSRF-Token": CSRF_token },
+          headers: { "x-csrf-Token": CSRF_token },
         }
       );
       return res.data;
@@ -93,13 +96,8 @@ export const createAppointment = async (payload) => {
 };
 
 export const createFirstAppointment = async (payload) => {
-  const {
-    idNumber,
-    birthDate,
-    recaptchaResponse,
-    doctorScheduleId,
-    name,
-  } = payload;
+  const { idNumber, birthDate, recaptchaResponse, doctorScheduleId, name } =
+    payload;
   try {
     const res = await axios.post(`${baseURL}/appointments/first-visit`, {
       idNumber,
@@ -114,35 +112,36 @@ export const createFirstAppointment = async (payload) => {
   }
 };
 
-export const cancelAppointment = async (id, CSRF_token, isAuthenticated, idNumber) => {
+export const cancelAppointment = async (
+  id,
+  CSRF_token,
+  isAuthenticated,
+  idNumber,
+  birthDate
+) => {
   if (isAuthenticated) {
     //登入後取消掛號
     try {
-      const res = await axios.patch(
-        `${baseURL}/appointments/${id}`,
+      const res = await axios.patch(`${baseURL}/appointments/${id}`, {},
         {
-          headers: { "X-CSRF-Token": CSRF_token },
-        }
-      );
+        headers: { "x-csrf-Token": CSRF_token },
+      });
       return res;
     } catch (error) {
       console.error("[Cancel Appointment failed]: ", error);
     }
   } else {
-    //為登入取消掛號
+    //未登入取消掛號
     try {
-      const res = await axios.patch(
-        `${baseURL}/appointments/${id}`,
-        {
-          idNumber: idNumber,
-        }
-      );
+      const res = await axios.patch(`${baseURL}/appointments/${id}`, {
+        idNumber: idNumber,
+        birthDate: birthDate
+      });
       return res;
     } catch (error) {
       console.error("[Cancel Appointment failed]: ", error);
     }
   }
-    
 };
 
 // 取消掛號：管理者權限
@@ -154,7 +153,7 @@ export const modifyAppointment = async (id, CSRF_token) => {
         status: "CANCELED",
       },
       {
-        headers: { "X-CSRF-Token": CSRF_token },
+        headers: { "x-csrf-Token": CSRF_token },
       }
     );
     return res;
@@ -172,7 +171,7 @@ export const reCreateAppointment = async (id, CSRF_token) => {
         status: "CONFIRMED",
       },
       {
-        headers: { "X-CSRF-Token": CSRF_token },
+        headers: { "x-csrf-Token": CSRF_token },
       }
     );
     return res;
@@ -184,7 +183,7 @@ export const reCreateAppointment = async (id, CSRF_token) => {
 export const deleteAppointment = async (id, CSRF_token) => {
   try {
     const res = await axios.delete(`${baseURL}/appointments/${id}`, {
-      headers: { "X-CSRF-Token": CSRF_token },
+      headers: { "x-csrf-Token": CSRF_token },
     });
     return res;
   } catch (error) {

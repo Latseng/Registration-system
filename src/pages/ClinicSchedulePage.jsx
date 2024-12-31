@@ -12,18 +12,16 @@ import {
   Breadcrumb,
 } from "antd";
 
-import { useNavigate, Link, useLocation } from "react-router-dom";
+import {  Link, useLocation } from "react-router-dom";
 import dayjs from "dayjs";
-import { createAppointment, createFirstAppointment } from "../api/appointments";
 import { getSchedules } from "../api/schedules";
 import { AiOutlineTeam } from "react-icons/ai";
 import { LuCalendarDays } from "react-icons/lu";
 import { MdPermContactCalendar } from "react-icons/md";
 import { getDoctorById } from "../api/doctors";
-import { useDispatch } from "react-redux";
-import { setNewAppointment } from "../store/appointmentSlice";
 import SelectedModal from "../components/SelectedModal";
 import LoginButton from "../components/LoginButton";
+import useRWD from "../hooks/useRWD";
 
 const { Content } = Layout;
 const { Search } = Input;
@@ -46,7 +44,6 @@ const generateDates = () => {
 };
 
 const ClinicSchedulePage = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   const { specialty } = location.state;
   const dates = generateDates();
@@ -65,7 +62,7 @@ const ClinicSchedulePage = () => {
   const [isModalLoading, setIsModalLoading] = useState(false);
   const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
-  const dispatch = useDispatch();
+const isDesktop = useRWD()
 
   useEffect(() => {
     const getSchedulesAsync = async () => {
@@ -204,79 +201,6 @@ const ClinicSchedulePage = () => {
     form.resetFields();
   };
 
-  const handleSubmit = async (values) => {
-    setIsSubmitLoading(true);
-    const birthDate = new Date(
-      Date.UTC(values.year, values.month - 1, values.day)
-    ).toISOString();
-
-    let requestData = {
-      idNumber: values.idNumber,
-      birthDate: birthDate,
-      recaptchaResponse: "test_recaptcha",
-      doctorScheduleId: selectedAppointment.id,
-    };
-
-    if (isFirstCreateAppointment) {
-      requestData = {
-        idNumber: values.idNumber,
-        birthDate: birthDate,
-        recaptchaResponse: "test_recaptcha",
-        doctorScheduleId: selectedAppointment.id,
-        name: values.name,
-      };
-      const newFistAppointment = await createFirstAppointment(requestData);
-      setIsSubmitLoading(false);
-      form.resetFields();
-      //新建立掛號狀態
-      dispatch(
-        setNewAppointment({
-          ...newFistAppointment,
-          requestData: {
-            idNumber: requestData.idNumber,
-            birthDate: requestData.birthDate,
-            recaptchaResponse: requestData.recaptchaResponse,
-          },
-        })
-      );
-      navigate("/query");
-      return;
-    }
-
-    const newAppointment = await createAppointment(requestData);
-
-    if (newAppointment === "You have already booked this time slot.") {
-      messageApi.open({
-        type: "warning",
-        content: "重複掛號",
-      });
-      setIsSubmitLoading(false);
-      return;
-    }
-    if (typeof newAppointment === "string" && newAppointment.includes("初診")) {
-      setIsSubmitLoading(false);
-      setIsFirstCreateAppointment(true);
-      messageApi.open({
-        type: "warning",
-        content: "您為初次掛號，請填寫以下資料",
-      });
-      return;
-    }
-    form.resetFields();
-    //新建立掛號狀態
-    dispatch(
-      setNewAppointment({
-        ...newAppointment,
-        requestData: {
-          idNumber: requestData.idNumber,
-          birthDate: requestData.birthDate,
-          recaptchaResponse: requestData.recaptchaResponse,
-        },
-      })
-    );
-    navigate("/query");
-  };
-
   
 
   const warning = (value) => {
@@ -329,7 +253,7 @@ const ClinicSchedulePage = () => {
     <>
       <Layout className="bg-gray-100 p-6">
         {contextHolder}
-        <LoginButton />
+        {isDesktop && <LoginButton />}
         <Breadcrumb
           items={[
             {

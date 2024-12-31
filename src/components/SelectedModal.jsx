@@ -277,10 +277,11 @@ SelectedModal.propTypes = {
   handleCancel: PropTypes.func,
   handleAppointment: PropTypes.func,
   selectedAppointment: PropTypes.object,
-  handleSubmit: PropTypes.func,
   isFirstCreateAppointment: PropTypes.bool,
   isModalLoading: PropTypes.bool,
   isSubmitLoading: PropTypes.bool,
+  setIsSubmitLoading: PropTypes.func,
+  setIsFirstCreateAppointment: PropTypes.func,
 };
 
 export default SelectedModal;
