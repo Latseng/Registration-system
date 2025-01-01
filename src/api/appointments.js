@@ -113,19 +113,25 @@ export const createFirstAppointment = async (payload) => {
 };
 
 export const cancelAppointment = async (
-  id,
-  CSRF_token,
-  isAuthenticated,
+  appointmentId,
   idNumber,
-  birthDate
+  birthDate,
+  isAuthenticated,
+  CSRF_token,
+  recaptchaResponse
 ) => {
   if (isAuthenticated) {
     //登入後取消掛號
     try {
-      const res = await axios.patch(`${baseURL}/appointments/${id}`, {},
+      
+      
+      const res = await axios.patch(
+        `${baseURL}/appointments/${appointmentId}`,
+        {},
         {
-        headers: { "x-csrf-Token": CSRF_token },
-      });
+          headers: { "x-csrf-Token": CSRF_token },
+        }
+      );
       return res;
     } catch (error) {
       console.error("[Cancel Appointment failed]: ", error);
@@ -133,10 +139,14 @@ export const cancelAppointment = async (
   } else {
     //未登入取消掛號
     try {
-      const res = await axios.patch(`${baseURL}/appointments/${id}`, {
-        idNumber: idNumber,
-        birthDate: birthDate
-      });
+      const res = await axios.patch(
+        `${baseURL}/appointments/${appointmentId}`,
+        {
+          idNumber: idNumber,
+          birthDate: birthDate,
+          recaptchaResponse: recaptchaResponse
+        }
+      );
       return res;
     } catch (error) {
       console.error("[Cancel Appointment failed]: ", error);

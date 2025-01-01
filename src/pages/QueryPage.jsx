@@ -44,8 +44,8 @@ const QueryPage = () => {
   const { isAuthenticated, role, CSRF_token } = useSelector(
     (state) => state.auth
   );
-  const [selectedAppointment, setSelectedAppointment] = useState({})
-  const [isReadable, setIsReadable] = useState(false)
+  const [selectedAppointment, setSelectedAppointment] = useState({});
+  const [isReadable, setIsReadable] = useState(false);
   const [recaptcha, setRecaptcha] = useState(null);
   const isDesktop = useRWD();
 
@@ -91,42 +91,44 @@ const QueryPage = () => {
         ),
     },
   ];
-const tableData = appointments.map((item) => ({
-  key: item.appointmentId,
-  appointmentId: item.appointmentId,
-  doctorScheduleId: item.doctorScheduleId,
-  date: item.date,
-  scheduleSlot: item.scheduleSlot,
-  specialty: item.doctorSpecialty,
-  doctorName: item.doctorName,
-  consultationNumber: item.consultationNumber,
-  status: item.status === "CANCELED" ? "已取消" : "已掛號",
-})).sort((a, b) => {
-  // 1. 根據狀態排序
-  if (a.status === "已掛號" && b.status !== "已掛號") {
-    return -1; // a 排在前
-  }
-  if (a.status !== "已掛號" && b.status === "已掛號") {
-    return 1; // b 排在前
-  }
+  const tableData = appointments
+    .map((item) => ({
+      key: item.appointmentId,
+      appointmentId: item.appointmentId,
+      doctorScheduleId: item.doctorScheduleId,
+      date: item.date,
+      scheduleSlot: item.scheduleSlot,
+      specialty: item.doctorSpecialty,
+      doctorName: item.doctorName,
+      consultationNumber: item.consultationNumber,
+      status: item.status === "CANCELED" ? "已取消" : "已掛號",
+    }))
+    .sort((a, b) => {
+      // 1. 根據狀態排序
+      if (a.status === "已掛號" && b.status !== "已掛號") {
+        return -1; // a 排在前
+      }
+      if (a.status !== "已掛號" && b.status === "已掛號") {
+        return 1; // b 排在前
+      }
 
-  // 2. 狀態相同，根據日期排序
-  const dateA = new Date(dayjs(a.date, "M/D").toDate());
-  const dateB = new Date(dayjs(b.date, "M/D").toDate());
+      // 2. 狀態相同，根據日期排序
+      const dateA = new Date(dayjs(a.date, "M/D").toDate());
+      const dateB = new Date(dayjs(b.date, "M/D").toDate());
 
-  if (a.status === "已掛號") {
-    // 候診中：日期越近越前
-    return dateA - dateB;
-  } else {
-    // 非候診中：日期越晚越前
-    return dateB - dateA;
-  }
-});
+      if (a.status === "已掛號") {
+        // 候診中：日期越近越前
+        return dateA - dateB;
+      } else {
+        // 非候診中：日期越晚越前
+        return dateB - dateA;
+      }
+    });
 
   const getAppointmentsDataAsync = useCallback(
     async (data) => {
       try {
-        setIsPageLoading(true)
+        setIsPageLoading(true);
         const patientAppointments = await getAppointmentsBypatient(data);
         if (patientAppointments.status === "success") {
           const weekDay = ["日", "一", "二", "三", "四", "五", "六"];
@@ -174,7 +176,7 @@ const tableData = appointments.map((item) => ({
           setIsPageLoading(false);
           return;
         }
-         setIsPageLoading(false);
+        setIsPageLoading(false);
       } catch (error) {
         console.error(error);
       }
@@ -189,12 +191,12 @@ const tableData = appointments.map((item) => ({
       const requestCSRF_token = async () => {
         try {
           const token = await CSRF_request();
-          return token
-        } catch(error) {
-          console.error(error);  
+          return token;
+        } catch (error) {
+          console.error(error);
         }
-      }
-      const CSRF_token = requestCSRF_token()
+      };
+      const CSRF_token = requestCSRF_token();
       const expiresIn = 3600; //設定登入時效為一小時 = 3600秒
       dispatch(
         setLogin({
@@ -215,20 +217,28 @@ const tableData = appointments.map((item) => ({
         CSRF_token,
       };
       getAppointmentsDataAsync(queryPayload);
-      setIsReadable(true)
+      setIsReadable(true);
     }
     //新掛號建立後，病患可立即查看
     if (isNewDataCreated) {
       setIsPageLoading(true);
       getAppointmentsDataAsync(newAppointment.requestData);
       setIsAppointmentSuccess(true);
-      setIsReadable(true)
+      setIsReadable(true);
     }
 
     return () => {
       dispatch(resetNewAppointment());
     };
-  }, [dispatch, getAppointmentsDataAsync, isAuthenticated, newAppointment, role, CSRF_token, isNewDataCreated]);
+  }, [
+    dispatch,
+    getAppointmentsDataAsync,
+    isAuthenticated,
+    newAppointment,
+    role,
+    CSRF_token,
+    isNewDataCreated,
+  ]);
 
   const handleFinish = async (values) => {
     setIsLoading(true);
@@ -240,8 +250,8 @@ const tableData = appointments.map((item) => ({
       recaptchaResponse: recaptcha,
     };
     getAppointmentsDataAsync(requestData);
-    setIsReadable(true)
-    setRecaptcha(null)
+    setIsReadable(true);
+    setRecaptcha(null);
   };
 
   const idNumberValidation = async (_, value) => {
@@ -329,7 +339,7 @@ const tableData = appointments.map((item) => ({
   };
 
   const handleClick = async (act, appointment) => {
-    setSelectedAppointment(appointment)
+    setSelectedAppointment(appointment);
     if (act === "cancel") {
       // 取消掛號確認
       setConfirmModal({ ...confirmModal, cancelModal: true });
@@ -339,6 +349,7 @@ const tableData = appointments.map((item) => ({
     setConfirmModal({ ...confirmModal, againModal: true });
   };
 
+  //使用者已登入
   const handleAppointment = async (value) => {
     //取消掛號
     if (value === "cancel") {
@@ -346,25 +357,26 @@ const tableData = appointments.map((item) => ({
         ...confirmModal,
         cancelModal: false,
       });
-      setSelectedAppointment({})
+      setSelectedAppointment({});
       setIsAppointmentSuccess(false);
-     setIsPageLoading(true);
+      setIsPageLoading(true);
       await cancelAppointment(
         selectedAppointment.appointmentId,
-        CSRF_token,
+        null,
+        null,
         isAuthenticated,
-        idNumber,
-        birthDate
+        CSRF_token,
+        null
       );
       setAppointments(
         appointments.map((a) => {
-          if(a.appointmentId === selectedAppointment.appointmentId) {
+          if (a.appointmentId === selectedAppointment.appointmentId) {
             return { ...a, status: "CANCELED" };
           }
-          return a
+          return a;
         })
       );
-     setIsPageLoading(false);
+      setIsPageLoading(false);
       messageApi.open({
         type: "warning",
         content: "掛號已取消",
@@ -390,9 +402,9 @@ const tableData = appointments.map((item) => ({
         type: "warning",
         content: "重複掛號",
       });
-      return
+      return;
     }
-  
+
     await getAppointmentsDataAsync(requestData);
     messageApi.open({
       type: "success",
@@ -402,7 +414,7 @@ const tableData = appointments.map((item) => ({
 
   const handleCloseConfirmModal = (act) => {
     form.resetFields();
-    if(act === "cancel") {
+    if (act === "cancel") {
       setConfirmModal({
         ...confirmModal,
         cancelModal: false,
@@ -415,20 +427,25 @@ const tableData = appointments.map((item) => ({
       });
       setSelectedAppointment({});
     }
-  }
+  };
+
   const handlerecaptchaChange = (value) => {
     setRecaptcha(value);
   };
-
+  //使用者未登入重新掛號
   const handleReCreateAppointment = async (values) => {
-     const requestData = {
-       idNumber: values.idNumber,
-       birthDate: new Date(
-         Date.UTC(values.year, values.month - 1, values.day)
-       ).toISOString(),
-       recaptchaResponse: recaptcha,
-     };
-    console.log(requestData);
+    setConfirmModal({
+      ...confirmModal,
+      againModal: false,
+    });
+    setIsPageLoading(true);
+    const requestData = {
+      idNumber: values.idNumber,
+      birthDate: new Date(
+        Date.UTC(values.year, values.month - 1, values.day)
+      ).toISOString(),
+      recaptchaResponse: recaptcha,
+    };
     const result = await createAppointment({
       ...requestData,
       doctorScheduleId: selectedAppointment.doctorScheduleId,
@@ -440,20 +457,56 @@ const tableData = appointments.map((item) => ({
         type: "warning",
         content: "重複掛號",
       });
-      return
+      return;
     }
     await getAppointmentsDataAsync(requestData);
     messageApi.open({
       type: "success",
       content: "掛號成功",
     });
-     setConfirmModal({
-       ...confirmModal,
-       againModal: false,
-     });
-     setSelectedAppointment({});
-  }
-  
+    setConfirmModal({
+      ...confirmModal,
+      againModal: false,
+    });
+    setSelectedAppointment({});
+    form.resetFields();
+  };
+  //使用者未登入取消掛號
+  const handleCancelAppointment = async (values) => {
+    setConfirmModal({
+      ...confirmModal,
+      cancelModal: false,
+    });
+    setSelectedAppointment({});
+    setIsAppointmentSuccess(false);
+    setIsPageLoading(true);
+
+    await cancelAppointment(
+      selectedAppointment.appointmentId,
+      values.idNumber,
+      new Date(
+        Date.UTC(values.year, values.month - 1, values.day)
+      ).toISOString(),
+      isAuthenticated,
+      CSRF_token,
+      recaptcha
+    );
+    setAppointments(
+      appointments.map((a) => {
+        if (a.appointmentId === selectedAppointment.appointmentId) {
+          return { ...a, status: "CANCELED" };
+        }
+        return a;
+      })
+    );
+    setIsPageLoading(false);
+    messageApi.open({
+      type: "warning",
+      content: "掛號已取消",
+    });
+    form.resetFields();
+  };
+
   return (
     <>
       {contextHolder}
@@ -536,39 +589,45 @@ const tableData = appointments.map((item) => ({
             </Form.Item>
           </Form>
         )}
-        <Modal
-          title="取消掛號確認"
-          open={confirmModal.cancelModal}
-          onOk={() => handleAppointment("cancel")}
-          onCancel={() => handleCloseConfirmModal("cancel")}
-        >
-          <div className="ml-8 mt-4">
-            <p>您確定要取消掛號？</p>
-            <p>{selectedAppointment.date + selectedAppointment.scheduleSlot}</p>
-            <p>{selectedAppointment.doctorSpecialty}</p>
-            <p>醫師：{selectedAppointment.doctorName}</p>
-            <p>若取消，再次看診須重新掛號</p>
-          </div>
-        </Modal>
-        <Modal
-          title="重新掛號確認"
-          open={confirmModal.againModal}
-          onCancel={() => handleCloseConfirmModal("again")}
-          footer={null}
-        >
-          <div className="md:mx-10 mt-4">
-            <p>將重新為您掛號同一診次</p>
-            <p>{selectedAppointment.date + selectedAppointment.scheduleSlot}</p>
-            <p>{selectedAppointment.doctorSpecialty}</p>
-            <p>醫師：{selectedAppointment.doctorName}</p>
-            {!isAuthenticated && (
+        {isAuthenticated ? (
+          <Modal
+            title="取消掛號確認"
+            open={confirmModal.cancelModal}
+            onOk={() => handleAppointment("cancel")}
+            onCancel={() => handleCloseConfirmModal("cancel")}
+          >
+            <div className="ml-8 mt-4">
+              <p>您確定要取消掛號？</p>
+              <p>
+                {selectedAppointment.date + selectedAppointment.scheduleSlot}
+              </p>
+              <p>{selectedAppointment.doctorSpecialty}</p>
+              <p>醫師：{selectedAppointment.doctorName}</p>
+              <p>若取消，再次看診須重新掛號</p>
+            </div>
+          </Modal>
+        ) : (
+          <Modal
+            title="取消掛號確認"
+            open={confirmModal.cancelModal}
+            onCancel={() => handleCloseConfirmModal("cancel")}
+            footer={null}
+          >
+            <div className="ml-8 mt-4">
+              <p>您確定要取消掛號？</p>
+              <p>
+                {selectedAppointment.date + selectedAppointment.scheduleSlot}
+              </p>
+              <p>{selectedAppointment.doctorSpecialty}</p>
+              <p>醫師：{selectedAppointment.doctorName}</p>
+              <p>若取消，再次看診須重新掛號</p>
               <Form
-                name="login"
-                className="mx-auto text-center rounded-2xl md:w-1/2 bg-white"
+                name="cancel-appointment"
+                className="mx-auto my-4 text-center rounded-2xl  bg-white"
                 initialValues={{
                   remember: true,
                 }}
-                onFinish={handleReCreateAppointment}
+                onFinish={handleCancelAppointment}
               >
                 <Form.Item
                   label="身份證字號"
@@ -596,9 +655,9 @@ const tableData = appointments.map((item) => ({
                   onChange={handlerecaptchaChange}
                 />
                 <Form.Item>
-                  <div className="flex gap-4">
+                  <div className="my-4 flex gap-4">
                     <Button
-                      onClick={() => handleCloseConfirmModal("again")}
+                      onClick={() => handleCloseConfirmModal("cancel")}
                       block
                     >
                       取消
@@ -622,9 +681,104 @@ const tableData = appointments.map((item) => ({
                   以方便您利用本系統
                 </Form.Item>
               </Form>
-            )}
-          </div>
-        </Modal>
+            </div>
+          </Modal>
+        )}
+        {isAuthenticated ? (
+          <Modal
+            title="重新掛號確認"
+            open={confirmModal.againModal}
+            onOk={() => handleAppointment("again")}
+            onCancel={() => handleCloseConfirmModal("again")}
+          >
+            <div className="md:mx-10 mt-4">
+              <p>將重新為您掛號同一診次</p>
+              <p>
+                {selectedAppointment.date + selectedAppointment.scheduleSlot}
+              </p>
+              <p>{selectedAppointment.doctorSpecialty}</p>
+              <p>醫師：{selectedAppointment.doctorName}</p>
+            </div>
+          </Modal>
+        ) : (
+          <Modal
+            title="重新掛號確認"
+            open={confirmModal.againModal}
+            onCancel={() => handleCloseConfirmModal("again")}
+            footer={null}
+          >
+            <div className="md:mx-10 mt-4">
+              <p>將重新為您掛號同一診次</p>
+              <p>
+                {selectedAppointment.date + selectedAppointment.scheduleSlot}
+              </p>
+              <p>{selectedAppointment.doctorSpecialty}</p>
+              <p>醫師：{selectedAppointment.doctorName}</p>
+              {!isAuthenticated && (
+                <Form
+                  name="create-appointment"
+                  className="mx-auto my-4 text-center rounded-2xl  bg-white"
+                  initialValues={{
+                    remember: true,
+                  }}
+                  onFinish={handleReCreateAppointment}
+                >
+                  <Form.Item
+                    label="身份證字號"
+                    name="idNumber"
+                    validateTrigger="onBlur"
+                    rules={[
+                      {
+                        required: true,
+                        message: "請輸入身份證字號",
+                      },
+
+                      {
+                        validator: idNumberValidation,
+                      },
+                    ]}
+                  >
+                    <Input prefix={<FaRegUser />} placeholder="身份證字號" />
+                  </Form.Item>
+                  <Form.Item label="生日">
+                    <DatePicker form={form}></DatePicker>
+                  </Form.Item>
+                  <ReCAPTCHA
+                    className="my-4"
+                    sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
+                    onChange={handlerecaptchaChange}
+                  />
+                  <Form.Item>
+                    <div className="my-4 flex gap-4">
+                      <Button
+                        onClick={() => handleCloseConfirmModal("again")}
+                        block
+                      >
+                        取消
+                      </Button>
+                      <Button
+                        block
+                        loading={isLoading}
+                        type="primary"
+                        htmlType="submit"
+                      >
+                        確認
+                      </Button>
+                    </div>
+                    或
+                    <Link
+                      to="/register"
+                      className="text-base mx-2 font-medium hover:text-mainColorLight"
+                    >
+                      立即註冊
+                    </Link>
+                    以方便您利用本系統
+                  </Form.Item>
+                </Form>
+              )}
+            </div>
+          </Modal>
+        )}
       </Content>
     </>
   );
