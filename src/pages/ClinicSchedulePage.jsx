@@ -33,7 +33,7 @@ const gridStyle = {
 const generateDates = () => {
   const dates = [];
   for (let i = 0; i < 14; i++) {
-    const date = dayjs("2024-09-01").add(i, "day");
+    const date = dayjs().add(i, "day");//以當前日期，創建一個起始日期
     const formattedDate = `${date.format("M/D")}(${"日一二三四五六".charAt(
       date.day()
     )})`;
@@ -220,7 +220,13 @@ const isDesktop = useRWD()
     setSchedules(resultData);
   };
 
+  //生成新的門診資料供卡片瀏覽使用
   const groupedSchedulesForList = schedules.reduce((acc, schedule) => {
+    // 檢查日期是否小於今天
+    if (dayjs(schedule.date).isBefore(dayjs(), "day")) {
+      return acc; // 跳過這筆資料
+    }
+    // 如果該醫師的資料還未在累加器中初始化，進行初始化
     if (!acc[schedule.doctorId]) {
       acc[schedule.doctorId] = {
         doctorId: schedule.doctorId,
@@ -229,6 +235,7 @@ const isDesktop = useRWD()
         schedules: [],
       };
     }
+    //生成新的門診物件
     const groupSchedule = {
       doctorScheduleId: schedule.doctorScheduleId,
       date: `${dayjs(schedule.date).format("M/D")}(${"日一二三四五六".charAt(
@@ -239,12 +246,13 @@ const isDesktop = useRWD()
       maxAppointments: schedule.maxAppointments,
       status: schedule.status,
     };
+    //在特定醫師的門診中，加入新門診
     acc[schedule.doctorId].schedules.push(groupSchedule);
     return acc;
   }, {});
 
   const doctorListData = Object.values(groupedSchedulesForList);
-
+  
   const handleSearchChange = (event) => {
     setSearchValue(event.target.value);
   };
