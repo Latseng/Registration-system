@@ -117,14 +117,11 @@ export const cancelAppointment = async (
   idNumber,
   birthDate,
   isAuthenticated,
-  CSRF_token,
-  recaptchaResponse
+  CSRF_token
 ) => {
   if (isAuthenticated) {
     //登入後取消掛號
     try {
-      
-      
       const res = await axios.patch(
         `${baseURL}/appointments/${appointmentId}`,
         {},
@@ -144,7 +141,6 @@ export const cancelAppointment = async (
         {
           idNumber: idNumber,
           birthDate: birthDate,
-          recaptchaResponse: recaptchaResponse
         }
       );
       return res;

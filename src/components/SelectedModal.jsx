@@ -34,15 +34,20 @@ const SelectedModal = ({
   const isPatientLogin = isAuthenticated && role === "patient";
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
-  const [recaptcha, setRecaptcha] = useState(null);
+  const [recaptcha, setRecaptcha] = useState("");
+  const [recaptchaError, setRecaptchaError] = useState("");
 
   const dispatch = useDispatch();
 
   const handlerecaptchaChange = (value) => {
     setRecaptcha(value);
+    setRecaptchaError("");
   };
 
   const handleSubmit = async (values) => {
+    if (recaptcha === "") {
+      return setRecaptchaError("請驗證reCaptcha");
+    }
     setIsSubmitLoading(true);
     const birthDate = new Date(
       Date.UTC(values.year, values.month - 1, values.day)
@@ -247,7 +252,9 @@ const SelectedModal = ({
                 </Form.Item>
               </>
             )}
-
+            {recaptchaError !== "" && (
+            <span className="text-red-500 ml-20">{recaptchaError}</span>
+            )}
             <ReCAPTCHA
               className="my-4 ml-20"
               sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}

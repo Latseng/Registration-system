@@ -68,7 +68,12 @@ const isDesktop = useRWD()
     const getSchedulesAsync = async () => {
       try {
         const scheduleData = await getSchedules(specialty);
-        setSchedules(scheduleData);
+        //如果沒有醫師門診
+        if (scheduleData?.length >= 0) {
+          setSchedules(scheduleData);
+        } else {
+          setSchedules([]);
+        }
         setScheduleLoading(false);
       } catch (error) {
         console.error(error);

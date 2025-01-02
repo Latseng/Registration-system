@@ -46,7 +46,12 @@ const QueryPage = () => {
   );
   const [selectedAppointment, setSelectedAppointment] = useState({});
   const [isReadable, setIsReadable] = useState(false);
-  const [recaptcha, setRecaptcha] = useState(null);
+  const [recaptcha, setRecaptcha] = useState("");
+  //使用者未登入，操作用到的暫存身份資料
+  const[idNumber, setIdNumber] = useState("")
+  const [birthDate, setBirthDate] = useState("")
+  const [recaptchaError, setRecaptchaError] = useState("")
+
   const isDesktop = useRWD();
 
   const columns = [
@@ -240,7 +245,11 @@ const QueryPage = () => {
     isNewDataCreated,
   ]);
 
+//處理查詢表單送出
   const handleFinish = async (values) => {
+    if (recaptcha === "") {
+      return setRecaptchaError('請驗證reCaptcha')
+    }
     setIsLoading(true);
     const requestData = {
       idNumber: values.idNumber,
@@ -251,7 +260,13 @@ const QueryPage = () => {
     };
     getAppointmentsDataAsync(requestData);
     setIsReadable(true);
-    setRecaptcha(null);
+    setIdNumber(values.idNumber);
+    setBirthDate(
+      new Date(
+        Date.UTC(values.year, values.month - 1, values.day)
+      ).toISOString()
+    );
+    setRecaptcha("");
   };
 
   const idNumberValidation = async (_, value) => {
@@ -431,9 +446,13 @@ const QueryPage = () => {
 
   const handlerecaptchaChange = (value) => {
     setRecaptcha(value);
+    setRecaptchaError("")
   };
   //使用者未登入重新掛號
   const handleReCreateAppointment = async (values) => {
+    if (recaptcha === "") {
+      return setRecaptchaError("請驗證reCaptcha");
+    }
     setConfirmModal({
       ...confirmModal,
       againModal: false,
@@ -472,7 +491,7 @@ const QueryPage = () => {
     form.resetFields();
   };
   //使用者未登入取消掛號
-  const handleCancelAppointment = async (values) => {
+  const handleCancelAppointment = async () => {
     setConfirmModal({
       ...confirmModal,
       cancelModal: false,
@@ -483,10 +502,8 @@ const QueryPage = () => {
 
     await cancelAppointment(
       selectedAppointment.appointmentId,
-      values.idNumber,
-      new Date(
-        Date.UTC(values.year, values.month - 1, values.day)
-      ).toISOString(),
+      idNumber,
+      birthDate,
       isAuthenticated,
       CSRF_token,
       recaptcha
@@ -568,6 +585,9 @@ const QueryPage = () => {
               sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
               onChange={handlerecaptchaChange}
             />
+            {recaptchaError !== "" && (
+              <span className="text-red-500">{recaptchaError}</span>
+            )}
             <Form.Item>
               <Button
                 block
@@ -610,8 +630,8 @@ const QueryPage = () => {
           <Modal
             title="取消掛號確認"
             open={confirmModal.cancelModal}
+            onOk={handleCancelAppointment}
             onCancel={() => handleCloseConfirmModal("cancel")}
-            footer={null}
           >
             <div className="ml-8 mt-4">
               <p>您確定要取消掛號？</p>
@@ -621,66 +641,6 @@ const QueryPage = () => {
               <p>{selectedAppointment.doctorSpecialty}</p>
               <p>醫師：{selectedAppointment.doctorName}</p>
               <p>若取消，再次看診須重新掛號</p>
-              <Form
-                name="cancel-appointment"
-                className="mx-auto my-4 text-center rounded-2xl  bg-white"
-                initialValues={{
-                  remember: true,
-                }}
-                onFinish={handleCancelAppointment}
-              >
-                <Form.Item
-                  label="身份證字號"
-                  name="idNumber"
-                  validateTrigger="onBlur"
-                  rules={[
-                    {
-                      required: true,
-                      message: "請輸入身份證字號",
-                    },
-
-                    {
-                      validator: idNumberValidation,
-                    },
-                  ]}
-                >
-                  <Input prefix={<FaRegUser />} placeholder="身份證字號" />
-                </Form.Item>
-                <Form.Item label="生日">
-                  <DatePicker form={form}></DatePicker>
-                </Form.Item>
-                <ReCAPTCHA
-                  className="my-4"
-                  sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
-                  onChange={handlerecaptchaChange}
-                />
-                <Form.Item>
-                  <div className="my-4 flex gap-4">
-                    <Button
-                      onClick={() => handleCloseConfirmModal("cancel")}
-                      block
-                    >
-                      取消
-                    </Button>
-                    <Button
-                      block
-                      loading={isLoading}
-                      type="primary"
-                      htmlType="submit"
-                    >
-                      確認
-                    </Button>
-                  </div>
-                  或
-                  <Link
-                    to="/register"
-                    className="text-base mx-2 font-medium hover:text-mainColorLight"
-                  >
-                    立即註冊
-                  </Link>
-                  以方便您利用本系統
-                </Form.Item>
-              </Form>
             </div>
           </Modal>
         )}
@@ -748,6 +708,9 @@ const QueryPage = () => {
                     sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
                     onChange={handlerecaptchaChange}
                   />
+                  {recaptchaError !== "" && (
+                    <span className="text-red-500">{recaptchaError}</span>
+                  )}
                   <Form.Item>
                     <div className="my-4 flex gap-4">
                       <Button
