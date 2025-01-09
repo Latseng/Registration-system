@@ -19,6 +19,7 @@ import useRWD from "../hooks/useRWD";
 import { setLogin } from "../store/authSlice";
 import { CSRF_request } from "../api/auth";
 import ReCAPTCHA from "react-google-recaptcha";
+import { idNumberValidation } from "../helper/idNumber";
 
 const { Content } = Layout;
 const { confirm } = Modal;
@@ -51,6 +52,7 @@ const QueryPage = () => {
   const[idNumber, setIdNumber] = useState("")
   const [birthDate, setBirthDate] = useState("")
   const [recaptchaError, setRecaptchaError] = useState("")
+  const [formDataError, setFormDataError] = useState("")
 
   const isDesktop = useRWD();
 
@@ -269,89 +271,89 @@ const QueryPage = () => {
     setRecaptcha("");
   };
 
-  const idNumberValidation = async (_, value) => {
-    function validateIdNumber(idNumber) {
-      const regex = /^[A-Z][12]\d{8}$/;
+  // const idNumberValidation = async (_, value) => {
+  //   function validateIdNumber(idNumber) {
+  //     const regex = /^[A-Z][12]\d{8}$/;
 
-      if (!regex.test(idNumber)) {
-        return false;
-      }
+  //     if (!regex.test(idNumber)) {
+  //       return false;
+  //     }
 
-      const letterMapping = {
-        A: 10,
-        B: 11,
-        C: 12,
-        D: 13,
-        E: 14,
-        F: 15,
-        G: 16,
-        H: 17,
-        I: 34,
-        J: 18,
-        K: 19,
-        L: 20,
-        M: 21,
-        N: 22,
-        O: 35,
-        P: 23,
-        Q: 24,
-        R: 25,
-        S: 26,
-        T: 27,
-        U: 28,
-        V: 29,
-        W: 32,
-        X: 30,
-        Y: 31,
-        Z: 33,
-      };
+  //     const letterMapping = {
+  //       A: 10,
+  //       B: 11,
+  //       C: 12,
+  //       D: 13,
+  //       E: 14,
+  //       F: 15,
+  //       G: 16,
+  //       H: 17,
+  //       I: 34,
+  //       J: 18,
+  //       K: 19,
+  //       L: 20,
+  //       M: 21,
+  //       N: 22,
+  //       O: 35,
+  //       P: 23,
+  //       Q: 24,
+  //       R: 25,
+  //       S: 26,
+  //       T: 27,
+  //       U: 28,
+  //       V: 29,
+  //       W: 32,
+  //       X: 30,
+  //       Y: 31,
+  //       Z: 33,
+  //     };
 
-      const firstLetterValue = letterMapping[idNumber[0]];
+  //     const firstLetterValue = letterMapping[idNumber[0]];
 
-      const n1 = Math.floor(firstLetterValue / 10);
+  //     const n1 = Math.floor(firstLetterValue / 10);
 
-      const n2 = firstLetterValue % 10;
+  //     const n2 = firstLetterValue % 10;
 
-      const n3 = parseInt(idNumber[1]);
+  //     const n3 = parseInt(idNumber[1]);
 
-      const n4 = parseInt(idNumber[2]);
+  //     const n4 = parseInt(idNumber[2]);
 
-      const n5 = parseInt(idNumber[3]);
+  //     const n5 = parseInt(idNumber[3]);
 
-      const n6 = parseInt(idNumber[4]);
+  //     const n6 = parseInt(idNumber[4]);
 
-      const n7 = parseInt(idNumber[5]);
+  //     const n7 = parseInt(idNumber[5]);
 
-      const n8 = parseInt(idNumber[6]);
+  //     const n8 = parseInt(idNumber[6]);
 
-      const n9 = parseInt(idNumber[7]);
+  //     const n9 = parseInt(idNumber[7]);
 
-      const n10 = parseInt(idNumber[8]);
+  //     const n10 = parseInt(idNumber[8]);
 
-      const n11 = parseInt(idNumber[9]);
+  //     const n11 = parseInt(idNumber[9]);
 
-      const total =
-        n1 * 1 +
-        n2 * 9 +
-        n3 * 8 +
-        n4 * 7 +
-        n5 * 6 +
-        n6 * 5 +
-        n7 * 4 +
-        n8 * 3 +
-        n9 * 2 +
-        n10 * 1 +
-        n11 * 1;
+  //     const total =
+  //       n1 * 1 +
+  //       n2 * 9 +
+  //       n3 * 8 +
+  //       n4 * 7 +
+  //       n5 * 6 +
+  //       n6 * 5 +
+  //       n7 * 4 +
+  //       n8 * 3 +
+  //       n9 * 2 +
+  //       n10 * 1 +
+  //       n11 * 1;
 
-      return total % 10 === 0;
-    }
-    const isValid = validateIdNumber(value);
-    return Promise.resolve().then(() => {
-      if (!isValid) {
-        return Promise.reject(new Error("身分證字號格式錯誤"));
-      }
-    });
-  };
+  //     return total % 10 === 0;
+  //   }
+  //   const isValid = validateIdNumber(value);
+  //   return Promise.resolve().then(() => {
+  //     if (!isValid) {
+  //       return Promise.reject(new Error("身分證字號格式錯誤"));
+  //     }
+  //   });
+  // };
 
   const handleClick = async (act, appointment) => {
     setSelectedAppointment(appointment);
@@ -448,11 +450,23 @@ const QueryPage = () => {
     setRecaptcha(value);
     setRecaptchaError("")
   };
+  
   //使用者未登入重新掛號
   const handleReCreateAppointment = async (values) => {
+    //確保recaptcha通過驗證
     if (recaptcha === "") {
       return setRecaptchaError("請驗證reCaptcha");
     }
+    // 檢查重新掛號的資料是否正確
+    if (
+      values.idNumber !== idNumber ||
+      new Date(
+        Date.UTC(values.year, values.month - 1, values.day)
+      ).toISOString() !== birthDate
+    ) {
+      setFormDataError("身份資料輸入錯誤，請檢查身份證字號或生日是否正確");
+      return;
+    } 
     setConfirmModal({
       ...confirmModal,
       againModal: false,
@@ -703,11 +717,14 @@ const QueryPage = () => {
                   <Form.Item label="生日">
                     <DatePicker form={form}></DatePicker>
                   </Form.Item>
+                  {/* 輸入資料錯誤 */}
+                  { formDataError !== "" && (<span className="text-red-500">{formDataError}</span>)}
                   <ReCAPTCHA
                     className="my-4"
                     sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
                     onChange={handlerecaptchaChange}
                   />
+                  {/* recaptcaha 錯誤 */}
                   {recaptchaError !== "" && (
                     <span className="text-red-500">{recaptchaError}</span>
                   )}

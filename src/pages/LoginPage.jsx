@@ -1,4 +1,3 @@
-import { FaSuitcaseMedical } from "react-icons/fa6";
 import { Form, Input, Button, message } from "antd";
 import { useNavigate, Link } from "react-router-dom";
 import { login, adminLogin, thirdPartyLogin, CSRF_request } from "../api/auth";
@@ -6,6 +5,7 @@ import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setLogin } from "../store/authSlice";
 import { FcGoogle } from "react-icons/fc";
+import Navbar from "../components/Navbar";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -88,123 +88,114 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
-      {contextHolder}
-      {isAdminLoginForm ? (
-        <Form
-          form={form}
-          name="basic"
-          initialValues={{ remember: true }}
-          onFinish={handleAdminLogin}
-          className="bg-white mb-8 p-16 flex flex-col md:w-1/3 rounded-2xl text-center"
-        >
-          <button
-            onClick={() => navigate("/*")}
-            className="mx-auto mb-10 flex items-center text-mainColor text-6xl"
+    <main className="bg-gray-100">
+      <Navbar currentPage={"loginPage"} />
+      <div className="mt-4 flex flex-col items-center justify-center h-screen">
+        {contextHolder}
+        {isAdminLoginForm ? (
+          <Form
+            form={form}
+            name="basic"
+            initialValues={{ remember: true }}
+            onFinish={handleAdminLogin}
+            className="bg-white mb-8 p-12 flex flex-col md:w-1/3 rounded-2xl text-center"
           >
-            <FaSuitcaseMedical className="mr-2" />
-            <h1>MA</h1>
-          </button>
-          <Form.Item
-            label="帳號"
-            name="account"
-            rules={[{ required: true, message: "請輸入帳號" }]}
-          >
-            <Input autoComplete="true" />
-          </Form.Item>
-          <Form.Item
-            label="密碼"
-            name="password"
-            rules={[{ required: true, message: "請輸入密碼" }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item>
-            <Button
-              className="w-full h-10 mb-4"
-              type="primary"
-              htmlType="submit"
+            <h1 className="mb-10 text-3xl">管理者登入</h1>
+            <Form.Item
+              label="帳號"
+              name="account"
+              rules={[{ required: true, message: "請輸入帳號" }]}
             >
-              登入
-            </Button>
-          </Form.Item>
+              <Input autoComplete="true" />
+            </Form.Item>
+            <Form.Item
+              label="密碼"
+              name="password"
+              rules={[{ required: true, message: "請輸入密碼" }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item>
+              <Button
+                className="w-full h-10 mb-4"
+                type="primary"
+                htmlType="submit"
+              >
+                登入
+              </Button>
+            </Form.Item>
 
-          <Button
-            className=" mx-auto"
-            onClick={() => setIsAdminLoginForm(false)}
-          >
-            回病患登入
-          </Button>
-        </Form>
-      ) : (
-        <Form
-          form={form}
-          name="basic"
-          initialValues={{ remember: true }}
-          onFinish={handlePatientLogin}
-          className="bg-white mb-8 p-12 flex flex-col md:w-1/3 rounded-2xl text-center"
-        >
-          <button
-            onClick={() => navigate("/*")}
-            className="mx-auto mb-10 flex items-center text-mainColor text-6xl"
-          >
-            <FaSuitcaseMedical className="mr-2" />
-            <h1>MA</h1>
-          </button>
-          <Form.Item
-            label="身分證字號"
-            name="idNumber"
-            rules={[
-              { required: true, message: "請輸入身分證字號" },
-              {
-                pattern: /^[A-Z][0-9]{9}$/,
-                message: "身份證字號格式錯誤，請輸入正確的身份證字號",
-              },
-            ]}
-          >
-            <Input autoComplete="true" />
-          </Form.Item>
-          <Form.Item
-            className="md:ml-10"
-            label="密碼"
-            name="password"
-            rules={[{ required: true, message: "請輸入密碼" }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item>
             <Button
-              className="w-full h-10 mb-4"
-              type="primary"
-              htmlType="submit"
+              className=" mx-auto"
+              onClick={() => setIsAdminLoginForm(false)}
             >
-              登入
+              回病患登入
             </Button>
-            <Button onClick={() => handleThirdPartyLogin("google")}>
-              <FcGoogle size={20} />
-              Google登入
-            </Button>
-          </Form.Item>
-
-          <p className="mb-4">
-            還沒有帳號嗎？
-            <Link
-              to="/register"
-              className="text-base mx-2 hover:text-mainColorLight"
-            >
-              立即註冊
-            </Link>
-            體驗更多便捷功能！
-          </p>
-          <Button
-            className=" mx-auto"
-            onClick={() => setIsAdminLoginForm(true)}
+          </Form>
+        ) : (
+          <Form
+            form={form}
+            name="basic"
+            initialValues={{ remember: true }}
+            onFinish={handlePatientLogin}
+            className="bg-white mb-8 p-12 flex flex-col md:w-1/3 rounded-2xl text-center"
           >
-            管理員登入
-          </Button>
-        </Form>
-      )}
-    </div>
+            <h1 className="mb-10 text-3xl">會員登入</h1>
+            <Form.Item
+              label="身分證字號"
+              name="idNumber"
+              rules={[
+                { required: true, message: "請輸入身分證字號" },
+                {
+                  pattern: /^[A-Z][0-9]{9}$/,
+                  message: "身份證字號格式錯誤，請輸入正確的身份證字號",
+                },
+              ]}
+            >
+              <Input autoComplete="true" />
+            </Form.Item>
+            <Form.Item
+              className="md:ml-10"
+              label="密碼"
+              name="password"
+              rules={[{ required: true, message: "請輸入密碼" }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item>
+              <Button
+                className="w-full h-10 mb-4"
+                type="primary"
+                htmlType="submit"
+              >
+                登入
+              </Button>
+              <Button onClick={() => handleThirdPartyLogin("google")}>
+                <FcGoogle size={20} />
+                Google登入
+              </Button>
+            </Form.Item>
+
+            <p className="mb-4">
+              還沒有帳號嗎？
+              <Link
+                to="/register"
+                className="text-base mx-2 hover:text-mainColorLight"
+              >
+                立即註冊
+              </Link>
+              體驗更多便捷功能！
+            </p>
+            <Button
+              className=" mx-auto"
+              onClick={() => setIsAdminLoginForm(true)}
+            >
+              管理員登入
+            </Button>
+          </Form>
+        )}
+      </div>
+    </main>
   );
 };
 

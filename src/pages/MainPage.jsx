@@ -32,7 +32,7 @@ const MainPage = () => {
 
   return (
     <>
-      <Navbar handleClick={handleClick} />
+      <Navbar handleClick={handleClick} currentPage={"mainPage"} />
       <MainContent handleClick={handleClick} />
     </>
   );
