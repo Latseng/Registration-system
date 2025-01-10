@@ -114,7 +114,7 @@ const Navbar = ({ handleClick, currentPage }) => {
   
   return (
     <>
-      {currentPage === "mainPage" && (
+      {currentPage === "mainPage" ? (
         <Header className="w-screen flex justify-center md:grid md:grid-cols-12 md:gap-1 md:grid-rows-1  bg-mainColor px-8">
           <div className="flex items-center mx-auto text-white text-2xl col-start-6 col-end-9 md:col-start-1 md:col-end-3 row-span-1">
             <FaSuitcaseMedical className="mr-2 size-6" />
@@ -144,6 +144,9 @@ const Navbar = ({ handleClick, currentPage }) => {
                     items: dropdownItems,
                     onClick: (items) => {
                       switch (items.key) {
+                        case "0":
+                          navigate("/user");
+                          break;
                         case "1":
                           handleLogout();
                           break;
@@ -178,6 +181,9 @@ const Navbar = ({ handleClick, currentPage }) => {
                 items,
                 onClick: (items) => {
                   switch (items.key) {
+                    case "0":
+                      navigate("/user");
+                      break;
                     case "3":
                       handleLogout();
                       break;
@@ -198,15 +204,13 @@ const Navbar = ({ handleClick, currentPage }) => {
             </Dropdown>
           )}
         </Header>
-      )}
-      {currentPage === "loginPage" && (
+      ) : (
         <Header className="px-4 bg-mainColor grid grid-cols-5 grid-rows-1">
-          <button
-            onClick={() => navigate("/")}
-            className="text-white col-start-1 col-end-2"
-          >
-            <FaHome className="size-6 md:size-8" />
-          </button>
+          <div className="flex items-center col-start-1 col-end-2">
+            <button onClick={() => navigate("/")} className="text-white ">
+              <FaHome className="size-6 md:size-8" />
+            </button>
+          </div>
           <div className="flex justify-center items-center col-start-3 col-end-4 text-white">
             <FaSuitcaseMedical className="mr-2 size-6" />
             <span className="text-xl md:text-2xl">MA</span>
@@ -219,6 +223,7 @@ const Navbar = ({ handleClick, currentPage }) => {
 
 Navbar.propTypes = {
   handleClick: PropTypes.func,
+  currentPage: PropTypes.string,
 };
 
 export default Navbar;

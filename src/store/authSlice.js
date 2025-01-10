@@ -26,8 +26,12 @@ const authSlice = createSlice({
       state.role = "";
       state.CSRF_token = "";
     },
+    //更新使用者資料
+    updateUser: (state, action) => {
+      state.user = action.payload;
+    },
   },
 });
 
-export const { setLogin, setLogout } = authSlice.actions;
+export const { setLogin, setLogout, updateUser } = authSlice.actions;
 export default authSlice.reducer;

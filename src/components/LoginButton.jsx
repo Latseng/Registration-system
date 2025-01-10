@@ -50,6 +50,9 @@ const LoginButton = () => {
             items: dropdownItems,
             onClick: (items) => {
               switch (items.key) {
+                case "0":
+                  navigate('/user');
+                  break;
                 case "1":
                   handleLogout();
                   break;

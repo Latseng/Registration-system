@@ -13,7 +13,8 @@ import {
   AdminSchedulePage,
   RegisterPage,
   AdminDoctorAppointmentsPage,
-  AdminPatientPage
+  AdminPatientPage,
+  UserInfoPage
 } from "./pages";
 import LayoutWithSidebar from "./components/LayoutWithSidebar";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -31,13 +32,14 @@ function App() {
       }}
     >
       {/* 登入狀態時效檢查 */}
-      <AuthChecker> 
+      <AuthChecker>
         <BrowserRouter>
           <Routes>
             {/* 一般使用者頁面 */}
             <Route path="*" element={<MainPage />} />
             <Route path="login" element={<LoginPage />} />
             <Route path="register" element={<RegisterPage />} />
+            <Route path="user" element={<UserInfoPage />} />
             <Route element={<LayoutWithSidebar />}>
               <Route path="departments" element={<DepartmentPage />} />
               <Route

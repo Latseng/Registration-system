@@ -11,6 +11,7 @@ import AdminSchedulePage from "./AdminSchedulePage";
 import RegisterPage from "./RegisterPage";
 import AdminDoctorAppointmentsPage from "./AdminDoctorAppointmentsPage";
 import AdminPatientPage from "./AdminPatientPage";
+import UserInfoPage from "./UserInfoPage"
 
 
 export {
@@ -26,5 +27,6 @@ export {
   AdminSchedulePage,
   RegisterPage,
   AdminDoctorAppointmentsPage,
-  AdminPatientPage
+  AdminPatientPage,
+  UserInfoPage,
 };

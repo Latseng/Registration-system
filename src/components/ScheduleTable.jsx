@@ -13,7 +13,7 @@ const { confirm } = Modal;
 const generateDates = () => {
   const dates = [];
   for (let i = 0; i < 14; i++) {
-    const date = dayjs("2024-09-01").add(i, "day");
+    const date = dayjs().add(i, "day");
     const formattedDate = `${date.format("M/D")}(${"日一二三四五六".charAt(
       date.day()
     )})`;
@@ -77,7 +77,7 @@ const ScheduleTable = () => {
     }
     getSchedulesAsync();
     getDoctorDataByDepartment();
-  }, [isDataUpdated]);
+  }, [isDataUpdated, specialty]);
 
   const columns = [
     {

@@ -29,7 +29,7 @@ const AdminPatientPage = () => {
     }
     getPatientDataAsync();
     
-  }, []);
+  }, [CSRF_token]);
 
   const columns = [
     {
