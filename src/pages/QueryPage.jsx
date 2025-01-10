@@ -195,26 +195,23 @@ const QueryPage = () => {
     //如果第三方登入驗證成功的話，存入登入狀態資料
     const queryString = window.location.search; //第三方登入狀態判斷
     if (queryString.includes("true")) {
-      const requestCSRF_token = async () => {
+      const getCSRF_tokenAsync = async () => {
         try {
-          const token = await CSRF_request();
-          return token;
+          const res = await CSRF_request();
+          dispatch(
+            setLogin({
+              user: { account: "google account" },
+              role: "patient",
+              CSRF_token: res.data.csrfToken,
+              expiresIn: 3600, //設定登入時效為一小時 = 3600秒
+            })
+          );
         } catch (error) {
           console.error(error);
         }
       };
-      const CSRF_token = requestCSRF_token();
-      const expiresIn = 3600; //設定登入時效為一小時 = 3600秒
-      dispatch(
-        setLogin({
-          user: { account: "google account" },
-          role: "patient",
-          CSRF_token: CSRF_token.data.csrfToken,
-          expiresIn: expiresIn,
-        })
-      );
+      getCSRF_tokenAsync();
     }
-
     //檢查使用者是否為登入狀態
     if (isAuthenticated && role === "patient") {
       setIsPageLoading(true);

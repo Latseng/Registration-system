@@ -5,6 +5,8 @@ import DatePicker  from "../components/DatePicker";
 import { register, login, CSRF_request } from "../api/auth";
 import { useDispatch } from "react-redux";
 import { setLogin } from "../store/authSlice";
+import { thirdPartyLogin } from "../api/auth";
+import { FcGoogle } from "react-icons/fc";
 
 const RegisterPage = () => {
   const [form] = Form.useForm();
@@ -37,6 +39,9 @@ const RegisterPage = () => {
           navigate("/departments", { state: { register: "success" } });
     }
   };
+   const handleThirdPartyLogin = async () => {
+      await thirdPartyLogin();
+    };
 
   return (
     <div className="p-8 flex flex-col items-center justify-center bg-gray-100">
@@ -54,6 +59,10 @@ const RegisterPage = () => {
         layout="vertical"
       >
         <h2 className="text-2xl">會員註冊</h2>
+        <Button className="my-8" onClick={() => handleThirdPartyLogin("google")}>
+          <FcGoogle size={20} />
+          使用Google註冊
+        </Button>
         <Form.Item
           label="姓名"
           name="name"
@@ -61,10 +70,7 @@ const RegisterPage = () => {
         >
           <Input placeholder="姓名" />
         </Form.Item>
-        <Form.Item
-          label="生日"
-          name="birthday"
-        >
+        <Form.Item label="生日" name="birthday">
           <DatePicker form={form} />
         </Form.Item>
         <Form.Item
