@@ -1,5 +1,5 @@
 import { Layout, Form, Input, Button, Modal, List, Table, message } from "antd";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   getAppointmentsBypatient,
   cancelAppointment,
@@ -48,13 +48,16 @@ const QueryPage = () => {
   const [selectedAppointment, setSelectedAppointment] = useState({});
   const [isReadable, setIsReadable] = useState(false);
   const [recaptcha, setRecaptcha] = useState("");
+
   //使用者未登入，操作用到的暫存身份資料
-  const[idNumber, setIdNumber] = useState("")
-  const [birthDate, setBirthDate] = useState("")
-  const [recaptchaError, setRecaptchaError] = useState("")
-  const [formDataError, setFormDataError] = useState("")
+  const [idNumber, setIdNumber] = useState("");
+  const [birthDate, setBirthDate] = useState("");
+  const [recaptchaError, setRecaptchaError] = useState("");
+  const [formDataError, setFormDataError] = useState("");
 
   const isDesktop = useRWD();
+
+  const isCallGoogle = useRef(false);
 
   const columns = [
     {
@@ -191,38 +194,41 @@ const QueryPage = () => {
     [navigate]
   );
 
+  const getCSRF_tokenAsync = useCallback(async () => {
+    try {
+      const res = await CSRF_request();
+      dispatch(
+        setLogin({
+          user: { account: "google account" },
+          role: "patient",
+          CSRF_token: res.data.csrfToken,
+          expiresIn: 3600, //設定登入時效為一小時 = 3600秒
+        })
+      );
+      isCallGoogle.value = true;
+    } catch (error) {
+      console.error(error);
+    }
+  }, [dispatch]);
+
   useEffect(() => {
     //如果第三方登入驗證成功的話，存入登入狀態資料
     const queryString = window.location.search; //第三方登入狀態判斷
-    if (queryString.includes("true")) {
-      const getCSRF_tokenAsync = async () => {
-        try {
-          const res = await CSRF_request();
-          dispatch(
-            setLogin({
-              user: { account: "google account" },
-              role: "patient",
-              CSRF_token: res.data.csrfToken,
-              expiresIn: 3600, //設定登入時效為一小時 = 3600秒
-            })
-          );
-        } catch (error) {
-          console.error(error);
-        }
-      };
+    if (queryString.includes("true") && !isCallGoogle.value) {
       getCSRF_tokenAsync();
     }
+
     //檢查使用者是否為登入狀態
     if (isAuthenticated && role === "patient") {
       setIsPageLoading(true);
       const queryPayload = {
-        recaptchaResponse: "test_recaptcha",
         isAuthenticated,
         CSRF_token,
       };
       getAppointmentsDataAsync(queryPayload);
       setIsReadable(true);
     }
+
     //新掛號建立後，病患可立即查看
     if (isNewDataCreated) {
       setIsPageLoading(true);
@@ -230,7 +236,6 @@ const QueryPage = () => {
       setIsAppointmentSuccess(true);
       setIsReadable(true);
     }
-
     return () => {
       dispatch(resetNewAppointment());
     };
@@ -242,12 +247,13 @@ const QueryPage = () => {
     role,
     CSRF_token,
     isNewDataCreated,
+    getCSRF_tokenAsync,
   ]);
 
-//處理查詢表單送出
+  //處理查詢表單送出
   const handleFinish = async (values) => {
     if (recaptcha === "") {
-      return setRecaptchaError('請驗證reCaptcha')
+      return setRecaptchaError("請驗證reCaptcha");
     }
     setIsLoading(true);
     const requestData = {
@@ -445,9 +451,9 @@ const QueryPage = () => {
 
   const handlerecaptchaChange = (value) => {
     setRecaptcha(value);
-    setRecaptchaError("")
+    setRecaptchaError("");
   };
-  
+
   //使用者未登入重新掛號
   const handleReCreateAppointment = async (values) => {
     //確保recaptcha通過驗證
@@ -463,7 +469,7 @@ const QueryPage = () => {
     ) {
       setFormDataError("身份資料輸入錯誤，請檢查身份證字號或生日是否正確");
       return;
-    } 
+    }
     setConfirmModal({
       ...confirmModal,
       againModal: false,
@@ -715,7 +721,9 @@ const QueryPage = () => {
                     <DatePicker form={form}></DatePicker>
                   </Form.Item>
                   {/* 輸入資料錯誤 */}
-                  { formDataError !== "" && (<span className="text-red-500">{formDataError}</span>)}
+                  {formDataError !== "" && (
+                    <span className="text-red-500">{formDataError}</span>
+                  )}
                   <ReCAPTCHA
                     className="my-4"
                     sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
