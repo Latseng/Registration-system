@@ -10,7 +10,6 @@ import DatePicker from "../components/DatePicker";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { useDispatch, useSelector } from "react-redux";
-import { resetNewAppointment } from "../store/appointmentSlice";
 import { GrStatusGood } from "react-icons/gr";
 import LoginButton from "../components/LoginButton";
 import { useNavigate, Link } from "react-router-dom";
@@ -39,9 +38,6 @@ const QueryPage = () => {
   const [requestData, setRequestData] = useState({});
   const [isPageLoading, setIsPageLoading] = useState(false);
   const [isAppointmentSuccess, setIsAppointmentSuccess] = useState(false);
-  const { isNewDataCreated, newAppointment } = useSelector(
-    (state) => state.appointment
-  );
   const { isAuthenticated, role, CSRF_token } = useSelector(
     (state) => state.auth
   );
@@ -194,62 +190,6 @@ const QueryPage = () => {
     [navigate]
   );
 
-  const getCSRF_tokenAsync = useCallback(async () => {
-    try {
-      const res = await CSRF_request();
-      dispatch(
-        setLogin({
-          user: { account: "google account" },
-          role: "patient",
-          CSRF_token: res.data.csrfToken,
-          expiresIn: 3600, //設定登入時效為一小時 = 3600秒
-        })
-      );
-      isCallGoogle.value = true;
-    } catch (error) {
-      console.error(error);
-    }
-  }, [dispatch]);
-
-  useEffect(() => {
-    //如果第三方登入驗證成功的話，存入登入狀態資料
-    const queryString = window.location.search; //第三方登入狀態判斷
-    if (queryString.includes("true") && !isCallGoogle.value) {
-      getCSRF_tokenAsync();
-    }
-
-    //檢查使用者是否為登入狀態
-    if (isAuthenticated && role === "patient") {
-      setIsPageLoading(true);
-      const queryPayload = {
-        isAuthenticated,
-        CSRF_token,
-      };
-      getAppointmentsDataAsync(queryPayload);
-      setIsReadable(true);
-    }
-
-    //新掛號建立後，病患可立即查看
-    if (isNewDataCreated) {
-      setIsPageLoading(true);
-      getAppointmentsDataAsync(newAppointment.requestData);
-      setIsAppointmentSuccess(true);
-      setIsReadable(true);
-    }
-    return () => {
-      dispatch(resetNewAppointment());
-    };
-  }, [
-    dispatch,
-    getAppointmentsDataAsync,
-    isAuthenticated,
-    newAppointment,
-    role,
-    CSRF_token,
-    isNewDataCreated,
-    getCSRF_tokenAsync,
-  ]);
-
   //處理查詢表單送出
   const handleFinish = async (values) => {
     if (recaptcha === "") {
@@ -273,90 +213,6 @@ const QueryPage = () => {
     );
     setRecaptcha("");
   };
-
-  // const idNumberValidation = async (_, value) => {
-  //   function validateIdNumber(idNumber) {
-  //     const regex = /^[A-Z][12]\d{8}$/;
-
-  //     if (!regex.test(idNumber)) {
-  //       return false;
-  //     }
-
-  //     const letterMapping = {
-  //       A: 10,
-  //       B: 11,
-  //       C: 12,
-  //       D: 13,
-  //       E: 14,
-  //       F: 15,
-  //       G: 16,
-  //       H: 17,
-  //       I: 34,
-  //       J: 18,
-  //       K: 19,
-  //       L: 20,
-  //       M: 21,
-  //       N: 22,
-  //       O: 35,
-  //       P: 23,
-  //       Q: 24,
-  //       R: 25,
-  //       S: 26,
-  //       T: 27,
-  //       U: 28,
-  //       V: 29,
-  //       W: 32,
-  //       X: 30,
-  //       Y: 31,
-  //       Z: 33,
-  //     };
-
-  //     const firstLetterValue = letterMapping[idNumber[0]];
-
-  //     const n1 = Math.floor(firstLetterValue / 10);
-
-  //     const n2 = firstLetterValue % 10;
-
-  //     const n3 = parseInt(idNumber[1]);
-
-  //     const n4 = parseInt(idNumber[2]);
-
-  //     const n5 = parseInt(idNumber[3]);
-
-  //     const n6 = parseInt(idNumber[4]);
-
-  //     const n7 = parseInt(idNumber[5]);
-
-  //     const n8 = parseInt(idNumber[6]);
-
-  //     const n9 = parseInt(idNumber[7]);
-
-  //     const n10 = parseInt(idNumber[8]);
-
-  //     const n11 = parseInt(idNumber[9]);
-
-  //     const total =
-  //       n1 * 1 +
-  //       n2 * 9 +
-  //       n3 * 8 +
-  //       n4 * 7 +
-  //       n5 * 6 +
-  //       n6 * 5 +
-  //       n7 * 4 +
-  //       n8 * 3 +
-  //       n9 * 2 +
-  //       n10 * 1 +
-  //       n11 * 1;
-
-  //     return total % 10 === 0;
-  //   }
-  //   const isValid = validateIdNumber(value);
-  //   return Promise.resolve().then(() => {
-  //     if (!isValid) {
-  //       return Promise.reject(new Error("身分證字號格式錯誤"));
-  //     }
-  //   });
-  // };
 
   const handleClick = async (act, appointment) => {
     setSelectedAppointment(appointment);
@@ -541,6 +397,53 @@ const QueryPage = () => {
     form.resetFields();
   };
 
+  useEffect(() => {
+    //如果第三方登入驗證成功的話，存入登入狀態資料
+    const queryString = window.location.search; //第三方登入狀態判斷
+    if (queryString.includes("true") && !isCallGoogle.value) {
+     const getCSRFtokenAsync = async () => {
+    try {
+      const res = await CSRF_request();
+      dispatch(
+        setLogin({
+          user: { account: "google account" },
+          role: "patient",
+          CSRF_token: res.data.csrfToken,
+          expiresIn: 3600, //設定登入時效為一小時 = 3600秒
+        })
+      );
+      isCallGoogle.value = true;
+    } catch (error) {
+      console.error(error);
+    }
+    }
+    getCSRFtokenAsync();
+  }
+  },[dispatch])
+
+  useEffect(() => {
+    //檢查使用者是否為登入狀態
+    if (isAuthenticated && role === "patient") {
+      setIsPageLoading(true);
+      const queryPayload = {
+        isAuthenticated,
+        CSRF_token,
+      };
+      getAppointmentsDataAsync(queryPayload);
+      setIsReadable(true);
+    }
+  },[CSRF_token, getAppointmentsDataAsync, isAuthenticated, role])
+
+  useEffect(() => {
+    //新掛號建立後，病患可立即查看
+    const queryString = window.location.search;
+    if (queryString.includes("appointmentStatus=success")) {
+      setIsPageLoading(true);
+      setIsAppointmentSuccess(true);
+      setIsReadable(true);
+    }
+  },[])
+
   return (
     <>
       {contextHolder}
@@ -649,6 +552,8 @@ const QueryPage = () => {
             open={confirmModal.cancelModal}
             onOk={handleCancelAppointment}
             onCancel={() => handleCloseConfirmModal("cancel")}
+            okText="確定"
+            cancelText="返回"
           >
             <div className="ml-8 mt-4">
               <p>您確定要取消掛號？</p>

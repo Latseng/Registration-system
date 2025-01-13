@@ -6,8 +6,7 @@ import { useState } from "react";
 import { createAppointment, createFirstAppointment } from "../api/appointments";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { useDispatch } from "react-redux";
-import { setNewAppointment } from "../store/appointmentSlice";
+import { AiOutlineFileDone } from "react-icons/ai";
 
 const gridStyle = {
   width: "25%",
@@ -17,7 +16,6 @@ const gridStyle = {
 const SelectedModal = ({
   selectedDoctor,
   isModalOpen,
-  handleCancel,
   handleAppointment,
   selectedAppointment,
   isFirstCreateAppointment,
@@ -25,6 +23,9 @@ const SelectedModal = ({
   isSubmitLoading,
   setIsSubmitLoading,
   setIsFirstCreateAppointment,
+  setSelectedAppointment,
+  setSelectedDoctor,
+  setIsModalOpen,
 }) => {
   const [form] = Form.useForm();
   const [isAppointmentLoading, setIsAppointmentLoading] = useState(false);
@@ -36,14 +37,20 @@ const SelectedModal = ({
   const [messageApi, contextHolder] = message.useMessage();
   const [recaptcha, setRecaptcha] = useState("");
   const [recaptchaError, setRecaptchaError] = useState("");
-
-  const dispatch = useDispatch();
+  const [isCreatedAppointment, setIsCreatedAppointment] = useState(false);
 
   const handlerecaptchaChange = (value) => {
     setRecaptcha(value);
     setRecaptchaError("");
   };
-
+  const handleCancel = () => {
+    setIsModalOpen(false);
+    setSelectedDoctor(null);
+    setSelectedAppointment(null);
+    setIsCreatedAppointment(false)
+    form.resetFields();
+  };
+  //使用者未登入掛號
   const handleSubmit = async (values) => {
     if (recaptcha === "") {
       return setRecaptchaError("請驗證reCaptcha");
@@ -68,21 +75,11 @@ const SelectedModal = ({
         doctorScheduleId: selectedAppointment.id,
         name: values.name,
       };
-      const newFistAppointment = await createFirstAppointment(requestData);
+      await createFirstAppointment(requestData);
       setIsSubmitLoading(false);
+      //掛號成功
+      setIsCreatedAppointment(true);
       form.resetFields();
-      //新建立掛號狀態
-      dispatch(
-        setNewAppointment({
-          ...newFistAppointment,
-          requestData: {
-            idNumber: requestData.idNumber,
-            birthDate: requestData.birthDate,
-            recaptchaResponse: requestData.recaptchaResponse,
-          },
-        })
-      );
-      navigate("/query");
       return;
     }
 
@@ -105,19 +102,9 @@ const SelectedModal = ({
       });
       return;
     }
+    //掛號成功
+    setIsCreatedAppointment(true);
     form.resetFields();
-    //新建立掛號狀態
-    dispatch(
-      setNewAppointment({
-        ...newAppointment,
-        requestData: {
-          idNumber: requestData.idNumber,
-          birthDate: requestData.birthDate,
-          recaptchaResponse: requestData.recaptchaResponse,
-        },
-      })
-    );
-    navigate("/query");
   };
 
   //使用者登入後的掛號
@@ -141,9 +128,10 @@ const SelectedModal = ({
       return;
     }
     form.resetFields();
-
-    navigate("/query");
+    //頁面導向，並帶入新掛號建立成功true
+    navigate("/query?appointmentStatus=success");
   };
+
   return (
     <Modal
       open={isModalOpen}
@@ -213,13 +201,14 @@ const SelectedModal = ({
             </Button>
           </div>
         ) : (
-          <Form
-            form={form}
-            onFinish={handleSubmit}
-            labelCol={{ span: 8 }}
-            className="w-full max-w-md"
-          >
+          <>
             <h1 className="text-center text-xl font-bold">掛號資訊</h1>
+            {isCreatedAppointment && (
+              <div className="my-4 flex justify-center items-center gap-2">
+                <AiOutlineFileDone className="text-green-500" size={24} />
+                <p className="text-lg font-bold">掛號成功</p>
+              </div>
+            )}
             <div className="my-4 text-center text-lg">
               <p>{selectedAppointment.specialty}</p>
               <p>
@@ -228,52 +217,66 @@ const SelectedModal = ({
               </p>
               <p>{selectedAppointment.doctor} 醫師</p>
             </div>
-            <Form.Item
-              label="身分證字號"
-              name="idNumber"
-              rules={[{ required: true, message: "請輸入身分證字號" }]}
-            >
-              <Input placeholder="請輸入身分證字號" />
-            </Form.Item>
-            <Form.Item label="生日" name="birthday">
-              <DatePicker form={form} />
-            </Form.Item>
-            {isFirstCreateAppointment && (
-              <>
-                <h4 className="m-4 text-center text-base text-red-500">
-                  您為初次掛號，請填寫以下資料
-                </h4>
+            {isCreatedAppointment && (
+              <Button className="w-full" type="primary" onClick={handleCancel}>
+                確定
+              </Button>
+            )}
+            {!isCreatedAppointment && (
+              <Form
+                form={form}
+                onFinish={handleSubmit}
+                labelCol={{ span: 8 }}
+                className="w-full max-w-md"
+              >
                 <Form.Item
-                  label="姓名"
-                  name="name"
-                  rules={[{ required: true, message: "請輸入姓名" }]}
+                  label="身分證字號"
+                  name="idNumber"
+                  rules={[{ required: true, message: "請輸入身分證字號" }]}
                 >
-                  <Input placeholder="請輸入姓名" />
+                  <Input placeholder="請輸入身分證字號" />
                 </Form.Item>
-              </>
-            )}
-            {recaptchaError !== "" && (
-            <span className="text-red-500 ml-20">{recaptchaError}</span>
-            )}
-            <ReCAPTCHA
-              className="my-4 ml-20"
-              sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
-              onChange={handlerecaptchaChange}
-            />
-            <Form.Item>
-              <Flex gap="middle" justify="center">
-                <Button onClick={handleCancel}>取消</Button>
+                <Form.Item label="生日" name="birthday">
+                  <DatePicker form={form} />
+                </Form.Item>
+                {isFirstCreateAppointment && (
+                  <>
+                    <h4 className="m-4 text-center text-base text-red-500">
+                      您為初次掛號，請填寫以下資料
+                    </h4>
+                    <Form.Item
+                      label="姓名"
+                      name="name"
+                      rules={[{ required: true, message: "請輸入姓名" }]}
+                    >
+                      <Input placeholder="請輸入姓名" />
+                    </Form.Item>
+                  </>
+                )}
+                {recaptchaError !== "" && (
+                  <span className="text-red-500 ml-20">{recaptchaError}</span>
+                )}
+                <ReCAPTCHA
+                  className="my-4 ml-20"
+                  sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
+                  onChange={handlerecaptchaChange}
+                />
+                <Form.Item>
+                  <Flex gap="middle" justify="center">
+                    <Button onClick={handleCancel}>取消</Button>
 
-                <Button
-                  type="primary"
-                  loading={isSubmitLoading}
-                  htmlType="submit"
-                >
-                  送出
-                </Button>
-              </Flex>
-            </Form.Item>
-          </Form>
+                    <Button
+                      type="primary"
+                      loading={isSubmitLoading}
+                      htmlType="submit"
+                    >
+                      送出
+                    </Button>
+                  </Flex>
+                </Form.Item>
+              </Form>
+            )}
+          </>
         ))}
     </Modal>
   );
@@ -289,6 +292,9 @@ SelectedModal.propTypes = {
   isSubmitLoading: PropTypes.bool,
   setIsSubmitLoading: PropTypes.func,
   setIsFirstCreateAppointment: PropTypes.func,
+  setSelectedAppointment: PropTypes.func,
+  setSelectedDoctor: PropTypes.func,
+  setIsModalOpen: PropTypes.func,
 };
 
 export default SelectedModal;

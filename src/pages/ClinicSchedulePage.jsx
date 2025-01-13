@@ -4,7 +4,6 @@ import {
   Button,
   Radio,
   Table,
-  Form,
   Card,
   Input,
   Flex,
@@ -60,7 +59,6 @@ const ClinicSchedulePage = () => {
   const [isFirstCreateAppointment, setIsFirstCreateAppointment] =
     useState(false);
   const [isModalLoading, setIsModalLoading] = useState(false);
-  const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
 const isDesktop = useRWD()
 
@@ -199,12 +197,7 @@ const isDesktop = useRWD()
     setIsModalOpen(true);
   };
 
-  const handleCancel = () => {
-    setIsModalOpen(false);
-    setSelectedDoctor(null);
-    setSelectedAppointment(null);
-    form.resetFields();
-  };
+ 
 
   
 
@@ -355,7 +348,7 @@ const isDesktop = useRWD()
       <SelectedModal
         selectedDoctor={selectedDoctor}
         isModalOpen={isModalOpen}
-        handleCancel={handleCancel}
+        setSelectedDoctor={setSelectedDoctor}
         handleAppointment={handleAppointment}
         selectedAppointment={selectedAppointment}
         setIsSubmitLoading={setIsSubmitLoading}
@@ -363,6 +356,8 @@ const isDesktop = useRWD()
         isModalLoading={isModalLoading}
         isSubmitLoading={isSubmitLoading}
         setIsFirstCreateAppointment={setIsFirstCreateAppointment}
+        setSelectedAppointment={setSelectedAppointment}
+        setIsModalOpen={setIsModalOpen}
       />
     </>
   );

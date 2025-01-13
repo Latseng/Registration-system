@@ -5,8 +5,6 @@ import { getDoctors, searchDoctors, getDoctorById } from "../api/doctors";
 import { createAppointment, createFirstAppointment } from "../api/appointments";
 import dayjs from "dayjs";
 import SelectedModal from "../components/SelectedModal";
-import { useDispatch } from "react-redux";
-import { setNewAppointment } from "../store/appointmentSlice";
 import LoginButton from "../components/LoginButton";
 import useRWD from "../hooks/useRWD";
 
@@ -23,12 +21,11 @@ const DoctorsPage = () => {
   const [selectedAppointment, setSelectedAppointment] = useState(null)
   const [isFirstCreateAppointment, setIsFirstCreateAppointment] =
     useState(false);
-    const [isSubmitLoading, setIsSubmitLoading] = useState(false);
-    const [isModalLoading, setIsModalLoading] = useState(false);
+  const [isSubmitLoading, setIsSubmitLoading] = useState(false);
+  const [isModalLoading, setIsModalLoading] = useState(false);
 
-    const [form] = Form.useForm();
+  const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
-  const dispatch = useDispatch();
   const isDesktop = useRWD()
 
   useEffect(() => {
@@ -161,18 +158,7 @@ const DoctorsPage = () => {
         type: "success",
         content: "掛號成功",
       });
-
-      dispatch(
-        setNewAppointment({
-          ...newAppointment,
-          requestData: {
-            idNumber: requestData.idNumber,
-            birthDate: requestData.birthDate,
-            recaptchaResponse: requestData.recaptchaResponse,
-          },
-        })
-      );
-      navigate("/query");
+      navigate("/query?appointmentStatus=success");
     };
     const onChange = (value) => {
       console.log("Captcha value:", value);
