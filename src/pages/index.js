@@ -12,7 +12,7 @@ import RegisterPage from "./RegisterPage";
 import AdminDoctorAppointmentsPage from "./AdminDoctorAppointmentsPage";
 import AdminPatientPage from "./AdminPatientPage";
 import UserInfoPage from "./UserInfoPage"
-
+import AdminPatientAppointmentPage from "./AdminPatientAppointmentPage"
 
 export {
   MainPage,
@@ -28,5 +28,6 @@ export {
   RegisterPage,
   AdminDoctorAppointmentsPage,
   AdminPatientPage,
+  AdminPatientAppointmentPage,
   UserInfoPage,
 };

@@ -468,7 +468,7 @@ const QueryPage = () => {
               </div>
             </>
           ) : (
-            <h1 className="text-2xl mb-6">您目前沒有看診掛號</h1>
+            <h1 className="text-2xl mb-6">查無掛號紀錄</h1>
           )
         ) : (
           <Form

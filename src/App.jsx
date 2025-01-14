@@ -14,6 +14,7 @@ import {
   RegisterPage,
   AdminDoctorAppointmentsPage,
   AdminPatientPage,
+  AdminPatientAppointmentPage,
   UserInfoPage
 } from "./pages";
 import LayoutWithSidebar from "./components/LayoutWithSidebar";
@@ -68,6 +69,10 @@ function App() {
                   element={<AdminSchedulePage />}
                 />
                 <Route path="admin/patients" element={<AdminPatientPage />} />
+                <Route
+                  path="/admin/patients/appointments/:patientId"
+                  element={<AdminPatientAppointmentPage />}
+                />
               </Route>
             </Route>
           </Routes>

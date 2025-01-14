@@ -7,11 +7,13 @@ import { useDispatch } from "react-redux";
 import { setLogin } from "../store/authSlice";
 import { thirdPartyLogin } from "../api/auth";
 import { FcGoogle } from "react-icons/fc";
+import { useState } from "react";
 
 const RegisterPage = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate()
   const dispatch = useDispatch();
+  const [idNumberError, setIdNumberError] = useState("")
 
   const onFinish = async (values) => {
      const birthDate = new Date(
@@ -37,8 +39,13 @@ const RegisterPage = () => {
             })
           );
           navigate("/departments", { state: { register: "success" } });
+    } else {
+      if(data.includes("idNumber already exists")){
+        setIdNumberError("身份證字號已註冊")
+      }
     }
   };
+
    const handleThirdPartyLogin = async () => {
       await thirdPartyLogin();
     };
@@ -59,7 +66,10 @@ const RegisterPage = () => {
         layout="vertical"
       >
         <h2 className="text-2xl">會員註冊</h2>
-        <Button className="my-8" onClick={() => handleThirdPartyLogin("google")}>
+        <Button
+          className="my-8"
+          onClick={() => handleThirdPartyLogin("google")}
+        >
           <FcGoogle size={20} />
           使用Google註冊
         </Button>
@@ -74,7 +84,7 @@ const RegisterPage = () => {
           <DatePicker form={form} />
         </Form.Item>
         <Form.Item
-          label="身分證字號（即為您的帳號）"
+          label="身份證字號（作帳號使用）"
           name="idNumber"
           rules={[
             { required: true, message: "請輸入身分證字號" },
@@ -86,6 +96,7 @@ const RegisterPage = () => {
         >
           <Input autoComplete="true" />
         </Form.Item>
+        <span className="text-red-500">{idNumberError}</span>
         <Form.Item
           label="密碼"
           name="password"

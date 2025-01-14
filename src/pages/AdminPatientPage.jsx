@@ -1,10 +1,12 @@
-import { Layout, Table, Button } from "antd";
+import { Layout, Table, Button, Modal } from "antd";
 import { useState, useEffect } from "react";
 import useRWD from "../hooks/useRWD";
 import LoginButton from "../components/LoginButton";
-import { getPatients } from "../api/patients";
+import { getPatients, deletePatientById } from "../api/patients";
 import { useSelector } from "react-redux";
 import dayjs from "dayjs";
+import { ExclamationCircleFilled } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 
 const { Content } = Layout;
 
@@ -15,6 +17,10 @@ const AdminPatientPage = () => {
   const { CSRF_token } = useSelector(
     (state) => state.auth
   );
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
+  const [selectedPatientId,setSelectedPatientId] = useState(null)
+  const [confirmLoading, setConfirmLoading] = useState(false);
+  const navigate = useNavigate()
 
   useEffect(() => {
     setIsLoading(true)
@@ -57,7 +63,7 @@ const AdminPatientPage = () => {
       dataIndex: "appoinetment",
       key: "appointment",
       render: (_, record) => (
-        <Button onClick={() => console.log("掛號", record.id)}>掛號</Button>
+        <Button onClick={() => handleAppointmentsByPatient(record)}>掛號</Button>
       ),
     },
     {
@@ -65,7 +71,7 @@ const AdminPatientPage = () => {
       dataIndex: "delete",
       key: "delete",
       render: (_, record) => (
-        <Button danger onClick={() => console.log("delete", record.id)}>
+        <Button danger onClick={() => handleDeleteConfirm(record.id)}>
           刪除
         </Button>
       ),
@@ -80,6 +86,28 @@ const AdminPatientPage = () => {
     contact: item.email
   }));
 
+  const handleDeleteConfirm = (id) => {
+    setIsConfirmModalOpen(true)
+    setSelectedPatientId(id);
+  }
+
+  const handleOk = async () => {
+    setConfirmLoading(true)
+    const result = await deletePatientById(selectedPatientId, CSRF_token);
+    setConfirmLoading(false);
+    console.log(result);
+
+  }
+
+  const handleAppointmentsByPatient = (record) => {
+    navigate(`/admin/patients/appointments/${record.id}`, {
+      state: {
+        patientId: record.id,
+        patientName: record.name,
+      },
+    });
+  };
+
   return (
     <Content className="bg-gray-100 p-6">
       <h1 className="text-2xl mb-4">病患管理</h1>
@@ -92,6 +120,26 @@ const AdminPatientPage = () => {
           columns={columns}
         />
       </div>
+      <Modal
+        title={
+          <div className="flex items-center">
+            <ExclamationCircleFilled className="mr-4 text-yellow-500 text-3xl" />
+            <span>確定要進行此操作？</span>
+          </div>
+        }
+        className="p-16"
+        open={isConfirmModalOpen}
+        onOk={handleOk}
+        okType="danger"
+        okText="確定"
+        confirmLoading={confirmLoading}
+        onCancel={() => setIsConfirmModalOpen(false)}
+        cancelText="返回"
+      >
+        <p className="p-4">
+          將要執行刪除病患資料的操作，刪除後無法復原！確定要執行？
+        </p>
+      </Modal>
     </Content>
   );
 }

@@ -93,12 +93,13 @@ const LayoutWithSidebar = () => {
       if (matchPath("/admin/doctors/*", location.pathname)) {
         return "2";
       }
+      if (matchPath("/admin/patients/*", location.pathname)) {
+        return "3";
+      }
       // 其他路由
       switch (location.pathname) {
         case "/admin/doctors":
           return "2";
-        case "/admin/patients":
-          return "3";
         default:
           return "1";
       }

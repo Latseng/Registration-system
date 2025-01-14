@@ -2,59 +2,68 @@ import { Layout, Table, Button } from "antd";
 import { useState, useEffect } from "react";
 import useRWD from "../hooks/useRWD";
 import LoginButton from "../components/LoginButton";
-import { getPatients } from "../api/patients";
+import { getAppointmentsByPatientId } from "../api/patients";
+import { useSelector } from "react-redux";
 import dayjs from "dayjs";
+import { useLocation } from "react-router-dom";
 
 const { Content } = Layout;
 
 const AdminPatientPage = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [patients, setPatients] = useState([]);
+  const [appointments, setAppointments] = useState([]);
   const isDesktop = useRWD();
+  const location = useLocation()
+  const { patientId, patientName } = location.state;
+  const { CSRF_token } = useSelector((state) => state.auth);
+  const [error, setError] = useState(null)
 
   useEffect(() => {
-    const getPatientDataAsync = async () => {
+    const getAppointmentsByPatientIdAsync = async () => {
+      setIsLoading
       try {
-        const data = await getPatients();
-        setPatients(data.data);
+        const data = await getAppointmentsByPatientId(patientId, CSRF_token);
+        if (data === "No appointments found for this patient."){
+          setError("使用者沒有掛號資料")
+          return
+        }
+        setAppointments(data.data);
+        setIsLoading(false)
       } catch (error) {
         console.log(error);
       }
     };
-    getPatientDataAsync();
-  }, []);
+   getAppointmentsByPatientIdAsync();
+  }, [CSRF_token, patientId]);
 
   const columns = [
     {
-      title: "Id",
-      dataIndex: "id",
-      key: "id",
+      title: "日期",
+      dataIndex: "date",
+      key: "date",
     },
     {
-      title: "姓名",
-      dataIndex: "name",
-      key: "name",
+      title: "時段",
+      dataIndex: "slot",
+      key: "slot",
     },
     {
-      title: "生日",
-      dataIndex: "age",
-      key: "age",
+      title: "科別",
+      dataIndex: "specialty",
+      key: "specialty",
     },
     {
-      title: "聯絡方式",
-      dataIndex: "contact",
-      key: "contact",
+      title: "醫師",
+      dataIndex: "doctor",
+      key: "doctor",
     },
     {
-      title: "掛號",
-      dataIndex: "appoinetment",
-      key: "appointment",
-      render: (_, record) => (
-        <Button onClick={() => console.log("掛號", record.id)}>掛號</Button>
-      ),
+      title: "狀態",
+      dataIndex: "status",
+      key: "status"
     },
     {
-      title: "刪除病患",
+      title: "刪除",
       dataIndex: "delete",
       key: "delete",
       render: (_, record) => (
@@ -65,18 +74,21 @@ const AdminPatientPage = () => {
     },
   ];
 
-  const dataSource = patients.map((item) => ({
+  const dataSource = appointments.map((item) => ({
     key: item.id,
     id: item.id,
-    name: item.name,
-    age: dayjs(item.birthDate).format("YYYY-MM-DD"),
-    contact: item.email,
+    date: dayjs(item.date).format("YYYY-MM-DD"),
+    slot: item.scheduleSlot?.includes("Morning") ? "上午診" : "下午診",
+    specialty: item.doctorSpecialty,
+    doctor: item.doctorName,
+    status: item.statue === "CONFIRMED" ? "已掛號" : "已取消",
   }));
 
   return (
     <Content className="bg-gray-100 p-6">
-      <h1 className="text-2xl mb-4">病患管理</h1>
+      <h1 className="text-2xl mb-4">{patientName}：掛號管理</h1>
       {isDesktop && <LoginButton />}
+      {error && <span className="text-red-500">{error}</span>}
       <Table dataSource={dataSource} columns={columns} />
       {isLoading && <Table className="mt-12" loading={isLoading} />}
     </Content>
