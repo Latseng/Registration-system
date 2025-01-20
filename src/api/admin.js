@@ -39,6 +39,7 @@ export const deletePatientById = async (id, CSRF_token) => {
     return res.data;
   } catch (error) {
     console.error("[Delete patient data failed]: ", error);
+    return error.response.data.message;
   }
 };
 

@@ -1,12 +1,12 @@
-import { Layout, Table, Button, Modal } from "antd";
-import { useState, useEffect } from "react";
+import { Layout, Table, Button, message } from "antd";
+import { useState, useEffect, useCallback } from "react";
 import useRWD from "../hooks/useRWD";
 import LoginButton from "../components/LoginButton";
 import { getPatients, deletePatientById } from "../api/admin";
 import { useSelector } from "react-redux";
 import dayjs from "dayjs";
-import { ExclamationCircleFilled } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
+import ConfirmModal from "../components/confirmModal";
 
 const { Content } = Layout;
 
@@ -19,23 +19,25 @@ const AdminPatientPage = () => {
   );
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
   const [selectedPatientId,setSelectedPatientId] = useState(null)
-  const [confirmLoading, setConfirmLoading] = useState(false);
+  const [isConfirmModalLoading, setIsConfirmModalLoading] = useState(false);
+  const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate()
+
+const getPatientDataAsync = useCallback(async () => {
+  try {
+    const data = await getPatients(CSRF_token);
+    setPatients(data.data);
+    setIsLoading(false);
+  } catch (error) {
+    console.log(error);
+  }
+},[CSRF_token])
 
   useEffect(() => {
     setIsLoading(true)
-    const getPatientDataAsync = async () => {
-      try {
-        const data = await getPatients(CSRF_token);
-        setPatients(data.data)
-        setIsLoading(false);
-      } catch(error) {
-        console.log(error);
-      }
-    }
     getPatientDataAsync();
     
-  }, [CSRF_token]);
+  }, [getPatientDataAsync]);
 
   const columns = [
     {
@@ -67,7 +69,7 @@ const AdminPatientPage = () => {
       ),
     },
     {
-      title: "刪除病患",
+      title: "刪除",
       dataIndex: "delete",
       key: "delete",
       render: (_, record) => (
@@ -92,12 +94,34 @@ const AdminPatientPage = () => {
   }
 
   const handleOk = async () => {
-    setConfirmLoading(true)
+    setIsConfirmModalLoading(true);
     const result = await deletePatientById(selectedPatientId, CSRF_token);
-    setConfirmLoading(false);
-    console.log(result.status);
+    if (result.status === "success") {
+      setIsConfirmModalLoading(false);
+      setIsConfirmModalOpen(false);
+      setSelectedPatientId(null);
+      getPatientDataAsync();
+      messageApi.open({
+        type: "success",
+        content: "刪除成功",
+      });
+    }
 
+    if (result === "Foreign key constraint failed. Ensure the referenced record exists.") {
+      setIsConfirmModalLoading(false);
+      setIsConfirmModalOpen(false);
+      setSelectedPatientId(null);
+      messageApi.open({
+        type: "error",
+        content: "刪除失敗，該病患存在掛號資料",
+      });
+    }
   }
+
+  const handleCancel = () => {
+    setIsConfirmModalOpen(false);
+    setSelectedPatientId(null);
+  };
 
   const handleAppointmentsByPatient = (record) => {
     navigate(`/admin/patients/appointments/${record.id}`, {
@@ -110,6 +134,7 @@ const AdminPatientPage = () => {
 
   return (
     <Content className="bg-gray-100 p-6">
+      {contextHolder}
       <h1 className="text-2xl mb-4">病患管理</h1>
       {isDesktop && <LoginButton />}
       <div className="overflow-x-auto bg-white">
@@ -120,26 +145,14 @@ const AdminPatientPage = () => {
           columns={columns}
         />
       </div>
-      <Modal
-        title={
-          <div className="flex items-center">
-            <ExclamationCircleFilled className="mr-4 text-yellow-500 text-3xl" />
-            <span>刪除病患資料？</span>
-          </div>
-        }
-        className="p-16"
-        open={isConfirmModalOpen}
-        onOk={handleOk}
-        okType="danger"
-        okText="確定"
-        confirmLoading={confirmLoading}
-        onCancel={() => setIsConfirmModalOpen(false)}
-        cancelText="返回"
-      >
-        <p className="p-4">
-          將從資料庫中，刪除該筆病患資料，確定要進行此一操作？
-        </p>
-      </Modal>
+      <ConfirmModal
+        title={"刪除病患資料"}
+        description={"將從資料庫刪除該名病患資料，確定要進行此操作？"}
+        isOpen={isConfirmModalOpen}
+        handleOk={handleOk}
+        isLoading={isConfirmModalLoading}
+        handleCancel={handleCancel}
+      />
     </Content>
   );
 }

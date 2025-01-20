@@ -1,6 +1,6 @@
 import { Modal, Button } from "antd";
 import { ExclamationCircleFilled } from "@ant-design/icons";
-
+import PropTypes from "prop-types";
 
 const ConfirmModal = ({ title, description, isOpen, handleOk, isLoading, handleCancel }) => {
 
@@ -28,6 +28,15 @@ const ConfirmModal = ({ title, description, isOpen, handleOk, isLoading, handleC
       <p className="p-4">{description}</p>
     </Modal>
   );
+};
+
+ConfirmModal.propTypes = {
+  title: PropTypes.string,
+  description: PropTypes.string,
+  isOpen: PropTypes.bool,
+  handleOk: PropTypes.func,
+  isLoading: PropTypes.bool,
+  handleCancel: PropTypes.func,
 };
 
 export default ConfirmModal;
