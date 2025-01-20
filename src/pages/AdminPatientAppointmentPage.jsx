@@ -1,11 +1,12 @@
-import { Layout, Table, Button } from "antd";
-import { useState, useEffect } from "react";
+import { Layout, Table, Button, message } from "antd";
+import { useState, useEffect, useCallback } from "react";
 import useRWD from "../hooks/useRWD";
 import LoginButton from "../components/LoginButton";
-import { getAppointmentsByPatientId } from "../api/patients";
+import { getAppointmentsByPatientId, deleteAppointmentById } from "../api/admin";
 import { useSelector } from "react-redux";
 import dayjs from "dayjs";
 import { useLocation } from "react-router-dom";
+import ConfirmModal from "../components/confirmModal";
 
 const { Content } = Layout;
 
@@ -17,25 +18,36 @@ const AdminPatientPage = () => {
   const { patientId, patientName } = location.state;
   const { CSRF_token } = useSelector((state) => state.auth);
   const [error, setError] = useState(null)
+  const[isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
+  const[isConfirmModalLoading, setIsConfirmModalLoading] = useState(false)
+  const [selectedAppointmentId, setSelectedAppointmentId] = useState(null)
+  const [messageApi, contextHolder] = message.useMessage();
+
+const getAppointmentsByPatientIdAsync = useCallback(
+  async () => {
+  setIsLoading(true);
+  try {
+    const data = await getAppointmentsByPatientId(patientId, CSRF_token);
+    if (data === "No appointments found for this patient.") {
+      setError("使用者沒有掛號資料");
+      setIsLoading(false);
+      return;
+    }
+    setAppointments(data.data);
+    setIsLoading(false);
+  } catch (error) {
+    console.log(error);
+  }
+},[CSRF_token, patientId])
 
   useEffect(() => {
-    const getAppointmentsByPatientIdAsync = async () => {
-      setIsLoading
-      try {
-        const data = await getAppointmentsByPatientId(patientId, CSRF_token);
-        if (data === "No appointments found for this patient."){
-          setError("使用者沒有掛號資料")
-          return
-        }
-        setAppointments(data.data);
-        setIsLoading(false)
-      } catch (error) {
-        console.log(error);
-      }
-    };
    getAppointmentsByPatientIdAsync();
-  }, [CSRF_token, patientId]);
+  }, [getAppointmentsByPatientIdAsync]);
 
+  const handleDelete = (id) => {
+    setSelectedAppointmentId(id);
+    setIsConfirmModalOpen(true)
+  }
   const columns = [
     {
       title: "日期",
@@ -67,7 +79,7 @@ const AdminPatientPage = () => {
       dataIndex: "delete",
       key: "delete",
       render: (_, record) => (
-        <Button danger onClick={() => console.log("delete", record.id)}>
+        <Button danger onClick={() => handleDelete(record.id)}>
           刪除
         </Button>
       ),
@@ -75,8 +87,8 @@ const AdminPatientPage = () => {
   ];
 
   const dataSource = appointments.map((item) => ({
-    key: item.id,
-    id: item.id,
+    key: item.appointmentId,
+    id: item.appointmentId,
     date: dayjs(item.date).format("YYYY-MM-DD"),
     slot: item.scheduleSlot?.includes("Morning") ? "上午診" : "下午診",
     specialty: item.doctorSpecialty,
@@ -84,13 +96,39 @@ const AdminPatientPage = () => {
     status: item.statue === "CONFIRMED" ? "已掛號" : "已取消",
   }));
 
+  const handleOk = async () => {
+    setIsConfirmModalLoading(true);
+    const result = await deleteAppointmentById(selectedAppointmentId, CSRF_token);
+    if(result.status === "success"){
+       setIsConfirmModalLoading(false);
+       setIsConfirmModalOpen(false);
+       setSelectedAppointmentId(null);
+       getAppointmentsByPatientIdAsync();
+       messageApi.open({
+         type: "success",
+         content: "刪除成功",
+       });
+    }
+  }
+  const handleCancel = () => {
+    setIsConfirmModalOpen(false);
+    setSelectedAppointmentId(null);
+  }
   return (
     <Content className="bg-gray-100 p-6">
+      {contextHolder}
       <h1 className="text-2xl mb-4">{patientName}：掛號管理</h1>
       {isDesktop && <LoginButton />}
-      {error && <span className="text-red-500">{error}</span>}
-      <Table dataSource={dataSource} columns={columns} />
-      {isLoading && <Table className="mt-12" loading={isLoading} />}
+      {error && <span className="text-red-500 text-lg">{error}</span>}
+      <Table loading={isLoading} dataSource={dataSource} columns={columns} />
+      <ConfirmModal
+        title={"刪除病患掛號"}
+        description={"將從資料庫刪除病患掛號資料，確定要進行此操作？"}
+        isOpen={isConfirmModalOpen}
+        handleOk={handleOk}
+        isLoading={isConfirmModalLoading}
+        handleCancel={handleCancel}
+      />
     </Content>
   );
 };

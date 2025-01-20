@@ -6,8 +6,8 @@ import { getAppointmentsByDoctorScheduleId } from "../api/schedules";
 import {
   modifyAppointment,
   reCreateAppointment,
-  deleteAppointment,
 } from "../api/appointments";
+import { deleteAppointmentById } from "../api/admin";
 import { useSelector } from "react-redux";
 import useRWD from "../hooks/useRWD";
 import LoginButton from "../components/LoginButton";
@@ -144,7 +144,7 @@ const AdminDoctorAppointmentsPage = () => {
       }
       setConfirmLoading(false);
     } else if (confirmModal.action === "delete") {
-      const result = await deleteAppointment(
+      const result = await deleteAppointmentById(
         confirmModal.appointmentId,
         CSRF_token
       );

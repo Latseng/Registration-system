@@ -26,6 +26,8 @@ const RegisterPage = () => {
        email: values.email || null,
        password: values.password,
      };
+     console.log(payload);
+     
     const data = await register(payload)
    //註冊成功，使用者直接登入、重導向頁面
     if (data.status === "success") {

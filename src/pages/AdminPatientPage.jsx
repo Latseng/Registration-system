@@ -2,7 +2,7 @@ import { Layout, Table, Button, Modal } from "antd";
 import { useState, useEffect } from "react";
 import useRWD from "../hooks/useRWD";
 import LoginButton from "../components/LoginButton";
-import { getPatients, deletePatientById } from "../api/patients";
+import { getPatients, deletePatientById } from "../api/admin";
 import { useSelector } from "react-redux";
 import dayjs from "dayjs";
 import { ExclamationCircleFilled } from "@ant-design/icons";
@@ -95,7 +95,7 @@ const AdminPatientPage = () => {
     setConfirmLoading(true)
     const result = await deletePatientById(selectedPatientId, CSRF_token);
     setConfirmLoading(false);
-    console.log(result);
+    console.log(result.status);
 
   }
 
@@ -124,7 +124,7 @@ const AdminPatientPage = () => {
         title={
           <div className="flex items-center">
             <ExclamationCircleFilled className="mr-4 text-yellow-500 text-3xl" />
-            <span>確定要進行此操作？</span>
+            <span>刪除病患資料？</span>
           </div>
         }
         className="p-16"
@@ -137,7 +137,7 @@ const AdminPatientPage = () => {
         cancelText="返回"
       >
         <p className="p-4">
-          將要執行刪除病患資料的操作，刪除後無法復原！確定要執行？
+          將從資料庫中，刪除該筆病患資料，確定要進行此一操作？
         </p>
       </Modal>
     </Content>

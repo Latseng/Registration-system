@@ -185,14 +185,3 @@ export const reCreateAppointment = async (id, CSRF_token) => {
     console.error("[Cancel Appointment failed]: ", error);
   }
 };
-
-export const deleteAppointment = async (id, CSRF_token) => {
-  try {
-    const res = await axios.delete(`${baseURL}/appointments/${id}`, {
-      headers: { "x-csrf-Token": CSRF_token },
-    });
-    return res;
-  } catch (error) {
-    console.error("[Delete Appointment failed]:", error);
-  }
-};
