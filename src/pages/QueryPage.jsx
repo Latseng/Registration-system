@@ -472,6 +472,7 @@ const QueryPage = () => {
           )
         ) : (
           <Form
+            form={form}
             name="login"
             className="mx-auto mt-8 text-center rounded-2xl md:w-1/2 bg-white p-4"
             initialValues={{
@@ -598,6 +599,7 @@ const QueryPage = () => {
               <p>醫師：{selectedAppointment.doctorName}</p>
               {!isAuthenticated && (
                 <Form
+                  form={form}
                   name="create-appointment"
                   className="mx-auto my-4 text-center rounded-2xl  bg-white"
                   initialValues={{

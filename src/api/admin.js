@@ -43,6 +43,41 @@ export const deletePatientById = async (id, CSRF_token) => {
   }
 };
 
+export const reCreateAppointment = async (id, CSRF_token) => {
+  try {
+    const res = await axios.put(
+      `${baseURL}/admins/appointments/${id}`,
+      {
+        status: "CONFIRMED",
+      },
+      {
+        headers: { "x-csrf-Token": CSRF_token },
+      }
+    );
+    return res.data;
+  } catch (error) {
+    console.error("[Cancel Appointment failed]: ", error);
+  }
+};
+
+// 取消掛號
+export const modifyAppointment = async (id, CSRF_token) => {
+  try {
+    const res = await axios.put(
+      `${baseURL}/admins/appointments/${id}`,
+      {
+        status: "CANCELED",
+      },
+      {
+        headers: { "x-csrf-Token": CSRF_token },
+      }
+    );
+    return res.data;
+  } catch (error) {
+    console.error("[Cancel Appointment failed]: ", error);
+  }
+};
+
 export const deleteAppointmentById = async (id, CSRF_token) => {
   try {
     const res = await axios.delete(`${baseURL}/admins/appointments/${id}`, {

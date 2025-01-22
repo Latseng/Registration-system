@@ -6,7 +6,7 @@ import { getPatients, deletePatientById } from "../api/admin";
 import { useSelector } from "react-redux";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
-import ConfirmModal from "../components/confirmModal";
+import ConfirmModal from "../components/ConfirmModal";
 
 const { Content } = Layout;
 
@@ -19,7 +19,7 @@ const AdminPatientPage = () => {
   );
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
   const [selectedPatientId,setSelectedPatientId] = useState(null)
-  const [isConfirmModalLoading, setIsConfirmModalLoading] = useState(false);
+  const [isConfirmLoading, setIsConfirmLoading] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate()
 
@@ -94,10 +94,10 @@ const getPatientDataAsync = useCallback(async () => {
   }
 
   const handleOk = async () => {
-    setIsConfirmModalLoading(true);
+    setIsConfirmLoading(true);
     const result = await deletePatientById(selectedPatientId, CSRF_token);
     if (result.status === "success") {
-      setIsConfirmModalLoading(false);
+      setIsConfirmLoading(false);
       setIsConfirmModalOpen(false);
       setSelectedPatientId(null);
       getPatientDataAsync();
@@ -106,9 +106,9 @@ const getPatientDataAsync = useCallback(async () => {
         content: "刪除成功",
       });
     }
-
+    //刪除失敗
     if (result === "Foreign key constraint failed. Ensure the referenced record exists.") {
-      setIsConfirmModalLoading(false);
+      setIsConfirmLoading(false);
       setIsConfirmModalOpen(false);
       setSelectedPatientId(null);
       messageApi.open({
@@ -150,7 +150,7 @@ const getPatientDataAsync = useCallback(async () => {
         description={"將從資料庫刪除該名病患資料，確定要進行此操作？"}
         isOpen={isConfirmModalOpen}
         handleOk={handleOk}
-        isLoading={isConfirmModalLoading}
+        isLoading={isConfirmLoading}
         handleCancel={handleCancel}
       />
     </Content>

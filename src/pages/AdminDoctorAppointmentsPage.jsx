@@ -1,48 +1,75 @@
 import { Layout, Table, Breadcrumb, Button, Modal } from "antd";
-import { useEffect, useState } from "react";
-import { ExclamationCircleFilled } from "@ant-design/icons";
+import { useCallback, useEffect, useState } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import { getAppointmentsByDoctorScheduleId } from "../api/schedules";
 import {
-  modifyAppointment,
+  deleteAppointmentById,
   reCreateAppointment,
-} from "../api/appointments";
-import { deleteAppointmentById } from "../api/admin";
+  modifyAppointment,
+} from "../api/admin";
 import { useSelector } from "react-redux";
 import useRWD from "../hooks/useRWD";
 import LoginButton from "../components/LoginButton";
+import ConfirmModal from "../components/ConfirmModal";
 
 const { Content } = Layout;
 
 const AdminDoctorAppointmentsPage = () => {
   const location = useLocation();
-  const { appointment, doctorScheduleId, doctorId, doctorName } = location.state;
+  const { appointment, doctorScheduleId, doctorId, doctorName } =
+    location.state;
   const [appointments, setAppointments] = useState([]);
   const [isTableLoading, setIsTableLoading] = useState(false);
-  const [confirmModal, setConfirmModal] = useState({
-    isOpen: false,
-    appointmentId: null,
+  const [isConfirmLoading, setIsConfirmLoading] = useState(false);
+  const [selectedAppointmentId, setSelectedAppointmentId] = useState(null);
+  const [confirmModalData, setConfirmModalData] = useState({
+    title: "",
+    description: "",
     action: "",
   });
-  const [confirmLoading, setConfirmLoading] = useState(false);
-   const { CSRF_token } = useSelector(
-     (state) => state.auth
-   );
-   const navigate = useNavigate()
-   const isDesktop = useRWD()
-  useEffect(() => {
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const { CSRF_token } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
+  const isDesktop = useRWD();
+
+  const getAppointmentsDataAsync = useCallback(async () => {
     setIsTableLoading(true);
-    const getAppointmentsDataAsync = async () => {
-      try {
-        const data = await getAppointmentsByDoctorScheduleId(doctorScheduleId);
-        setAppointments(data.appointments);
-        setIsTableLoading(false);
-      } catch (error) {
-        console.error(error);
-      }
-    };
+    try {
+      const data = await getAppointmentsByDoctorScheduleId(doctorScheduleId);
+      setAppointments(data.appointments);
+      setIsTableLoading(false);
+    } catch (error) {
+      console.error(error);
+    }
+  }, [doctorScheduleId]);
+
+  useEffect(() => {
     getAppointmentsDataAsync();
-  }, []);
+  }, [getAppointmentsDataAsync]);
+
+  const handleAppointment = (appointmentId, action) => {
+    setSelectedAppointmentId(appointmentId);
+    if (action === "cancel") {
+      setConfirmModalData({
+        title: "取消掛號確認",
+        description: "確定要取消掛號嗎？",
+        action: action,
+      });
+    } else if (action === "reCreate") {
+      setConfirmModalData({
+        title: "重新掛號確認",
+        description: "確定要重新掛號嗎？",
+        action: action,
+      });
+    } else {
+      setConfirmModalData({
+        title: "刪除掛號確認",
+        description: "確定要刪除掛號嗎？",
+        action: action,
+      });
+    }
+    setIsConfirmModalOpen(true);
+  };
 
   const columns = [
     {
@@ -69,11 +96,7 @@ const AdminDoctorAppointmentsPage = () => {
           {record.status === "已取消" ? (
             <Button
               onClick={() =>
-                setConfirmModal({
-                  appointmentId: record.appointmentId,
-                  isOpen: true,
-                  action: "re-appointment",
-                })
+                handleAppointment(record.appointmentId, "reCreate")
               }
             >
               重新掛號
@@ -82,13 +105,7 @@ const AdminDoctorAppointmentsPage = () => {
             <Button
               type="text"
               danger
-              onClick={() =>
-                setConfirmModal({
-                  appointmentId: record.appointmentId,
-                  isOpen: true,
-                  action: "cancel",
-                })
-              }
+              onClick={() => handleAppointment(record.appointmentId, "cancel")}
             >
               取消掛號
             </Button>
@@ -96,13 +113,7 @@ const AdminDoctorAppointmentsPage = () => {
           <Button
             type="text"
             danger
-            onClick={() =>
-              setConfirmModal({
-                appointmentId: record.appointmentId,
-                isOpen: true,
-                action: "delete",
-              })
-            }
+            onClick={() => handleAppointment(record.appointmentId, "delete")}
           >
             刪除
           </Button>
@@ -119,71 +130,77 @@ const AdminDoctorAppointmentsPage = () => {
     status: item.status === "CONFIRMED" ? "已掛號" : "已取消",
   }));
 
-  //確認Modal資料送出
   const handleOk = async () => {
-    setConfirmLoading(true);
-    if (confirmModal.action === "cancel") {
-      const result = await modifyAppointment(
-        confirmModal.appointmentId,
-        CSRF_token
-      );
-      if (result.data.status === "success") {
-        setConfirmModal({
-          appointmentId: null,
-          isOpen: false,
-          action: "",
-        });
-        setAppointments(
-          appointments.map((item) => {
-            if (item.id === confirmModal.appointmentId) {
-              return { ...item, status: "CANCELED" };
-            }
-            return item;
-          })
+    switch (confirmModalData.action) {
+      case "cancel": {
+        setIsConfirmLoading(true);
+        const result = await modifyAppointment(
+          selectedAppointmentId,
+          CSRF_token
         );
+        if (result.status === "success") {
+          setIsConfirmModalOpen(false);
+          setIsConfirmLoading(false);
+          setConfirmModalData({
+            title: "",
+            description: "",
+            action: "",
+          });
+          setSelectedAppointmentId(null);
+          getAppointmentsDataAsync();
+        }
+        break;
       }
-      setConfirmLoading(false);
-    } else if (confirmModal.action === "delete") {
-      const result = await deleteAppointmentById(
-        confirmModal.appointmentId,
-        CSRF_token
-      );
-      if (result.data.status === "success") {
-        setConfirmModal({
-          appointmentId: null,
-          isOpen: false,
-          action: "",
-        });
-        setAppointments(
-          appointments.filter((item) => (
-            item.id !== confirmModal.appointmentId
-          ))
+      case "reCreate": {
+        setIsConfirmLoading(true);
+        const result = await reCreateAppointment(
+          selectedAppointmentId,
+          CSRF_token
         );
+        if (result.status === "success") {
+          setIsConfirmModalOpen(false);
+          setIsConfirmLoading(false);
+          setConfirmModalData({
+            title: "",
+            description: "",
+            action: "",
+          });
+          setSelectedAppointmentId(null);
+          getAppointmentsDataAsync();
+        }
+        break;
       }
-      setConfirmLoading(false);
-
-    } else {
-      const result = await reCreateAppointment(
-        confirmModal.appointmentId,
-        CSRF_token
-      );
-      if (result.data.status === "success") {
-        setConfirmModal({
-          appointmentId: null,
-          isOpen: false,
-          action: "",
-        });
-        setAppointments(
-          appointments.map((item) => {
-            if (item.id === confirmModal.appointmentId) {
-              return { ...item, status: "CONFIRMED" };
-            }
-            return item;
-          })
+      case "delete": {
+        setIsConfirmLoading(true);
+        const result = await deleteAppointmentById(
+          selectedAppointmentId,
+          CSRF_token
         );
+        if (result.status === "success") {
+          setIsConfirmModalOpen(false);
+          setIsConfirmLoading(false);
+          setConfirmModalData({
+            title: "",
+            description: "",
+            action: "",
+          });
+          setSelectedAppointmentId(null);
+          getAppointmentsDataAsync();
+        }
+        break;
       }
-    setConfirmLoading(false);
+      default:
+        break;
     }
+  };
+
+  const handleCancel = () => {
+    setIsConfirmModalOpen(false);
+    setSelectedAppointmentId(null);
+    setConfirmModalData({
+      title: "",
+      description: "",
+    });
   };
 
   return (
@@ -193,39 +210,14 @@ const AdminDoctorAppointmentsPage = () => {
       <div>
         <Table loading={isTableLoading} columns={columns} dataSource={data} />
       </div>
-      {/* 取消掛號確認 */}
-      <Modal
-        title={
-          <div className="flex items-center">
-            <ExclamationCircleFilled className="mr-4 text-yellow-500 text-3xl" />
-            <span>確定要進行此操作？</span>
-          </div>
-        }
-        className="p-16"
-        open={confirmModal.isOpen}
-        onOk={handleOk}
-        okType="danger"
-        okText="確定"
-        confirmLoading={confirmLoading}
-        onCancel={() =>
-          setConfirmModal({
-            appointmentId: null,
-            isOpen: false,
-            action: "",
-          })
-        }
-        cancelText="返回"
-      >
-        <p className="p-4">
-          您將要執行
-          {confirmModal.action === "cancel"
-            ? "取消"
-            : confirmModal.action === "delete"
-            ? "刪除"
-            : "重新"}
-          掛號的操作
-        </p>
-      </Modal>
+      <ConfirmModal
+        title={confirmModalData.title}
+        description={confirmModalData.description}
+        isOpen={isConfirmModalOpen}
+        handleOk={handleOk}
+        isLoading={isConfirmLoading}
+        handleCancel={handleCancel}
+      />
     </Content>
   );
 };

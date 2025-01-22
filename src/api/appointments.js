@@ -149,39 +149,3 @@ export const cancelAppointment = async (
     }
   }
 };
-
-// 取消掛號：管理者權限
-export const modifyAppointment = async (id, CSRF_token) => {
-  try {
-    const res = await axios.put(
-      `${baseURL}/appointments/${id}`,
-      {
-        status: "CANCELED",
-      },
-      {
-        headers: { "x-csrf-Token": CSRF_token },
-      }
-    );
-    return res;
-  } catch (error) {
-    console.error("[Cancel Appointment failed]: ", error);
-  }
-};
-
-// 重新掛號：管理者權限
-export const reCreateAppointment = async (id, CSRF_token) => {
-  try {
-    const res = await axios.put(
-      `${baseURL}/appointments/${id}`,
-      {
-        status: "CONFIRMED",
-      },
-      {
-        headers: { "x-csrf-Token": CSRF_token },
-      }
-    );
-    return res;
-  } catch (error) {
-    console.error("[Cancel Appointment failed]: ", error);
-  }
-};

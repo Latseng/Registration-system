@@ -1,8 +1,6 @@
-import { Layout, List, message, Button, Input, Avatar, Form } from "antd";
-import { useNavigate } from "react-router-dom";
+import { Layout, List, message, Button, Input, Avatar } from "antd";
 import { useState, useEffect } from "react";
 import { getDoctors, searchDoctors, getDoctorById } from "../api/doctors";
-import { createAppointment, createFirstAppointment } from "../api/appointments";
 import dayjs from "dayjs";
 import SelectedModal from "../components/SelectedModal";
 import LoginButton from "../components/LoginButton";
@@ -12,7 +10,6 @@ const { Content } = Layout;
 const { Search } = Input;
 
 const DoctorsPage = () => {
-  const navigate = useNavigate();
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [doctors, setDoctors] = useState([])
   const [isLoading, setIsLoading] = useState(false)
@@ -23,8 +20,6 @@ const DoctorsPage = () => {
     useState(false);
   const [isSubmitLoading, setIsSubmitLoading] = useState(false);
   const [isModalLoading, setIsModalLoading] = useState(false);
-
-  const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
   const isDesktop = useRWD()
 
@@ -77,10 +72,6 @@ const DoctorsPage = () => {
     setIsModalLoading(false);
   };
 
-  const handleCancel = () => {
-    setIsModalOpen(false);
-    setSelectedAppointment(null)
-  };
   const warning = (value) => {
     messageApi.open({
       type: "warning",
@@ -107,63 +98,7 @@ const DoctorsPage = () => {
      setSelectedDoctor(null);
      setSelectedAppointment(appointment);
    };
-
-    const handleSubmit = async (values) => {
-      setIsSubmitLoading(true);
-      const birthDate = new Date(
-        Date.UTC(values.year, values.month - 1, values.day)
-      ).toISOString();
-
-      let requestData = {
-        idNumber: values.idNumber,
-        birthDate: birthDate,
-        recaptchaResponse: "test_recaptcha",
-        doctorScheduleId: selectedAppointment.id,
-      };
-      
-      if (isFirstCreateAppointment) {
-        requestData = {
-          idNumber: values.idNumber,
-          birthDate: birthDate,
-          recaptchaResponse: "test_recaptcha",
-          doctorScheduleId: selectedAppointment.id,
-          name: values.name,
-          contactInfo: values.number,
-        };
-        const newFistAppointment = await createFirstAppointment(requestData);
-        console.log(newFistAppointment);
-        return;
-      }
-
-      const newAppointment = await createAppointment(requestData);
-
-      if (newAppointment === "You have already booked this time slot.") {
-        messageApi.open({
-          type: "warning",
-          content: "重複掛號",
-        });
-        setIsSubmitLoading(false);
-        return
-      }
-        
-      if (
-        typeof newAppointment === "string" &&
-        newAppointment.includes("初診")
-      ) {
-        setIsFirstCreateAppointment(true);
-      }
-
-      form.resetFields();
-      messageApi.open({
-        type: "success",
-        content: "掛號成功",
-      });
-      navigate("/query?appointmentStatus=success");
-    };
-    const onChange = (value) => {
-      console.log("Captcha value:", value);
-    };
-  
+   
   return (
     <>
       {contextHolder}
@@ -209,14 +144,16 @@ const DoctorsPage = () => {
         <SelectedModal
           selectedDoctor={selectedDoctor}
           isModalOpen={isModalOpen}
-          handleCancel={handleCancel}
+          setSelectedDoctor={setSelectedDoctor}
           handleAppointment={handleAppointment}
           selectedAppointment={selectedAppointment}
-          handleSubmit={handleSubmit}
+          setIsSubmitLoading={setIsSubmitLoading}
           isFirstCreateAppointment={isFirstCreateAppointment}
-          onChange={onChange}
           isModalLoading={isModalLoading}
           isSubmitLoading={isSubmitLoading}
+          setIsFirstCreateAppointment={setIsFirstCreateAppointment}
+          setSelectedAppointment={setSelectedAppointment}
+          setIsModalOpen={setIsModalOpen}
         />
       </Content>
     </>

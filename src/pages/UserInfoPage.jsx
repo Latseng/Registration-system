@@ -26,20 +26,24 @@ const LoginPage = () => {
     (state) => state.auth
   );
   const [messageApi, contextHolder] = message.useMessage();
-  const [userData, setUserData] = useState({name: "", birthDate: "", contact: ""})
-  const [isInfoModalOpen, setIsinfoModalOpen] = useState(false)
-  const [isUserDataLoading, setIsUserDataLoading] = useState(true)
-  const [isSubmitButtonLoading, setIsSubmitButtonLoading] = useState(false)
-  
-  const listData = userData ? [
-    `姓名： ${userData.name}`,
-    `生日： ${userData.birthDate}`,
-    `聯絡方式： ${userData.contact}`,
-    
-  ] : ["姓名：", "生日：", "聯絡方式："];
+  const [userData, setUserData] = useState({
+    name: "",
+    birthDate: "",
+    contact: "",
+  });
+  const [isInfoModalOpen, setIsinfoModalOpen] = useState(false);
+  const [isUserDataLoading, setIsUserDataLoading] = useState(true);
+  const [isSubmitButtonLoading, setIsSubmitButtonLoading] = useState(false);
 
-  const getPatientDataAsync = useCallback(
-    async () => {
+  const listData = userData
+    ? [
+        `姓名： ${userData.name}`,
+        `生日： ${userData.birthDate}`,
+        `聯絡方式： ${userData.contact}`,
+      ]
+    : ["姓名：", "生日：", "聯絡方式："];
+
+  const getPatientDataAsync = useCallback(async () => {
     try {
       setIsUserDataLoading(true);
       const data = await getPatientById(user.id, CSRF_token);
@@ -53,8 +57,7 @@ const LoginPage = () => {
     } catch (error) {
       console.error(error);
     }
-  }, [CSRF_token, user.id]
-  )
+  }, [CSRF_token, user.id]);
 
   useEffect(() => {
     // 是否登入
@@ -66,43 +69,41 @@ const LoginPage = () => {
     } else {
       return navigate("/login");
     }
-    getPatientDataAsync()
+    getPatientDataAsync();
   }, [getPatientDataAsync, isAuthenticated, navigate, role]);
 
-const handleModifiedModalClose = () => {
-  setIsinfoModalOpen(false)
-  form.resetFields()
-}
-
-const handleModifiedDataSubmit = async (value) => {
-  setIsSubmitButtonLoading(true)
-  const payload = {
-    name: value.name,
-    birthDate: dayjs(value.birthDate).toISOString(),
-    contact: value.email,
+  const handleModifiedModalClose = () => {
+    setIsinfoModalOpen(false);
+    form.resetFields();
   };
-  const result = await modifyPatientDataById(user.id, payload, CSRF_token);
-  if(result.status === "success") {
-    getPatientDataAsync();
-     messageApi.open({
-       type: "success",
-       content: "資料更新成功",
-     });
-     handleModifiedModalClose();
-     const newUserData = {
-       id: result.data.id,
-       name: result.data.name,
-       email: result.data.email,
-     };
-     //更新全域狀態
-    dispatch(
-      updateUser(newUserData)
-    );
-  }
-  setIsSubmitButtonLoading(false);
-}
 
- const handleLogout = async () => {
+  const handleModifiedDataSubmit = async (value) => {
+    setIsSubmitButtonLoading(true);
+    const payload = {
+      name: value.name,
+      birthDate: dayjs(value.birthDate).toISOString(),
+      contact: value.email,
+    };
+    const result = await modifyPatientDataById(user.id, payload, CSRF_token);
+    if (result.status === "success") {
+      getPatientDataAsync();
+      messageApi.open({
+        type: "success",
+        content: "資料更新成功",
+      });
+      handleModifiedModalClose();
+      const newUserData = {
+        id: result.data.id,
+        name: result.data.name,
+        email: result.data.email,
+      };
+      //更新全域狀態
+      dispatch(updateUser(newUserData));
+    }
+    setIsSubmitButtonLoading(false);
+  };
+
+  const handleLogout = async () => {
     navigate("/departments");
     const res = await logoutReqest();
     if (res.status === "success") {

@@ -6,7 +6,7 @@ import { getAppointmentsByPatientId, deleteAppointmentById } from "../api/admin"
 import { useSelector } from "react-redux";
 import dayjs from "dayjs";
 import { useLocation } from "react-router-dom";
-import ConfirmModal from "../components/confirmModal";
+import ConfirmModal from "../components/ConfirmModal";
 
 const { Content } = Layout;
 
@@ -19,7 +19,7 @@ const AdminPatientPage = () => {
   const { CSRF_token } = useSelector((state) => state.auth);
   const [error, setError] = useState(null)
   const[isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
-  const[isConfirmModalLoading, setIsConfirmModalLoading] = useState(false)
+  const[isConfirmLoading, setIsConfirmLoading] = useState(false)
   const [selectedAppointmentId, setSelectedAppointmentId] = useState(null)
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -97,10 +97,10 @@ const getAppointmentsByPatientIdAsync = useCallback(
   }));
 
   const handleOk = async () => {
-    setIsConfirmModalLoading(true);
+    setIsConfirmLoading(true);
     const result = await deleteAppointmentById(selectedAppointmentId, CSRF_token);
     if(result.status === "success"){
-       setIsConfirmModalLoading(false);
+       setIsConfirmLoading(false);
        setIsConfirmModalOpen(false);
        setSelectedAppointmentId(null);
        getAppointmentsByPatientIdAsync();
@@ -126,7 +126,7 @@ const getAppointmentsByPatientIdAsync = useCallback(
         description={"將從資料庫刪除病患掛號資料，確定要進行此操作？"}
         isOpen={isConfirmModalOpen}
         handleOk={handleOk}
-        isLoading={isConfirmModalLoading}
+        isLoading={isConfirmLoading}
         handleCancel={handleCancel}
       />
     </Content>

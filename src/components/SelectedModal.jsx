@@ -50,6 +50,7 @@ const SelectedModal = ({
     setIsCreatedAppointment(false)
     form.resetFields();
   };
+
   //使用者未登入掛號
   const handleSubmit = async (values) => {
     if (recaptcha === "") {
@@ -66,7 +67,6 @@ const SelectedModal = ({
       recaptchaResponse: recaptcha,
       doctorScheduleId: selectedAppointment.id,
     };
-
     if (isFirstCreateAppointment) {
       requestData = {
         idNumber: values.idNumber,
@@ -75,6 +75,7 @@ const SelectedModal = ({
         doctorScheduleId: selectedAppointment.id,
         name: values.name,
       };
+     
       await createFirstAppointment(requestData);
       setIsSubmitLoading(false);
       //掛號成功
