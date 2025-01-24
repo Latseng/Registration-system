@@ -149,3 +149,42 @@ export const cancelAppointment = async (
     }
   }
 };
+
+//查詢歷史掛號紀錄
+export const getPreviousAppointmentsBypatient = async (payload) => {
+  const {
+    idNumber,
+    birthDate,
+    recaptchaResponse,
+    CSRF_token,
+    isAuthenticated,
+  } = payload;
+  //使用者已登入
+  if (isAuthenticated) {
+    try {
+      const res = await axios.post(
+        `${baseURL}/appointments/by-patient/past`,
+        {
+          recaptchaResponse,
+        },
+        { headers: { "x-csrf-Token": CSRF_token } }
+      );
+      return res.data;
+    } catch (error) {
+      console.error("[Get Previous Appointments failed]: ", error);
+      return error.response;
+    }
+  }
+  //未註冊使用者
+  try {
+    const res = await axios.post(`${baseURL}/appointments/by-patient/past`, {
+      idNumber,
+      birthDate,
+      recaptchaResponse,
+    });
+    return res.data;
+  } catch (error) {
+    console.error("[Get Previous Appointments failed]: ", error);
+    return error.response;
+  }
+};

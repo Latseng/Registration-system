@@ -13,6 +13,7 @@ import AdminDoctorAppointmentsPage from "./AdminDoctorAppointmentsPage";
 import AdminPatientPage from "./AdminPatientPage";
 import UserInfoPage from "./UserInfoPage"
 import AdminPatientAppointmentPage from "./AdminPatientAppointmentPage"
+import AppointmentHistoryPage from "./AppointmentHistoryPage";
 
 export {
   MainPage,
@@ -30,4 +31,5 @@ export {
   AdminPatientPage,
   AdminPatientAppointmentPage,
   UserInfoPage,
+  AppointmentHistoryPage,
 };

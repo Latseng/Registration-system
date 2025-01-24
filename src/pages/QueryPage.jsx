@@ -19,6 +19,7 @@ import { setLogin } from "../store/authSlice";
 import { CSRF_request } from "../api/auth";
 import ReCAPTCHA from "react-google-recaptcha";
 import { idNumberValidation } from "../helper/idNumber";
+import { useLocation } from "react-router-dom";
 
 const { Content } = Layout;
 const { confirm } = Modal;
@@ -50,7 +51,7 @@ const QueryPage = () => {
   const [birthDate, setBirthDate] = useState("");
   const [recaptchaError, setRecaptchaError] = useState("");
   const [formDataError, setFormDataError] = useState("");
-
+  const location = useLocation();
   const isDesktop = useRWD();
 
   const isCallGoogle = useRef(false);
@@ -424,13 +425,13 @@ const QueryPage = () => {
   useEffect(() => {
     //檢查使用者是否為登入狀態
     if (isAuthenticated && role === "patient") {
+      setIsReadable(true);
       setIsPageLoading(true);
       const queryPayload = {
         isAuthenticated,
         CSRF_token,
       };
       getAppointmentsDataAsync(queryPayload);
-      setIsReadable(true);
     }
   },[CSRF_token, getAppointmentsDataAsync, isAuthenticated, role])
 
@@ -438,11 +439,15 @@ const QueryPage = () => {
     //新掛號建立後，病患可立即查看
     const queryString = window.location.search;
     if (queryString.includes("appointmentStatus=success")) {
+      //是否為掛號成功的未登入使用者
+      if(location.state) {
+        getAppointmentsDataAsync(location.state.requestPayload)
+      }
       setIsPageLoading(true);
       setIsAppointmentSuccess(true);
       setIsReadable(true);
     }
-  },[])
+  },[getAppointmentsDataAsync, location.state])
 
   return (
     <>

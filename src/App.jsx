@@ -15,7 +15,8 @@ import {
   AdminDoctorAppointmentsPage,
   AdminPatientPage,
   AdminPatientAppointmentPage,
-  UserInfoPage
+  UserInfoPage,
+  AppointmentHistoryPage
 } from "./pages";
 import LayoutWithSidebar from "./components/LayoutWithSidebar";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -49,6 +50,7 @@ function App() {
               />
               <Route path="query" element={<QueryPage />} />
               <Route path="doctors" element={<DoctorsPage />} />
+              <Route path="history" element={<AppointmentHistoryPage />} />
               {/* 管理者頁面 */}
               <Route element={<ProtectedRoute requiredRole="admin" />}>
                 <Route

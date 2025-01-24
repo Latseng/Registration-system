@@ -20,7 +20,7 @@ const LayoutWithSidebar = () => {
     items: [
       {
         key: "1",
-        label: "快速掛號",
+        label: "門診科別",
       },
       {
         key: "2",
@@ -30,6 +30,10 @@ const LayoutWithSidebar = () => {
         key: "3",
         label: "醫師專長查詢",
       },
+      {
+        key: "4",
+        label: "歷史掛號紀錄",
+      }
     ],
     onClickPage: (e) => {
       switch (e.key) {
@@ -42,6 +46,9 @@ const LayoutWithSidebar = () => {
         case "3":
           navigate("/doctors");
           break;
+        case "4":
+          navigate("/history");
+          break;
         default:
           break;
       }
@@ -52,6 +59,8 @@ const LayoutWithSidebar = () => {
           return "2";
         case "/doctors":
           return "3";
+        case "/history":
+          return "4";
         default:
           return "1";
       }

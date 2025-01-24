@@ -6,7 +6,7 @@ import { useState } from "react";
 import { createAppointment, createFirstAppointment } from "../api/appointments";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { AiOutlineFileDone } from "react-icons/ai";
+
 
 const gridStyle = {
   width: "25%",
@@ -37,7 +37,6 @@ const SelectedModal = ({
   const [messageApi, contextHolder] = message.useMessage();
   const [recaptcha, setRecaptcha] = useState("");
   const [recaptchaError, setRecaptchaError] = useState("");
-  const [isCreatedAppointment, setIsCreatedAppointment] = useState(false);
 
   const handlerecaptchaChange = (value) => {
     setRecaptcha(value);
@@ -47,7 +46,6 @@ const SelectedModal = ({
     setIsModalOpen(false);
     setSelectedDoctor(null);
     setSelectedAppointment(null);
-    setIsCreatedAppointment(false)
     form.resetFields();
   };
 
@@ -75,11 +73,19 @@ const SelectedModal = ({
         doctorScheduleId: selectedAppointment.id,
         name: values.name,
       };
-     
+
       await createFirstAppointment(requestData);
       setIsSubmitLoading(false);
       //掛號成功
-      setIsCreatedAppointment(true);
+      //頁面導向，並帶入新掛號建立成功true
+      navigate("/query?appointmentStatus=success", {
+        state: {
+          requestPayload: {
+            idNumber: values.idNumber,
+            birthDate: birthDate,
+          },
+        },
+      });
       form.resetFields();
       return;
     }
@@ -104,7 +110,13 @@ const SelectedModal = ({
       return;
     }
     //掛號成功
-    setIsCreatedAppointment(true);
+    //頁面導向，並帶入新掛號建立成功true
+    navigate("/query?appointmentStatus=success", {
+      state: { requestPayload: {
+        idNumber: values.idNumber,
+        birthDate: birthDate,
+      } },
+    });
     form.resetFields();
   };
 
@@ -129,7 +141,7 @@ const SelectedModal = ({
       return;
     }
     form.resetFields();
-    //頁面導向，並帶入新掛號建立成功true
+    //頁面導向，並帶入新掛號建立成功
     navigate("/query?appointmentStatus=success");
   };
 
@@ -204,12 +216,6 @@ const SelectedModal = ({
         ) : (
           <>
             <h1 className="text-center text-xl font-bold">掛號資訊</h1>
-            {isCreatedAppointment && (
-              <div className="my-4 flex justify-center items-center gap-2">
-                <AiOutlineFileDone className="text-green-500" size={24} />
-                <p className="text-lg font-bold">掛號成功</p>
-              </div>
-            )}
             <div className="my-4 text-center text-lg">
               <p>{selectedAppointment.specialty}</p>
               <p>
@@ -218,12 +224,7 @@ const SelectedModal = ({
               </p>
               <p>{selectedAppointment.doctor} 醫師</p>
             </div>
-            {isCreatedAppointment && (
-              <Button className="w-full" type="primary" onClick={handleCancel}>
-                確定
-              </Button>
-            )}
-            {!isCreatedAppointment && (
+           
               <Form
                 form={form}
                 onFinish={handleSubmit}
@@ -276,7 +277,7 @@ const SelectedModal = ({
                   </Flex>
                 </Form.Item>
               </Form>
-            )}
+            
           </>
         ))}
     </Modal>

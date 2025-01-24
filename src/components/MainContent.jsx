@@ -20,7 +20,7 @@ const MainContent = ({handleClick}) => {
           className="w-48 h-12 md:ml-20 animate-slideInRight"
           type="primary"
         >
-          快速掛號
+          我要掛號
         </Button>
       </div>
     </Content>

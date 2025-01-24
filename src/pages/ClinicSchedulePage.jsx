@@ -335,7 +335,6 @@ const isDesktop = useRWD()
                     >
                       <p>{schedule.date}</p>
                       <p>{schedule.scheduleSlot}診</p>
-                      {console.log(d)}
                       <p>已掛號{schedule.bookedAppointments}人</p>
                     </Card.Grid>
                   ))}
