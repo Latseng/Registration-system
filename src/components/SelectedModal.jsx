@@ -1,31 +1,31 @@
-import { Modal, Avatar, Card, Form, Flex, Button, Input, message } from "antd";
+import { Modal, Avatar, Form, Flex, Button, Input, message } from "antd";
 import DatePicker from "./DatePicker";
 import ReCAPTCHA from "react-google-recaptcha";
 import PropTypes from "prop-types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createAppointment, createFirstAppointment } from "../api/appointments";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import DoctorSchedulesTable from "./DoctorSchedulesTable";
+import {formattedDate} from "../helper/dateUtils";
 
 
-const gridStyle = {
-  width: "25%",
-  textAlign: "center",
-};
+// const gridStyle = {
+//   width: "25%",
+//   textAlign: "center",
+// };
 
 const SelectedModal = ({
   selectedDoctor,
   isModalOpen,
-  handleAppointment,
-  selectedAppointment,
   isFirstCreateAppointment,
   isModalLoading,
   isSubmitLoading,
   setIsSubmitLoading,
   setIsFirstCreateAppointment,
-  setSelectedAppointment,
   setSelectedDoctor,
   setIsModalOpen,
+  scheduleData
 }) => {
   const [form] = Form.useForm();
   const [isAppointmentLoading, setIsAppointmentLoading] = useState(false);
@@ -37,6 +37,7 @@ const SelectedModal = ({
   const [messageApi, contextHolder] = message.useMessage();
   const [recaptcha, setRecaptcha] = useState("");
   const [recaptchaError, setRecaptchaError] = useState("");
+  const [selectedAppointmentData, setSelectedAppointmentData] = useState(null);
 
   const handlerecaptchaChange = (value) => {
     setRecaptcha(value);
@@ -45,7 +46,7 @@ const SelectedModal = ({
   const handleCancel = () => {
     setIsModalOpen(false);
     setSelectedDoctor(null);
-    setSelectedAppointment(null);
+    setSelectedAppointmentData(null);
     form.resetFields();
   };
 
@@ -63,14 +64,15 @@ const SelectedModal = ({
       idNumber: values.idNumber,
       birthDate: birthDate,
       recaptchaResponse: recaptcha,
-      doctorScheduleId: selectedAppointment.id,
+      doctorScheduleId: selectedAppointmentData.doctorScheduleId,
     };
+    
     if (isFirstCreateAppointment) {
       requestData = {
         idNumber: values.idNumber,
         birthDate: birthDate,
         recaptchaResponse: recaptcha,
-        doctorScheduleId: selectedAppointment.id,
+        doctorScheduleId: selectedAppointmentData.doctorScheduleId,
         name: values.name,
       };
 
@@ -125,7 +127,7 @@ const SelectedModal = ({
     setIsAppointmentLoading(true);
     const requestData = {
       recaptchaResponse: recaptcha,
-      doctorScheduleId: selectedAppointment.id,
+      doctorScheduleId: selectedAppointmentData.doctorScheduleId,
       isAuthenticated,
       CSRF_token,
     };
@@ -144,6 +146,38 @@ const SelectedModal = ({
     //頁面導向，並帶入新掛號建立成功
     navigate("/query?appointmentStatus=success");
   };
+
+   const handleAppointment = (schedule) => {
+     setSelectedDoctor(null);
+     setSelectedAppointmentData({
+       specialty: schedule.specialty,
+       date: formattedDate(schedule.date),
+       doctorName: schedule.doctorName,
+       time: schedule.scheduleSlot.includes("Morning") ? "上午診" : "下午診",
+       doctorScheduleId: schedule.doctorScheduleId,
+     });
+    
+     console.log({
+      specialty: schedule.specialty,
+       date: formattedDate(schedule.date),
+       doctorName: schedule.doctorName,
+       time: schedule.scheduleSlot.includes("Morning") ? "上午診" : "下午診",
+       doctorScheduleId: schedule.doctorScheduleId,
+     });
+     
+   };
+
+   useEffect(() => {
+     if (scheduleData) {
+       setSelectedAppointmentData({
+         specialty: scheduleData.specialty,
+         date: formattedDate(scheduleData.date),
+         doctorName: scheduleData.doctorName,
+         time: scheduleData.scheduleSlot.includes("Morning") ? "上午診" : "下午診",
+         doctorScheduleId: scheduleData.doctorScheduleId,
+       });
+     }
+   }, [scheduleData]);
 
   return (
     <Modal
@@ -168,7 +202,7 @@ const SelectedModal = ({
             <p>科別： {selectedDoctor.specialty}</p>
             <p>專長：{JSON.parse(selectedDoctor.description).join("、")}</p>
           </div>
-          <Card className="my-4" title="可掛號時段">
+          {/* <Card className="my-4" title="可掛號時段">
             {selectedDoctor.schedules.map((schedule) => (
               <Card.Grid
                 className="cursor-pointer hover:text-blue-500"
@@ -188,20 +222,22 @@ const SelectedModal = ({
                 <p>已掛號{schedule.bookedAppointments}人</p>
               </Card.Grid>
             ))}
-          </Card>
+          </Card> */}
+          <DoctorSchedulesTable
+            handleAppointment={handleAppointment}
+            doctorId={selectedDoctor.id}
+          />
         </div>
       )}
-      {selectedAppointment &&
+      {selectedAppointmentData &&
         (isPatientLogin ? (
           <div className="text-center">
             <h1 className="text-xl font-bold">掛號資訊</h1>
             <div className="my-4 text-base">
-              <p>
-                {selectedAppointment.date}
-                {selectedAppointment.time}
-              </p>
-              <p>{selectedAppointment.specialty}</p>
-              <p>{selectedAppointment.doctor} 醫師</p>
+              <p>科別：{selectedAppointmentData.specialty}</p>
+              <p>日期：{selectedAppointmentData.date}</p>
+              <p>時段：{selectedAppointmentData.time}</p>
+              <p>醫師：{selectedAppointmentData.doctorName}</p>
             </div>
             <p className="my-4">將幫您預約以上門診，確定要掛號嗎？</p>
             <Button
@@ -216,68 +252,65 @@ const SelectedModal = ({
         ) : (
           <>
             <h1 className="text-center text-xl font-bold">掛號資訊</h1>
-            <div className="my-4 text-center text-lg">
-              <p>{selectedAppointment.specialty}</p>
-              <p>
-                {selectedAppointment.date}
-                {selectedAppointment.time}
-              </p>
-              <p>{selectedAppointment.doctor} 醫師</p>
+            <div className="my-8 ml-20 text-lg">
+              <p>科別：{selectedAppointmentData.specialty}</p>
+              <p>日期：{selectedAppointmentData.date}</p>
+              <p>時段：{selectedAppointmentData.time}</p>
+              <p>醫師：{selectedAppointmentData.doctorName}</p>
             </div>
-           
-              <Form
-                form={form}
-                onFinish={handleSubmit}
-                labelCol={{ span: 8 }}
-                className="w-full max-w-md"
-              >
-                <Form.Item
-                  label="身分證字號"
-                  name="idNumber"
-                  rules={[{ required: true, message: "請輸入身分證字號" }]}
-                >
-                  <Input placeholder="請輸入身分證字號" />
-                </Form.Item>
-                <Form.Item label="生日" name="birthday">
-                  <DatePicker form={form} />
-                </Form.Item>
-                {isFirstCreateAppointment && (
-                  <>
-                    <h4 className="m-4 text-center text-base text-red-500">
-                      您為初次掛號，請填寫以下資料
-                    </h4>
-                    <Form.Item
-                      label="姓名"
-                      name="name"
-                      rules={[{ required: true, message: "請輸入姓名" }]}
-                    >
-                      <Input placeholder="請輸入姓名" />
-                    </Form.Item>
-                  </>
-                )}
-                {recaptchaError !== "" && (
-                  <span className="text-red-500 ml-20">{recaptchaError}</span>
-                )}
-                <ReCAPTCHA
-                  className="my-4 ml-20"
-                  sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
-                  onChange={handlerecaptchaChange}
-                />
-                <Form.Item>
-                  <Flex gap="middle" justify="center">
-                    <Button onClick={handleCancel}>取消</Button>
 
-                    <Button
-                      type="primary"
-                      loading={isSubmitLoading}
-                      htmlType="submit"
-                    >
-                      送出
-                    </Button>
-                  </Flex>
-                </Form.Item>
-              </Form>
-            
+            <Form
+              form={form}
+              onFinish={handleSubmit}
+              labelCol={{ span: 8 }}
+              className="w-full max-w-md"
+            >
+              <Form.Item
+                label="身分證字號"
+                name="idNumber"
+                rules={[{ required: true, message: "請輸入身分證字號" }]}
+              >
+                <Input placeholder="請輸入身分證字號" />
+              </Form.Item>
+              <Form.Item label="生日" name="birthday">
+                <DatePicker form={form} />
+              </Form.Item>
+              {isFirstCreateAppointment && (
+                <>
+                  <h4 className="m-4 text-center text-base text-red-500">
+                    您為初次掛號，請填寫以下資料
+                  </h4>
+                  <Form.Item
+                    label="姓名"
+                    name="name"
+                    rules={[{ required: true, message: "請輸入姓名" }]}
+                  >
+                    <Input placeholder="請輸入姓名" />
+                  </Form.Item>
+                </>
+              )}
+              {recaptchaError !== "" && (
+                <span className="text-red-500 ml-20">{recaptchaError}</span>
+              )}
+              <ReCAPTCHA
+                className="my-4 ml-20"
+                sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
+                onChange={handlerecaptchaChange}
+              />
+              <Form.Item>
+                <Flex gap="middle" justify="center">
+                  <Button onClick={handleCancel}>取消</Button>
+
+                  <Button
+                    type="primary"
+                    loading={isSubmitLoading}
+                    htmlType="submit"
+                  >
+                    送出
+                  </Button>
+                </Flex>
+              </Form.Item>
+            </Form>
           </>
         ))}
     </Modal>
@@ -287,16 +320,14 @@ SelectedModal.propTypes = {
   selectedDoctor: PropTypes.object,
   isModalOpen: PropTypes.bool.isRequired,
   handleCancel: PropTypes.func,
-  handleAppointment: PropTypes.func,
-  selectedAppointment: PropTypes.object,
   isFirstCreateAppointment: PropTypes.bool,
   isModalLoading: PropTypes.bool,
   isSubmitLoading: PropTypes.bool,
   setIsSubmitLoading: PropTypes.func,
   setIsFirstCreateAppointment: PropTypes.func,
-  setSelectedAppointment: PropTypes.func,
   setSelectedDoctor: PropTypes.func,
   setIsModalOpen: PropTypes.func,
+  scheduleData: PropTypes.object,
 };
 
 export default SelectedModal;

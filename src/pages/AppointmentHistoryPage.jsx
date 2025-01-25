@@ -40,6 +40,7 @@ const AppointmentHistoryPage = () => {
   const [isReadable, setIsReadable] = useState(false);
   const [recaptcha, setRecaptcha] = useState("");
   const [recaptchaError, setRecaptchaError] = useState("");
+  const [selectedDoctorId, setSelectedDoctorId] = useState("");
   //使用者未登入，操作用到的暫存身份資料
   const [idNumber, setIdNumber] = useState("");
   const [birthDate, setBirthDate] = useState("");
@@ -50,6 +51,7 @@ const AppointmentHistoryPage = () => {
 
   const handleClick = (value) => {
     console.log(value);
+    setSelectedDoctorId(value);
     
   }
 
@@ -77,7 +79,7 @@ const AppointmentHistoryPage = () => {
     {
       render: (_, record) =>
          (
-          <Button onClick={() => handleClick(record)}>
+          <Button onClick={() => handleClick(record.doctorId)}>
             快速掛號
           </Button>
         )
@@ -88,6 +90,7 @@ const AppointmentHistoryPage = () => {
       key: item.appointmentId,
       appointmentId: item.appointmentId,
       doctorScheduleId: item.doctorScheduleId,
+      doctorId: item.doctorId,
       date: item.date,
       scheduleSlot: item.scheduleSlot,
       specialty: item.doctorSpecialty,
@@ -250,12 +253,6 @@ const AppointmentHistoryPage = () => {
           appointments.length > 0 ? (
             <>
               <h1 className="text-2xl mb-6">您的歷史掛號紀錄</h1>
-              {isAppointmentSuccess && (
-                <div className="flex items-center justify-center text-lg">
-                  <GrStatusGood className="text-green-500" />
-                  <span>掛號成功</span>
-                </div>
-              )}
               <div className="overflow-x-auto">
                 <Table columns={columns} dataSource={tableData} />
               </div>
@@ -273,7 +270,7 @@ const AppointmentHistoryPage = () => {
             }}
             onFinish={handleFinish}
           >
-            <h1 className="text-2xl mb-6">歷史掛號紀錄查詢</h1>
+            <h1 className="text-2xl mb-6">歷史掛號查詢</h1>
             <Form.Item
               label="身份證字號"
               name="idNumber"

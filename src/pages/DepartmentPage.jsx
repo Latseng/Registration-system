@@ -1,9 +1,12 @@
 import { Layout, Input, Card, message } from "antd";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState,useRef } from "react";
 import { getSpecialties } from "../api/specialties";
 import LoginButton from "../components/LoginButton";
 import useRWD from "../hooks/useRWD";
+import { useDispatch } from "react-redux";
+import { setLogin } from "../store/authSlice";
+import { CSRF_request } from "../api/auth";
 
 const { Content } = Layout;
 const { Search } = Input;
@@ -20,6 +23,9 @@ const DepartmentPage = () => {
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [messageApi, contextHolder] = message.useMessage();
   const location = useLocation();
+  const dispatch = useDispatch();
+
+  const isCallGoogle = useRef(false);
 
   const warning = (value) => {
     messageApi.open({
@@ -79,6 +85,30 @@ const DepartmentPage = () => {
   const handleChange = (event) => {
     setSearchValue(event.target.value);
   };
+
+   useEffect(() => {
+     //如果第三方登入驗證成功的話，存入登入狀態資料
+     const queryString = window.location.search; //第三方登入狀態判斷
+     if (queryString.includes("true") && !isCallGoogle.value) {
+       const getCSRFtokenAsync = async () => {
+         try {
+           const res = await CSRF_request();
+           dispatch(
+             setLogin({
+               user: { account: "google account" },
+               role: "patient",
+               CSRF_token: res.data.csrfToken,
+               expiresIn: 3600, //設定登入時效為一小時 = 3600秒
+             })
+           );
+           isCallGoogle.value = true;
+         } catch (error) {
+           console.error(error);
+         }
+       };
+       getCSRFtokenAsync();
+     }
+   }, [dispatch]);
 
   return (
     <Content className="bg-gray-100 p-6">

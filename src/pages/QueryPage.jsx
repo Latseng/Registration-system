@@ -1,5 +1,5 @@
 import { Layout, Form, Input, Button, Modal, List, Table, message } from "antd";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   getAppointmentsBypatient,
   cancelAppointment,
@@ -9,17 +9,17 @@ import { FaRegUser } from "react-icons/fa";
 import DatePicker from "../components/DatePicker";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { GrStatusGood } from "react-icons/gr";
 import LoginButton from "../components/LoginButton";
 import { useNavigate, Link } from "react-router-dom";
 import { ExclamationCircleFilled } from "@ant-design/icons";
 import useRWD from "../hooks/useRWD";
-import { setLogin } from "../store/authSlice";
-import { CSRF_request } from "../api/auth";
 import ReCAPTCHA from "react-google-recaptcha";
 import { idNumberValidation } from "../helper/idNumber";
 import { useLocation } from "react-router-dom";
+import { getDoctorById } from "../api/doctors";
+import SelectedModal from "../components/SelectedModal";
 
 const { Content } = Layout;
 const { confirm } = Modal;
@@ -27,7 +27,6 @@ dayjs.extend(customParseFormat);
 
 const QueryPage = () => {
   const [form] = Form.useForm();
-  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [appointments, setAppointments] = useState([]);
   const [messageApi, contextHolder] = message.useMessage();
@@ -45,6 +44,12 @@ const QueryPage = () => {
   const [selectedAppointment, setSelectedAppointment] = useState({});
   const [isReadable, setIsReadable] = useState(false);
   const [recaptcha, setRecaptcha] = useState("");
+  const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalLoading, setIsModalLoading] = useState(false); 
+  const [isFirstCreateAppointment, setIsFirstCreateAppointment] =
+    useState(false);
+  const [isSubmitLoading, setIsSubmitLoading] = useState(false);
 
   //使用者未登入，操作用到的暫存身份資料
   const [idNumber, setIdNumber] = useState("");
@@ -53,8 +58,6 @@ const QueryPage = () => {
   const [formDataError, setFormDataError] = useState("");
   const location = useLocation();
   const isDesktop = useRWD();
-
-  const isCallGoogle = useRef(false);
 
   const columns = [
     {
@@ -97,11 +100,17 @@ const QueryPage = () => {
           <Button onClick={() => handleClick("again", record)}>重新掛號</Button>
         ),
     },
+    {
+      render: (_, record) => (
+        <Button onClick={() => showDoctorInfo(record.doctorId)}>其他時段</Button>
+      ),
+    },
   ];
   const tableData = appointments
     .map((item) => ({
       key: item.appointmentId,
       appointmentId: item.appointmentId,
+      doctorId: item.doctorId,
       doctorScheduleId: item.doctorScheduleId,
       date: item.date,
       scheduleSlot: item.scheduleSlot,
@@ -215,15 +224,38 @@ const QueryPage = () => {
     setRecaptcha("");
   };
 
+//顯示醫師資訊
+ const showDoctorInfo = async (id) => {
+    setIsModalOpen(true);
+    setIsModalLoading(true);
+    const doctor = await getDoctorById(id);
+    const weekDay = ["日", "一", "二", "三", "四", "五", "六"];
+    const organizedSchedules = doctor.schedules.map((s) => {
+      const formattedDate =
+        dayjs(s.date).format("M/D") +
+        "（" +
+        weekDay[dayjs(s.date).day()] +
+        "）";
+      const formattedSlot = s.scheduleSlot.includes("Morning")
+        ? "上午診"
+        : "下午診";
+      return { ...s, date: formattedDate, scheduleSlot: formattedSlot };
+    });
+    const organizedDoctor = { ...doctor, schedules: organizedSchedules };
+    setSelectedDoctor(organizedDoctor);
+    setIsModalLoading(false);
+  };
+
   const handleClick = async (act, appointment) => {
     setSelectedAppointment(appointment);
     if (act === "cancel") {
       // 取消掛號確認
       setConfirmModal({ ...confirmModal, cancelModal: true });
       return;
-    }
-    // 重新掛號確認
-    setConfirmModal({ ...confirmModal, againModal: true });
+    } else if (act === "again") {
+      // 重新掛號確認
+      setConfirmModal({ ...confirmModal, againModal: true });
+    } 
   };
 
   //使用者已登入
@@ -399,30 +431,6 @@ const QueryPage = () => {
   };
 
   useEffect(() => {
-    //如果第三方登入驗證成功的話，存入登入狀態資料
-    const queryString = window.location.search; //第三方登入狀態判斷
-    if (queryString.includes("true") && !isCallGoogle.value) {
-     const getCSRFtokenAsync = async () => {
-    try {
-      const res = await CSRF_request();
-      dispatch(
-        setLogin({
-          user: { account: "google account" },
-          role: "patient",
-          CSRF_token: res.data.csrfToken,
-          expiresIn: 3600, //設定登入時效為一小時 = 3600秒
-        })
-      );
-      isCallGoogle.value = true;
-    } catch (error) {
-      console.error(error);
-    }
-    }
-    getCSRFtokenAsync();
-  }
-  },[dispatch])
-
-  useEffect(() => {
     //檢查使用者是否為登入狀態
     if (isAuthenticated && role === "patient") {
       setIsReadable(true);
@@ -485,7 +493,7 @@ const QueryPage = () => {
             }}
             onFinish={handleFinish}
           >
-            <h1 className="text-2xl mb-6">掛號資訊查詢</h1>
+            <h1 className="text-2xl mb-6">掛號查詢</h1>
             <Form.Item
               label="身份證字號"
               name="idNumber"
@@ -676,6 +684,19 @@ const QueryPage = () => {
             </div>
           </Modal>
         )}
+         <SelectedModal
+                  selectedDoctor={selectedDoctor}
+                  isModalOpen={isModalOpen}
+                  setSelectedDoctor={setSelectedDoctor}
+                  setIsSubmitLoading={setIsSubmitLoading}
+                  isFirstCreateAppointment={isFirstCreateAppointment}
+                  isModalLoading={isModalLoading}
+                  isSubmitLoading={isSubmitLoading}
+                  setIsFirstCreateAppointment={setIsFirstCreateAppointment}
+                  setIsModalOpen={setIsModalOpen}
+                  handleAppointment={handleAppointment}
+                  selectedAppointment={selectedAppointment}
+                />
       </Content>
     </>
   );

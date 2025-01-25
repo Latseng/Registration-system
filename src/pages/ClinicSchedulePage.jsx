@@ -21,6 +21,7 @@ import { getDoctorById } from "../api/doctors";
 import SelectedModal from "../components/SelectedModal";
 import LoginButton from "../components/LoginButton";
 import useRWD from "../hooks/useRWD";
+import { generateDates, mapSchedulesToSlots } from "../helper/dateUtils";
 
 const { Content } = Layout;
 const { Search } = Input;
@@ -29,27 +30,16 @@ const gridStyle = {
   textAlign: "center",
 };
 
-const generateDates = () => {
-  const dates = [];
-  for (let i = 0; i < 14; i++) {
-    const date = dayjs().add(i, "day");//以當前日期，創建一個起始日期
-    const formattedDate = `${date.format("M/D")}(${"日一二三四五六".charAt(
-      date.day()
-    )})`;
-
-    dates.push(formattedDate);
-  }
-  return dates;
-};
+const dates = generateDates();//兩個禮拜的日期陣列
 
 const ClinicSchedulePage = () => {
   const location = useLocation();
   const { specialty } = location.state;
-  const dates = generateDates();
   const [currentWeek, setCurrentWeek] = useState(0);
-  const weekDates = dates.slice(currentWeek * 7, (currentWeek + 1) * 7);
+  //兩個禮拜分割成各一個禮拜
+  const weekDates = dates.slice(currentWeek * 5, (currentWeek + 1) * 5);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedAppointment, setSelectedAppointment] = useState(null);
+ const [scheduleData, setScheduleData] = useState(null);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [schedules, setSchedules] = useState([]);
   const [displayMode, setDisplayMode] = useState("schedule");
@@ -61,6 +51,8 @@ const ClinicSchedulePage = () => {
   const [isModalLoading, setIsModalLoading] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
 const isDesktop = useRWD()
+
+
 
   useEffect(() => {
     const getSchedulesAsync = async () => {
@@ -82,18 +74,6 @@ const isDesktop = useRWD()
     }
   }, [searchValue, specialty]);
 
-  const mapSchedulesToSlots = (schedules, time, dates) => {
-    return dates.reduce((acc, date, index) => {
-      const filteredSchedules = schedules.filter(
-        (schedule) =>
-          schedule.scheduleSlot.includes(time) &&
-          dayjs(schedule.date).format("M/D") === date.split("(")[0]
-      );
-      acc[`date${index}`] = filteredSchedules;
-      return acc;
-    }, {});
-  };
-
   const columns = [
     {
       title: "時間",
@@ -107,11 +87,11 @@ const isDesktop = useRWD()
       dataIndex: `date${index}`,
       key: `date${index}`,
       className: "min-w-44",
-      render: (text, record) =>
-        text.map((doc, idx) => (
+      render: (text) =>
+        text.map((doctorSchedule, idx) => (
           <Flex key={idx} className="my-2">
             <Button
-              onClick={() => handleClickDoctorInfo(doc.doctorId)}
+              onClick={() => handleClickDoctorInfo(doctorSchedule.doctorId)}
               size="small"
               className="mr-1"
             >
@@ -119,21 +99,15 @@ const isDesktop = useRWD()
             </Button>
             <Button
               onClick={() =>
-                handleAppointment({
-                  id: doc.doctorScheduleId,
-                  date: date,
-                  doctor: doc.doctorName,
-                  specialty: doc.specialty,
-                  time: record.time,
-                })
+                handleAppointment(doctorSchedule)
               }
               size="small"
-              disabled={doc.bookedAppointments >= doc.maxAppointments}
+              disabled={doctorSchedule.bookedAppointments >= doctorSchedule.maxAppointments}
             >
-              {doc.doctorName} <br />{" "}
-              {doc.bookedAppointments >= doc.maxAppointments
+              {doctorSchedule.doctorName} <br />{" "}
+              {doctorSchedule.bookedAppointments >= doctorSchedule.maxAppointments
                 ? "額滿"
-                : `掛號人數: ${doc.bookedAppointments}`}
+                : `掛號人數: ${doctorSchedule.bookedAppointments}`}
             </Button>
           </Flex>
         )),
@@ -162,11 +136,12 @@ const isDesktop = useRWD()
     setCurrentWeek((prev) => (prev > 0 ? prev - 1 : prev));
   };
 
-  const handleAppointment = (appointment) => {
-    setSelectedDoctor(null);
-    setSelectedAppointment(appointment);
+  const handleAppointment = (schedule) => {
+    setScheduleData(schedule);
     setIsModalOpen(true);
   };
+
+
 
   const handleClickDoctorInfo = (id) => {
     setIsModalLoading(true);
@@ -348,14 +323,12 @@ const isDesktop = useRWD()
         selectedDoctor={selectedDoctor}
         isModalOpen={isModalOpen}
         setSelectedDoctor={setSelectedDoctor}
-        handleAppointment={handleAppointment}
-        selectedAppointment={selectedAppointment}
+        scheduleData={scheduleData}
         setIsSubmitLoading={setIsSubmitLoading}
         isFirstCreateAppointment={isFirstCreateAppointment}
         isModalLoading={isModalLoading}
         isSubmitLoading={isSubmitLoading}
         setIsFirstCreateAppointment={setIsFirstCreateAppointment}
-        setSelectedAppointment={setSelectedAppointment}
         setIsModalOpen={setIsModalOpen}
       />
     </>

@@ -5,7 +5,7 @@ import dayjs from "dayjs";
 import SelectedModal from "../components/SelectedModal";
 import LoginButton from "../components/LoginButton";
 import useRWD from "../hooks/useRWD";
-
+import { formattedDate } from "../helper/dateUtils";
 const { Content } = Layout;
 const { Search } = Input;
 
@@ -15,11 +15,11 @@ const DoctorsPage = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [searchValue, setSearchValue] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedAppointment, setSelectedAppointment] = useState(null)
   const [isFirstCreateAppointment, setIsFirstCreateAppointment] =
     useState(false);
   const [isSubmitLoading, setIsSubmitLoading] = useState(false);
   const [isModalLoading, setIsModalLoading] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [messageApi, contextHolder] = message.useMessage();
   const isDesktop = useRWD()
 
@@ -94,10 +94,26 @@ const DoctorsPage = () => {
     setSearchValue(event.target.value);
   };
 
-   const handleAppointment = (appointment) => {
-     setSelectedDoctor(null);
-     setSelectedAppointment(appointment);
-   };
+  const handleAppointment = (schedule) => {
+    setSelectedDoctor(null);
+    setSelectedAppointment({
+      specialty: schedule.specialty,
+      date: formattedDate(schedule.date),
+      doctorName: schedule.doctorName,
+      time: schedule.scheduleSlot.includes("Morning") ? "上午診" : "下午診",
+      doctorScheduleI: schedule.doctorScheduleId,
+    });
+    console.log(schedule);
+  
+    console.log({
+      specialty: schedule.specialty,
+      date: formattedDate(schedule.date),
+      doctorName: schedule.doctorName,
+      time: schedule.scheduleSlot.includes("Morning") ? "上午診" : "下午診",
+      doctorScheduleId: schedule.doctorScheduleId,
+    });
+    setIsModalOpen(true);
+  };
    
   return (
     <>
@@ -145,15 +161,14 @@ const DoctorsPage = () => {
           selectedDoctor={selectedDoctor}
           isModalOpen={isModalOpen}
           setSelectedDoctor={setSelectedDoctor}
-          handleAppointment={handleAppointment}
-          selectedAppointment={selectedAppointment}
           setIsSubmitLoading={setIsSubmitLoading}
           isFirstCreateAppointment={isFirstCreateAppointment}
           isModalLoading={isModalLoading}
           isSubmitLoading={isSubmitLoading}
           setIsFirstCreateAppointment={setIsFirstCreateAppointment}
-          setSelectedAppointment={setSelectedAppointment}
           setIsModalOpen={setIsModalOpen}
+          handleAppointment={handleAppointment}
+          selectedAppointment={selectedAppointment}
         />
       </Content>
     </>
