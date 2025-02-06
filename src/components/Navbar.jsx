@@ -181,6 +181,9 @@ const Navbar = ({ handleClick, currentPage }) => {
                 items,
                 onClick: (items) => {
                   switch (items.key) {
+                    case "0":
+                      navigate("/user");
+                      break;
                     case "3":
                       handleLogout();
                       break;

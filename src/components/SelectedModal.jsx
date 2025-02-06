@@ -7,13 +7,8 @@ import { createAppointment, createFirstAppointment } from "../api/appointments";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import DoctorSchedulesTable from "./DoctorSchedulesTable";
-import {formattedDate} from "../helper/dateUtils";
+import { formattedDate } from "../helper/dateUtils";
 
-
-// const gridStyle = {
-//   width: "25%",
-//   textAlign: "center",
-// };
 
 const SelectedModal = ({
   selectedDoctor,
@@ -25,7 +20,8 @@ const SelectedModal = ({
   setIsFirstCreateAppointment,
   setSelectedDoctor,
   setIsModalOpen,
-  scheduleData
+  scheduleData,
+  getAppointmentsDataAsync,
 }) => {
   const [form] = Form.useForm();
   const [isAppointmentLoading, setIsAppointmentLoading] = useState(false);
@@ -38,16 +34,29 @@ const SelectedModal = ({
   const [recaptcha, setRecaptcha] = useState("");
   const [recaptchaError, setRecaptchaError] = useState("");
   const [selectedAppointmentData, setSelectedAppointmentData] = useState(null);
+  const { idNumber, birthDate } = useSelector((state) => state.tempUser);
+  const [error, setError] = useState("");
+  const [prevModalState, setPrevModalState] = useState(null)
 
   const handlerecaptchaChange = (value) => {
     setRecaptcha(value);
     setRecaptchaError("");
   };
-  const handleCancel = () => {
+  
+  const handleCancel = (value) => {
+    setIsSubmitLoading(false);
+    if(value === "doctor") {
+      setSelectedAppointmentData(null);
+      setSelectedDoctor(prevModalState)
+      form.resetFields();
+      setError("");
+      return
+    }
     setIsModalOpen(false);
     setSelectedDoctor(null);
     setSelectedAppointmentData(null);
     form.resetFields();
+    setError("")
   };
 
   //使用者未登入掛號
@@ -55,18 +64,28 @@ const SelectedModal = ({
     if (recaptcha === "") {
       return setRecaptchaError("請驗證reCaptcha");
     }
+    if (location.pathname === "/query"){
+      if (
+        values.idNumber !== idNumber ||
+        new Date(
+          Date.UTC(values.year, values.month - 1, values.day)
+        ).toISOString() !== birthDate
+      ) {
+        //使用者掛號輸入的資料不一致
+        return setError("身份資料輸入錯誤，請檢查身份證字號或生日是否正確");
+      }
+    }
     setIsSubmitLoading(true);
-    const birthDate = new Date(
-      Date.UTC(values.year, values.month - 1, values.day)
-    ).toISOString();
 
     let requestData = {
       idNumber: values.idNumber,
-      birthDate: birthDate,
+      birthDate: new Date(
+        Date.UTC(values.year, values.month - 1, values.day)
+      ).toISOString(),
       recaptchaResponse: recaptcha,
       doctorScheduleId: selectedAppointmentData.doctorScheduleId,
     };
-    
+
     if (isFirstCreateAppointment) {
       requestData = {
         idNumber: values.idNumber,
@@ -91,10 +110,10 @@ const SelectedModal = ({
       form.resetFields();
       return;
     }
+    
+    const result = await createAppointment(requestData);
 
-    const newAppointment = await createAppointment(requestData);
-
-    if (newAppointment === "You have already booked this time slot.") {
+    if (result === "You have already booked this time slot.") {
       messageApi.open({
         type: "warning",
         content: "重複掛號",
@@ -102,7 +121,7 @@ const SelectedModal = ({
       setIsSubmitLoading(false);
       return;
     }
-    if (typeof newAppointment === "string" && newAppointment.includes("初診")) {
+    if (typeof result === "string" && result.includes("初診")) {
       setIsSubmitLoading(false);
       setIsFirstCreateAppointment(true);
       messageApi.open({
@@ -113,12 +132,29 @@ const SelectedModal = ({
     }
     //掛號成功
     //頁面導向，並帶入新掛號建立成功true
-    navigate("/query?appointmentStatus=success", {
-      state: { requestPayload: {
-        idNumber: values.idNumber,
-        birthDate: birthDate,
-      } },
-    });
+    if (result.status === "success") {
+      setIsAppointmentLoading(false);
+      setIsModalOpen(false);
+      //如果不在查詢頁面則導向查詢頁面，並帶入新掛號建立成功
+      if (location.pathname !== "/query") {
+        navigate("/query?appointmentStatus=success", {
+          state: {
+            requestPayload: requestData,
+          },
+        });
+      } else {
+        //重新呼叫API資料，觸發重新渲染
+        await getAppointmentsDataAsync(
+          requestData
+        );
+        setSelectedAppointmentData(null);
+        messageApi.open({
+          type: "success",
+          content: "掛號成功",
+        });
+      }
+    }
+    setIsSubmitLoading(false)
     form.resetFields();
   };
 
@@ -126,15 +162,13 @@ const SelectedModal = ({
   const handleAppointmentLogin = async () => {
     setIsAppointmentLoading(true);
     const requestData = {
-      recaptchaResponse: recaptcha,
       doctorScheduleId: selectedAppointmentData.doctorScheduleId,
       isAuthenticated,
       CSRF_token,
     };
+    const result = await createAppointment(requestData);
 
-    const newAppointment = await createAppointment(requestData);
-
-    if (newAppointment === "You have already booked this time slot.") {
+    if (result === "You have already booked this time slot.") {
       messageApi.open({
         type: "warning",
         content: "重複掛號",
@@ -142,49 +176,60 @@ const SelectedModal = ({
       setIsAppointmentLoading(false);
       return;
     }
-    form.resetFields();
-    //頁面導向，並帶入新掛號建立成功
-    navigate("/query?appointmentStatus=success");
+    //掛號成功
+    if (result.status === "success") {
+      setIsAppointmentLoading(false);
+      setIsModalOpen(false);
+      //如果不在查詢頁面則導向查詢頁面，並帶入新掛號建立成功
+      if (location.pathname !== "/query") {
+        navigate("/query?appointmentStatus=success");
+      } else {
+        //重新呼叫API資料，觸發重新渲染
+        await getAppointmentsDataAsync({
+          isAuthenticated,
+          CSRF_token,
+        });
+        setSelectedAppointmentData(null)
+        messageApi.open({
+          type: "success",
+          content: "掛號成功",
+        });
+      }
+    }
   };
 
-   const handleAppointment = (schedule) => {
-     setSelectedDoctor(null);
-     setSelectedAppointmentData({
-       specialty: schedule.specialty,
-       date: formattedDate(schedule.date),
-       doctorName: schedule.doctorName,
-       time: schedule.scheduleSlot.includes("Morning") ? "上午診" : "下午診",
-       doctorScheduleId: schedule.doctorScheduleId,
-     });
-    
-     console.log({
+  const handleAppointment = (schedule) => {
+    setPrevModalState(selectedDoctor);
+    setSelectedDoctor(null);
+    setSelectedAppointmentData({
       specialty: schedule.specialty,
-       date: formattedDate(schedule.date),
-       doctorName: schedule.doctorName,
-       time: schedule.scheduleSlot.includes("Morning") ? "上午診" : "下午診",
-       doctorScheduleId: schedule.doctorScheduleId,
-     });
-     
-   };
+      date: formattedDate(schedule.date),
+      doctorName: schedule.doctorName,
+      time: schedule.scheduleSlot.includes("Morning") ? "上午診" : "下午診",
+      doctorScheduleId: schedule.doctorScheduleId,
+    });
+  };
 
-   useEffect(() => {
-     if (scheduleData) {
-       setSelectedAppointmentData({
-         specialty: scheduleData.specialty,
-         date: formattedDate(scheduleData.date),
-         doctorName: scheduleData.doctorName,
-         time: scheduleData.scheduleSlot.includes("Morning") ? "上午診" : "下午診",
-         doctorScheduleId: scheduleData.doctorScheduleId,
-       });
-     }
-   }, [scheduleData]);
+  useEffect(() => {
+    if (scheduleData) {
+      setSelectedAppointmentData({
+        specialty: scheduleData.specialty,
+        date: formattedDate(scheduleData.date),
+        doctorName: scheduleData.doctorName,
+        time: scheduleData.scheduleSlot.includes("Morning")
+          ? "上午診"
+          : "下午診",
+        doctorScheduleId: scheduleData.doctorScheduleId,
+      });
+    }
+  }, [scheduleData, selectedDoctor]);
 
   return (
     <Modal
       open={isModalOpen}
       loading={isModalLoading}
       title={isModalLoading && "醫師資訊"}
-      onCancel={() => handleCancel("doctor")}
+      onCancel={handleCancel}
       footer={null}
     >
       {contextHolder}
@@ -202,27 +247,6 @@ const SelectedModal = ({
             <p>科別： {selectedDoctor.specialty}</p>
             <p>專長：{JSON.parse(selectedDoctor.description).join("、")}</p>
           </div>
-          {/* <Card className="my-4" title="可掛號時段">
-            {selectedDoctor.schedules.map((schedule) => (
-              <Card.Grid
-                className="cursor-pointer hover:text-blue-500"
-                onClick={() =>
-                  handleAppointment({
-                    date: schedule.date,
-                    doctor: selectedDoctor.name,
-                    time: schedule.scheduleSlot,
-                    id: schedule.id,
-                  })
-                }
-                key={schedule.id}
-                style={gridStyle}
-              >
-                <p>{schedule.date}</p>
-                <p>{schedule.scheduleSlot}</p>
-                <p>已掛號{schedule.bookedAppointments}人</p>
-              </Card.Grid>
-            ))}
-          </Card> */}
           <DoctorSchedulesTable
             handleAppointment={handleAppointment}
             doctorId={selectedDoctor.id}
@@ -289,6 +313,9 @@ const SelectedModal = ({
                   </Form.Item>
                 </>
               )}
+              {error !== "" && (
+                <span className="text-red-500 ml-20">{error}</span>
+              )}
               {recaptchaError !== "" && (
                 <span className="text-red-500 ml-20">{recaptchaError}</span>
               )}
@@ -299,7 +326,7 @@ const SelectedModal = ({
               />
               <Form.Item>
                 <Flex gap="middle" justify="center">
-                  <Button onClick={handleCancel}>取消</Button>
+                  <Button onClick={() => handleCancel("doctor")}>返回</Button>
 
                   <Button
                     type="primary"
@@ -328,6 +355,7 @@ SelectedModal.propTypes = {
   setSelectedDoctor: PropTypes.func,
   setIsModalOpen: PropTypes.func,
   scheduleData: PropTypes.object,
+  getAppointmentsDataAsync: PropTypes.func
 };
 
 export default SelectedModal;

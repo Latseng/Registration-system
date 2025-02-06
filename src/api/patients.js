@@ -5,9 +5,9 @@ const baseURL = "https://registration-system-2gho.onrender.com/api";
 axios.defaults.headers.common["x-api-key"] = import.meta.env.VITE_API_KEY;
 axios.defaults.withCredentials = true;
 
-export const getPatientById = async (id, CSRF_token) => {
+export const getPatientById = async (CSRF_token) => {
   try {
-    const res = await axios.get(`${baseURL}/patients/${id}`, {
+    const res = await axios.get(`${baseURL}/patients/profile`,{
       headers: { "x-csrf-Token": CSRF_token },
     });
     return res.data;

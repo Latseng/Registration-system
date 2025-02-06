@@ -18,7 +18,7 @@ import { updateUser, setLogout } from "../store/authSlice";
 import Navbar from "../components/Navbar";
 import { logoutReqest } from "../api/auth";
 
-const LoginPage = () => {
+const UserInfoPage = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const dispatch = useDispatch();
@@ -46,7 +46,7 @@ const LoginPage = () => {
   const getPatientDataAsync = useCallback(async () => {
     try {
       setIsUserDataLoading(true);
-      const data = await getPatientById(user.id, CSRF_token);
+      const data = await getPatientById(CSRF_token);
       const result = {
         name: data.data.name,
         birthDate: dayjs(data.data.birthDate).format("YYYY-MM-DD"),
@@ -57,7 +57,7 @@ const LoginPage = () => {
     } catch (error) {
       console.error(error);
     }
-  }, [CSRF_token, user.id]);
+  }, [CSRF_token]);
 
   useEffect(() => {
     // 是否登入
@@ -217,4 +217,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default UserInfoPage;

@@ -5,7 +5,6 @@ import dayjs from "dayjs";
 import SelectedModal from "../components/SelectedModal";
 import LoginButton from "../components/LoginButton";
 import useRWD from "../hooks/useRWD";
-import { formattedDate } from "../helper/dateUtils";
 const { Content } = Layout;
 const { Search } = Input;
 
@@ -19,7 +18,6 @@ const DoctorsPage = () => {
     useState(false);
   const [isSubmitLoading, setIsSubmitLoading] = useState(false);
   const [isModalLoading, setIsModalLoading] = useState(false);
-  const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [messageApi, contextHolder] = message.useMessage();
   const isDesktop = useRWD()
 
@@ -93,27 +91,6 @@ const DoctorsPage = () => {
   const handleSearchChange = (event) => {
     setSearchValue(event.target.value);
   };
-
-  const handleAppointment = (schedule) => {
-    setSelectedDoctor(null);
-    setSelectedAppointment({
-      specialty: schedule.specialty,
-      date: formattedDate(schedule.date),
-      doctorName: schedule.doctorName,
-      time: schedule.scheduleSlot.includes("Morning") ? "上午診" : "下午診",
-      doctorScheduleI: schedule.doctorScheduleId,
-    });
-    console.log(schedule);
-  
-    console.log({
-      specialty: schedule.specialty,
-      date: formattedDate(schedule.date),
-      doctorName: schedule.doctorName,
-      time: schedule.scheduleSlot.includes("Morning") ? "上午診" : "下午診",
-      doctorScheduleId: schedule.doctorScheduleId,
-    });
-    setIsModalOpen(true);
-  };
    
   return (
     <>
@@ -167,8 +144,6 @@ const DoctorsPage = () => {
           isSubmitLoading={isSubmitLoading}
           setIsFirstCreateAppointment={setIsFirstCreateAppointment}
           setIsModalOpen={setIsModalOpen}
-          handleAppointment={handleAppointment}
-          selectedAppointment={selectedAppointment}
         />
       </Content>
     </>

@@ -1,23 +1,20 @@
-import { Layout, Form, Input, Button, Modal, List, Table, message } from "antd";
-import { useState, useEffect, useCallback, useRef } from "react";
-import {
-  getPreviousAppointmentsBypatient,
-} from "../api/appointments";
+import { Layout, Form, Input, Button, Modal, List, Table } from "antd";
+import { useState, useEffect, useCallback } from "react";
+import { getPreviousAppointmentsBypatient } from "../api/appointments";
 import { FaRegUser } from "react-icons/fa";
 import DatePicker from "../components/DatePicker";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
-import { useDispatch, useSelector } from "react-redux";
-import { GrStatusGood } from "react-icons/gr";
+import { useSelector, useDispatch } from "react-redux";
 import LoginButton from "../components/LoginButton";
 import { useNavigate, Link } from "react-router-dom";
 import { ExclamationCircleFilled } from "@ant-design/icons";
 import useRWD from "../hooks/useRWD";
-import { setLogin } from "../store/authSlice";
-import { CSRF_request } from "../api/auth";
 import ReCAPTCHA from "react-google-recaptcha";
 import { idNumberValidation } from "../helper/idNumber";
-import { useLocation } from "react-router-dom";
+import SelectedModal from "../components/SelectedModal";
+import { getDoctorById } from "../api/doctors";
+import { setTempUserData } from "../store/tempUserSlice";
 
 const { Content } = Layout;
 const { confirm } = Modal;
@@ -25,35 +22,45 @@ dayjs.extend(customParseFormat);
 
 const AppointmentHistoryPage = () => {
   const [form] = Form.useForm();
-  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [appointments, setAppointments] = useState([]);
-  const [messageApi, contextHolder] = message.useMessage();
   const [isLoading, setIsLoading] = useState(false);
-  const [requestData, setRequestData] = useState({});
   const [isPageLoading, setIsPageLoading] = useState(false);
-  const [isAppointmentSuccess, setIsAppointmentSuccess] = useState(false);
   const { isAuthenticated, role, CSRF_token } = useSelector(
     (state) => state.auth
   );
-  const [selectedAppointment, setSelectedAppointment] = useState({});
   const [isReadable, setIsReadable] = useState(false);
   const [recaptcha, setRecaptcha] = useState("");
   const [recaptchaError, setRecaptchaError] = useState("");
-  const [selectedDoctorId, setSelectedDoctorId] = useState("");
-  //使用者未登入，操作用到的暫存身份資料
-  const [idNumber, setIdNumber] = useState("");
-  const [birthDate, setBirthDate] = useState("");
-  const location = useLocation();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [isFirstCreateAppointment, setIsFirstCreateAppointment] =
+    useState(false);
+  const [isModalLoading, setIsModalLoading] = useState(false);
+  const [isSubmitLoading, setIsSubmitLoading] = useState(false);
   const isDesktop = useRWD();
+  const dispatch = useDispatch();
 
-  const isCallGoogle = useRef(false);
-
-  const handleClick = (value) => {
-    console.log(value);
-    setSelectedDoctorId(value);
-    
-  }
+  const showDoctorInfo = async (id) => {
+    setIsModalOpen(true);
+    setIsModalLoading(true);
+    const doctor = await getDoctorById(id);
+    const weekDay = ["日", "一", "二", "三", "四", "五", "六"];
+    const organizedSchedules = doctor.schedules.map((s) => {
+      const formattedDate =
+        dayjs(s.date).format("M/D") +
+        "（" +
+        weekDay[dayjs(s.date).day()] +
+        "）";
+      const formattedSlot = s.scheduleSlot.includes("Morning")
+        ? "上午診"
+        : "下午診";
+      return { ...s, date: formattedDate, scheduleSlot: formattedSlot };
+    });
+    const organizedDoctor = { ...doctor, schedules: organizedSchedules };
+    setSelectedDoctor(organizedDoctor);
+    setIsModalLoading(false);
+  };
 
   const columns = [
     {
@@ -77,27 +84,26 @@ const AppointmentHistoryPage = () => {
       dataIndex: "doctorName",
     },
     {
-      render: (_, record) =>
-         (
-          <Button onClick={() => handleClick(record.doctorId)}>
-            快速掛號
-          </Button>
-        )
+      render: (_, record) => (
+        <Button onClick={() => showDoctorInfo(record.doctorId)}>
+          快速掛號
+        </Button>
+      ),
     },
   ];
-  const tableData = appointments
-    .map((item) => ({
-      key: item.appointmentId,
-      appointmentId: item.appointmentId,
-      doctorScheduleId: item.doctorScheduleId,
-      doctorId: item.doctorId,
-      date: item.date,
-      scheduleSlot: item.scheduleSlot,
-      specialty: item.doctorSpecialty,
-      doctorName: item.doctorName,
-      consultationNumber: item.consultationNumber,
-      status: item.status === "CANCELED" ? "已取消" : "已掛號",
-    }))
+
+  const tableData = appointments.map((item) => ({
+    key: item.appointmentId,
+    appointmentId: item.appointmentId,
+    doctorScheduleId: item.doctorScheduleId,
+    doctorId: item.doctorId,
+    date: item.date,
+    scheduleSlot: item.scheduleSlot,
+    specialty: item.doctorSpecialty,
+    doctorName: item.doctorName,
+    consultationNumber: item.consultationNumber,
+    status: item.status === "CANCELED" ? "已取消" : "已掛號",
+  }));
 
   const getAppointmentsDataAsync = useCallback(
     async (data) => {
@@ -120,7 +126,6 @@ const AppointmentHistoryPage = () => {
             return { ...p, date: formattedDate, scheduleSlot: formattedSlot };
           });
 
-          setRequestData(data);
           setAppointments(organizedAppointments);
 
           setIsLoading(false);
@@ -129,6 +134,7 @@ const AppointmentHistoryPage = () => {
         //持有帳號的使用者必須登入才能查看掛號
         if (patientAppointments.data.message?.includes("登入")) {
           setIsLoading(false);
+          setIsPageLoading(false);
           confirm({
             title: "須先登入",
             icon: <ExclamationCircleFilled />,
@@ -153,6 +159,7 @@ const AppointmentHistoryPage = () => {
           return;
         }
         setIsPageLoading(false);
+        return "success";
       } catch (error) {
         console.error(error);
       }
@@ -160,12 +167,12 @@ const AppointmentHistoryPage = () => {
     [navigate]
   );
 
-  //處理查詢表單送出
+  //查詢表單送出
   const handleFinish = async (values) => {
     if (recaptcha === "") {
       return setRecaptchaError("請驗證reCaptcha");
     }
-    setIsLoading(true);
+
     const requestData = {
       idNumber: values.idNumber,
       birthDate: new Date(
@@ -173,45 +180,27 @@ const AppointmentHistoryPage = () => {
       ).toISOString(),
       recaptchaResponse: recaptcha,
     };
-    getAppointmentsDataAsync(requestData);
-    setIsReadable(true);
-    setIdNumber(values.idNumber);
-    setBirthDate(
-      new Date(
-        Date.UTC(values.year, values.month - 1, values.day)
-      ).toISOString()
-    );
-    setRecaptcha("");
+    const result = await getAppointmentsDataAsync(requestData);
+    //未註冊使用者查詢成功
+    if (result === "success") {
+      setIsReadable(true);
+      //未登入使用者狀態儲存，用以比對使用者再次輸入的掛號資料是否一致
+      dispatch(
+        setTempUserData({
+          idNumber: values.idNumber,
+          birthDate: new Date(
+            Date.UTC(values.year, values.month - 1, values.day)
+          ).toISOString(),
+        })
+      );
+      setRecaptcha("");
+    }
   };
 
   const handlerecaptchaChange = (value) => {
     setRecaptcha(value);
     setRecaptchaError("");
   };
-
-  useEffect(() => {
-    //如果第三方登入驗證成功的話，存入登入狀態資料
-    const queryString = window.location.search; //第三方登入狀態判斷
-    if (queryString.includes("true") && !isCallGoogle.value) {
-      const getCSRFtokenAsync = async () => {
-        try {
-          const res = await CSRF_request();
-          dispatch(
-            setLogin({
-              user: { account: "google account" },
-              role: "patient",
-              CSRF_token: res.data.csrfToken,
-              expiresIn: 3600, //設定登入時效為一小時 = 3600秒
-            })
-          );
-          isCallGoogle.value = true;
-        } catch (error) {
-          console.error(error);
-        }
-      };
-      getCSRFtokenAsync();
-    }
-  }, [dispatch]);
 
   useEffect(() => {
     //檢查使用者是否為登入狀態
@@ -226,23 +215,8 @@ const AppointmentHistoryPage = () => {
     }
   }, [CSRF_token, getAppointmentsDataAsync, isAuthenticated, role]);
 
-  useEffect(() => {
-    //新掛號建立後，病患可立即查看
-    const queryString = window.location.search;
-    if (queryString.includes("appointmentStatus=success")) {
-      //是否為掛號成功的未登入使用者
-      if (location.state) {
-        getAppointmentsDataAsync(location.state.requestPayload);
-      }
-      setIsPageLoading(true);
-      setIsAppointmentSuccess(true);
-      setIsReadable(true);
-    }
-  }, [getAppointmentsDataAsync, location.state]);
-
   return (
     <>
-      {contextHolder}
       {isDesktop && <LoginButton />}
       <Content className="bg-gray-100 p-4">
         {isPageLoading ? (
@@ -320,6 +294,17 @@ const AppointmentHistoryPage = () => {
             </Form.Item>
           </Form>
         )}
+        <SelectedModal
+          selectedDoctor={selectedDoctor}
+          isModalOpen={isModalOpen}
+          setSelectedDoctor={setSelectedDoctor}
+          setIsSubmitLoading={setIsSubmitLoading}
+          isFirstCreateAppointment={isFirstCreateAppointment}
+          isModalLoading={isModalLoading}
+          isSubmitLoading={isSubmitLoading}
+          setIsFirstCreateAppointment={setIsFirstCreateAppointment}
+          setIsModalOpen={setIsModalOpen}
+        />
       </Content>
     </>
   );

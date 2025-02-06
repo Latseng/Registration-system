@@ -9,7 +9,7 @@ import { FaRegUser } from "react-icons/fa";
 import DatePicker from "../components/DatePicker";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { GrStatusGood } from "react-icons/gr";
 import LoginButton from "../components/LoginButton";
 import { useNavigate, Link } from "react-router-dom";
@@ -20,6 +20,7 @@ import { idNumberValidation } from "../helper/idNumber";
 import { useLocation } from "react-router-dom";
 import { getDoctorById } from "../api/doctors";
 import SelectedModal from "../components/SelectedModal";
+import { setTempUserData } from "../store/tempUserSlice";
 
 const { Content } = Layout;
 const { confirm } = Modal;
@@ -46,14 +47,14 @@ const QueryPage = () => {
   const [recaptcha, setRecaptcha] = useState("");
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isModalLoading, setIsModalLoading] = useState(false); 
+  const [isModalLoading, setIsModalLoading] = useState(false);
   const [isFirstCreateAppointment, setIsFirstCreateAppointment] =
     useState(false);
   const [isSubmitLoading, setIsSubmitLoading] = useState(false);
 
   //使用者未登入，操作用到的暫存身份資料
-  const [idNumber, setIdNumber] = useState("");
-  const [birthDate, setBirthDate] = useState("");
+  const dispatch = useDispatch();
+  const { idNumber, birthDate } = useSelector((state) => state.tempUser);
   const [recaptchaError, setRecaptchaError] = useState("");
   const [formDataError, setFormDataError] = useState("");
   const location = useLocation();
@@ -102,7 +103,9 @@ const QueryPage = () => {
     },
     {
       render: (_, record) => (
-        <Button onClick={() => showDoctorInfo(record.doctorId)}>其他時段</Button>
+        <Button onClick={() => showDoctorInfo(record.doctorId)}>
+          其他時段
+        </Button>
       ),
     },
   ];
@@ -120,24 +123,11 @@ const QueryPage = () => {
       status: item.status === "CANCELED" ? "已取消" : "已掛號",
     }))
     .sort((a, b) => {
-      // 1. 根據狀態排序
       if (a.status === "已掛號" && b.status !== "已掛號") {
         return -1; // a 排在前
       }
       if (a.status !== "已掛號" && b.status === "已掛號") {
         return 1; // b 排在前
-      }
-
-      // 2. 狀態相同，根據日期排序
-      const dateA = new Date(dayjs(a.date, "M/D").toDate());
-      const dateB = new Date(dayjs(b.date, "M/D").toDate());
-
-      if (a.status === "已掛號") {
-        // 候診中：日期越近越前
-        return dateA - dateB;
-      } else {
-        // 非候診中：日期越晚越前
-        return dateB - dateA;
       }
     });
 
@@ -193,6 +183,7 @@ const QueryPage = () => {
           return;
         }
         setIsPageLoading(false);
+        return "success";
       } catch (error) {
         console.error(error);
       }
@@ -213,19 +204,27 @@ const QueryPage = () => {
       ).toISOString(),
       recaptchaResponse: recaptcha,
     };
-    getAppointmentsDataAsync(requestData);
+    const result = await getAppointmentsDataAsync(requestData);
     setIsReadable(true);
-    setIdNumber(values.idNumber);
-    setBirthDate(
-      new Date(
-        Date.UTC(values.year, values.month - 1, values.day)
-      ).toISOString()
-    );
+    //未註冊使用者查詢成功
+        if (result === "success") {
+          setIsReadable(true);
+          //未登入使用者狀態儲存，用以比對使用者再次輸入的掛號資料是否一致
+          dispatch(
+            setTempUserData({
+              idNumber: values.idNumber,
+              birthDate: new Date(
+                Date.UTC(values.year, values.month - 1, values.day)
+              ).toISOString(),
+            })
+          );
+          setRecaptcha("");
+        }
     setRecaptcha("");
   };
 
-//顯示醫師資訊
- const showDoctorInfo = async (id) => {
+  //顯示醫師資訊
+  const showDoctorInfo = async (id) => {
     setIsModalOpen(true);
     setIsModalLoading(true);
     const doctor = await getDoctorById(id);
@@ -255,7 +254,7 @@ const QueryPage = () => {
     } else if (act === "again") {
       // 重新掛號確認
       setConfirmModal({ ...confirmModal, againModal: true });
-    } 
+    }
   };
 
   //使用者已登入
@@ -441,21 +440,23 @@ const QueryPage = () => {
       };
       getAppointmentsDataAsync(queryPayload);
     }
-  },[CSRF_token, getAppointmentsDataAsync, isAuthenticated, role])
+  }, [CSRF_token, getAppointmentsDataAsync, isAuthenticated, role]);
 
   useEffect(() => {
     //新掛號建立後，病患可立即查看
+    
+    
     const queryString = window.location.search;
     if (queryString.includes("appointmentStatus=success")) {
       //是否為掛號成功的未登入使用者
-      if(location.state) {
-        getAppointmentsDataAsync(location.state.requestPayload)
+      if (location.state) {
+        getAppointmentsDataAsync(location.state.requestPayload);
       }
       setIsPageLoading(true);
       setIsAppointmentSuccess(true);
       setIsReadable(true);
     }
-  },[getAppointmentsDataAsync, location.state])
+  }, [getAppointmentsDataAsync, location.state]);
 
   return (
     <>
@@ -549,6 +550,8 @@ const QueryPage = () => {
             open={confirmModal.cancelModal}
             onOk={() => handleAppointment("cancel")}
             onCancel={() => handleCloseConfirmModal("cancel")}
+            okText="確定"
+            cancelText="返回"
           >
             <div className="ml-8 mt-4">
               <p>您確定要取消掛號？</p>
@@ -586,6 +589,8 @@ const QueryPage = () => {
             open={confirmModal.againModal}
             onOk={() => handleAppointment("again")}
             onCancel={() => handleCloseConfirmModal("again")}
+            okText="確定"
+            cancelText="返回"
           >
             <div className="md:mx-10 mt-4">
               <p>將重新為您掛號同一診次</p>
@@ -684,19 +689,18 @@ const QueryPage = () => {
             </div>
           </Modal>
         )}
-         <SelectedModal
-                  selectedDoctor={selectedDoctor}
-                  isModalOpen={isModalOpen}
-                  setSelectedDoctor={setSelectedDoctor}
-                  setIsSubmitLoading={setIsSubmitLoading}
-                  isFirstCreateAppointment={isFirstCreateAppointment}
-                  isModalLoading={isModalLoading}
-                  isSubmitLoading={isSubmitLoading}
-                  setIsFirstCreateAppointment={setIsFirstCreateAppointment}
-                  setIsModalOpen={setIsModalOpen}
-                  handleAppointment={handleAppointment}
-                  selectedAppointment={selectedAppointment}
-                />
+        <SelectedModal
+          selectedDoctor={selectedDoctor}
+          isModalOpen={isModalOpen}
+          setSelectedDoctor={setSelectedDoctor}
+          setIsSubmitLoading={setIsSubmitLoading}
+          isFirstCreateAppointment={isFirstCreateAppointment}
+          isModalLoading={isModalLoading}
+          isSubmitLoading={isSubmitLoading}
+          setIsFirstCreateAppointment={setIsFirstCreateAppointment}
+          setIsModalOpen={setIsModalOpen}
+          getAppointmentsDataAsync={getAppointmentsDataAsync}
+        />
       </Content>
     </>
   );
