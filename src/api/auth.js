@@ -47,6 +47,15 @@ export const thirdPartyLogin = async () => {
   }
 };
 
+export const getEmail = async () => {
+  try {
+    const res = await axios.get(`${patientAuthURL}/pending-email`);
+    return res.data
+  } catch(error) {
+    console.error("[Get Email Failed]:", error);
+  }
+}
+
 export const adminLogin = async ({ account, password }) => {
   try {
     const { data } = await axios.post(
@@ -69,7 +78,7 @@ export const adminLogin = async ({ account, password }) => {
 export const CSRF_request = async () => {
   try {
     const res = await axios.get(`${baseURL}/csrf-token`);
-    return res.data
+    return res
     
   } catch (error) {
     console.error("請求失敗", error);
@@ -85,3 +94,27 @@ export const logoutReqest = async () => {
     console.error("[Logout Failed]:", error);
   }
 };
+
+//browser API test
+
+// fetch(
+//       "https://registration-system-2gho.onrender.com/api/patients/pending-email", {
+//           headers: {
+//               "x-api-key": "0rEx0X54ow3S6M7yp8hYS4PkOhRC2irQ"
+//           },
+//           credentials: 'include'
+//       }
+//     )
+//       .then((response) => {
+//         if (!response.ok) {
+//           throw new Error(`HTTP error! status: ${response.status}`); // 檢查狀態碼
+//         }
+//         return response.json(); // 解析 JSON 格式的回應
+//       })
+//       .then((data) => {
+//         console.log("Success:", data); // 成功取得資料
+//         // 在這裡處理取得的資料
+//       })
+//       .catch((error) => {
+//         console.error("Error:", error); // 處理錯誤
+//       });

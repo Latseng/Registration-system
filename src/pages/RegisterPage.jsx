@@ -2,18 +2,17 @@ import { Form, Input, Button } from "antd";
 import { FaSuitcaseMedical } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 import DatePicker  from "../components/DatePicker";
-import { register, login, CSRF_request } from "../api/auth";
+import { register, login, CSRF_request, getEmail } from "../api/auth";
 import { useDispatch } from "react-redux";
 import { setLogin } from "../store/authSlice";
-import { thirdPartyLogin } from "../api/auth";
-import { FcGoogle } from "react-icons/fc";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const RegisterPage = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate()
   const dispatch = useDispatch();
   const [idNumberError, setIdNumberError] = useState("")
+  const [email, setEmail] = useState('')
 
   const onFinish = async (values) => {
      const birthDate = new Date(
@@ -26,10 +25,10 @@ const RegisterPage = () => {
        email: values.email || null,
        password: values.password,
      };
-     console.log(payload);
-     
+
     const data = await register(payload)
-   //註冊成功，使用者直接登入、重導向頁面
+    
+  //  註冊成功，使用者直接登入、重導向頁面
     if (data.status === "success") {
       await login({idNumber: payload.idNumber, password: payload.password});
       const CSRF_token = await CSRF_request()
@@ -47,10 +46,25 @@ const RegisterPage = () => {
       }
     }
   };
-
-   const handleThirdPartyLogin = async () => {
-      await thirdPartyLogin();
-    };
+  
+    useEffect(() => {
+      //第三方登入註冊
+       const queryString = window.location.search;
+       if(queryString.includes("pendingUser=true")) {
+        const getEmailAsync = async () => {
+          try {
+            const res = await getEmail();
+            if (res.status === "success") {
+            setEmail(res.data.email);
+            form.setFieldsValue({ email: res.data.email });
+            }
+          } catch (error) {
+            console.error(error);
+          }
+        };
+        getEmailAsync()
+       }
+    },[form])
 
   return (
     <div className="p-8 flex flex-col items-center justify-center bg-gray-100">
@@ -68,13 +82,6 @@ const RegisterPage = () => {
         layout="vertical"
       >
         <h2 className="text-2xl">會員註冊</h2>
-        <Button
-          className="my-8"
-          onClick={() => handleThirdPartyLogin("google")}
-        >
-          <FcGoogle size={20} />
-          使用Google註冊
-        </Button>
         <Form.Item
           label="姓名"
           name="name"
@@ -129,7 +136,10 @@ const RegisterPage = () => {
           name="email"
           rules={[{ type: "email", message: "請輸入有效的電子郵件" }]}
         >
-          <Input placeholder="電子郵件" />
+          <Input
+            placeholder={email !== "" ? email : "請輸入電子信箱"}
+            disabled={email !== ""}
+          />
         </Form.Item>
         <Form.Item>
           <Button type="primary" htmlType="submit" block>

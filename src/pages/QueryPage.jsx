@@ -444,8 +444,6 @@ const QueryPage = () => {
 
   useEffect(() => {
     //新掛號建立後，病患可立即查看
-    
-    
     const queryString = window.location.search;
     if (queryString.includes("appointmentStatus=success")) {
       //是否為掛號成功的未登入使用者
