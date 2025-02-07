@@ -92,15 +92,20 @@ const DepartmentPage = () => {
      if (queryString.includes("true") && !isCallGoogle.value) {
        const getCSRFtokenAsync = async () => {
          try {
-           const res = await CSRF_request();
-           dispatch(
-             setLogin({
-               user: { account: "google account" },
-               role: "patient",
-               CSRF_token: res.data.csrfToken,
-               expiresIn: 3600, //設定登入時效為一小時 = 3600秒
-             })
-           );
+           const result = await CSRF_request();
+           const expiresIn = 3600; //設定登入時效為一小時 = 3600秒
+           if (result.status === "success") {
+             dispatch(
+               setLogin({
+                 user: {account: "google account"},
+                 role: "patient",
+                 CSRF_token: result.data.csrfToken,
+                 expiresIn: expiresIn,
+               })
+             );
+           } else {
+             console.log("CSRF_Token錯誤");
+           }
            isCallGoogle.value = true;
          } catch (error) {
            console.error(error);

@@ -78,7 +78,7 @@ export const adminLogin = async ({ account, password }) => {
 export const CSRF_request = async () => {
   try {
     const res = await axios.get(`${baseURL}/csrf-token`);
-    return res
+    return res.data
     
   } catch (error) {
     console.error("請求失敗", error);

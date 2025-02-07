@@ -21,7 +21,7 @@ const LoginPage = () => {
       content: "帳號或密碼錯誤",
     });
   };
- 
+
   useEffect(() => {
     // 如果已登入
     if (isAuthenticated) {
@@ -40,21 +40,25 @@ const LoginPage = () => {
       duration: 0,
     });
     const data = await login(value);
-    if(data === "帳號或密碼錯誤") {
-      error()
+    if (data === "帳號或密碼錯誤") {
+      error();
       return;
     }
-    messageApi.destroy()
-    const CSRF_token = await CSRF_request()
+    messageApi.destroy();
+    const result = await CSRF_request();
     const expiresIn = 3600; //設定登入時效為一小時 = 3600秒
-    dispatch(
-      setLogin({
-        user: data.data.user,
-        role: "patient",
-        CSRF_token: CSRF_token.data.csrfToken,
-        expiresIn: expiresIn
-      })
-    );
+    if (result.status === "success") {
+      dispatch(
+        setLogin({
+          user: data.data.user,
+          role: "patient",
+          CSRF_token: result.data.csrfToken,
+          expiresIn: expiresIn,
+        })
+      );
+    } else {
+      console.log("CSRF_Token錯誤");
+    }
     navigate("/departments");
   };
 
@@ -67,19 +71,23 @@ const LoginPage = () => {
     const data = await adminLogin(value);
     if (data === "帳號或密碼錯誤") {
       error();
-      return
+      return;
     }
     messageApi.destroy();
-    const CSRF_token = await CSRF_request();
-    const expiresIn = 3600;
-    dispatch(
-      setLogin({
-        user: data.data.user,
-        role: data.data.user.role,
-        CSRF_token: CSRF_token.data.csrfToken,
-        expiresIn: expiresIn,
-      })
-    );
+    const result = await CSRF_request();
+    const expiresIn = 3600; //設定登入時效為一小時 = 3600秒
+    if (result.status === "success") {
+      dispatch(
+        setLogin({
+          user: data.data.user,
+          role: "patient",
+          CSRF_token: result.data.csrfToken,
+          expiresIn: expiresIn,
+        })
+      );
+    } else {
+      console.log("CSRF_Token錯誤");
+    }
     navigate("/admin/departments");
   };
 
