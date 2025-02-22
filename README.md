@@ -27,8 +27,6 @@ A hospital appointment booking website that allows users to schedule medical app
 
 ### Admin Features
 
-Admin Features:
-
 1. Doctor Management: Administrators can access the backend interface to add, edit, and delete doctor information.
 2. Patient Management: Administrators can delete patient records.
 3. Appointment Management: Administrators can delete patient appointment records and modify appointment status.
