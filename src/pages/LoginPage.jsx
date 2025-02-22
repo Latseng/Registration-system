@@ -80,7 +80,7 @@ const LoginPage = () => {
       dispatch(
         setLogin({
           user: data.data.user,
-          role: "patient",
+          role: "admin",
           CSRF_token: result.data.csrfToken,
           expiresIn: expiresIn,
         })
