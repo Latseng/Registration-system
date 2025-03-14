@@ -80,7 +80,7 @@ const LoginPage = () => {
       dispatch(
         setLogin({
           user: data.data.user,
-          role: "patient",
+          role: "admin",
           CSRF_token: result.data.csrfToken,
           expiresIn: expiresIn,
         })
@@ -121,7 +121,7 @@ const LoginPage = () => {
               name="password"
               rules={[{ required: true, message: "請輸入密碼" }]}
             >
-              <Input />
+              <Input.Password />
             </Form.Item>
             <Form.Item>
               <Button
@@ -168,7 +168,7 @@ const LoginPage = () => {
               name="password"
               rules={[{ required: true, message: "請輸入密碼" }]}
             >
-              <Input />
+              <Input.Password />
             </Form.Item>
             <Form.Item>
               <Button

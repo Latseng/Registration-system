@@ -13,7 +13,7 @@ const { Header } = Layout;
 
 const Navbar = ({ handleClick, currentPage }) => {
   const isDesktop = useRWD();
-  const { isAuthenticated } = useSelector((state) => state.auth);
+  const { isAuthenticated, role } = useSelector((state) => state.auth);
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const items = isAuthenticated
