@@ -14,6 +14,9 @@ const LoginPage = () => {
   const [isAdminLoginForm, setIsAdminLoginForm] = useState(false);
   const { isAuthenticated, role } = useSelector((state) => state.auth);
   const [messageApi, contextHolder] = message.useMessage();
+  const [isThirdPartyLoginLoading, setIsThirdPartyLoginLoading] = useState(
+    false
+  );
 
   const error = () => {
     messageApi.open({
@@ -92,7 +95,9 @@ const LoginPage = () => {
   };
 
   const handleThirdPartyLogin = async () => {
+    setIsThirdPartyLoginLoading(true);
     await thirdPartyLogin();
+    setIsThirdPartyLoginLoading(false)
   };
 
   return (
@@ -178,7 +183,10 @@ const LoginPage = () => {
               >
                 登入
               </Button>
-              <Button onClick={() => handleThirdPartyLogin("google")}>
+              <Button
+                loading={isThirdPartyLoginLoading}
+                onClick={() => handleThirdPartyLogin("google")}
+              >
                 <FcGoogle size={20} />
                 Google登入
               </Button>
